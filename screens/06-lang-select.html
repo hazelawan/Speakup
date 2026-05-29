@@ -1,0 +1,220 @@
+<!-- ═══ Language Select Screen ═══ -->
+<div class="screen" id="langSelect" style="">
+  <div class="lang-header" style="padding:44px 20px 24px;position:relative;">
+    <button onclick="showScreen('dashboard');renderDash();" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;">← Wapas</button>
+    <div class="lang-owl" style="font-size:44px;margin-bottom:6px;">🦉</div>
+    <div class="lang-title" style="font-size:22px;margin-bottom:3px;">Kya Seekhna Hai? 📚</div>
+    <div class="lang-sub">Apni category chuno — language, chess, ya kuch aur!</div>
+  </div>
+  <div class="lang-body">
+
+    <!-- ══ SECTION 1: ZUBAANEIN ══ -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;margin-top:4px;">
+      <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#58CC02,#1CB0F6);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 3px 10px rgba(88,204,2,.3);">🌍</div>
+      <div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:18px;color:#58CC02;text-shadow:0 0 12px rgba(88,204,2,.4);">Zubaanein Seekho</div>
+        <div style="font-size:11px;color:var(--mut);">11 languages available • Abhi shuru karo!</div>
+      </div>
+    </div>
+    <div class="lang-grid" style="margin-bottom:24px;">
+      <div class="lang-card lang-en observed anim-entrance" onclick="pickLanguage('en')" style="opacity: 1; transform: translateX(0px) scale(1); animation-delay: 0s; position: relative; overflow: hidden;">
+        <div class="lang-badge">Most Popular 🔥</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#58CC0222;border-color:#58CC0244;">🇬🇧</div>
+          <div class="lang-info">
+            <div class="lang-name">English</div>
+            <div class="lang-desc">Urdu se English seekho — business, travel, aur rozana ki baatein. Duniya ki sabse popular language!</div>
+            <div class="lang-speakers">👥 1.5B speakers</div><div class="lang-sel-indicator" id="langSel_en">✅ Active — English</div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-fr observed anim-entrance" onclick="pickLanguage('fr')" style="opacity: 1; transform: translateX(0px) scale(1); animation-delay: 0.06s;">
+        <div class="lang-badge">Europe 🌟</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#4A90E222;border-color:#4A90E244;">🇫🇷</div>
+          <div class="lang-info">
+            <div class="lang-name">French — Français</div>
+            <div class="lang-desc">Urdu se French seekho — Paris ki zubaan! Europe, Africa aur duniya mein 300 million log bolte hain.</div>
+            <div class="lang-speakers">👥 300M speakers</div><div class="lang-sel-indicator" id="langSel_fr"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-zh observed anim-entrance" onclick="pickLanguage('zh')" style="opacity: 1; transform: translateX(0px) scale(1); animation-delay: 0.12s;">
+        <div class="lang-badge">Business 💼</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#E74C3C22;border-color:#E74C3C44;">🇨🇳</div>
+          <div class="lang-info">
+            <div class="lang-name">Chinese — 中文</div>
+            <div class="lang-desc">Urdu se Chinese (Mandarin) seekho — duniya ki sabse zyada boli jane wali zubaan! 1.4 billion log!</div>
+            <div class="lang-speakers">👥 1.4B speakers</div><div class="lang-sel-indicator" id="langSel_zh"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-ar observed anim-entrance" onclick="pickLanguage('ar')" style="opacity: 1; transform: translateX(0px) scale(1); animation-delay: 0.18s;">
+        <div class="lang-badge">Quranic 📖</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#9B59B622;border-color:#9B59B644;">🇸🇦</div>
+          <div class="lang-info">
+            <div class="lang-name">Arabic — عربی</div>
+            <div class="lang-desc">Urdu se Arabic seekho — Quran ki zubaan, 22 mulkon mein boli jati hai. Hamari dini zaroorat!</div>
+            <div class="lang-speakers">👥 400M speakers</div><div class="lang-sel-indicator" id="langSel_ar"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-ko observed" onclick="pickLanguage('ko')" style="opacity: 1; transform: translateX(0px) scale(1);position:relative;">
+        <div class="lang-badge">K-Drama 🎬</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#FF6B9D22;border-color:#FF6B9D44;">🇰🇷</div>
+          <div class="lang-info">
+            <div class="lang-name">Korean — 한국어</div>
+            <div class="lang-desc">Urdu se Korean seekho — K-Drama, K-Pop aur Korean culture ki zubaan! BTS ki boli samjho!</div>
+            <div class="lang-speakers">👥 80M speakers</div><div class="lang-sel-indicator" id="langSel_ko"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-ja observed" onclick="pickLanguage('ja')" style="opacity: 1; transform: translateX(0px) scale(1);position:relative;">
+        <div class="lang-badge">Anime 🎌</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#FF8C4222;border-color:#FF8C4244;">🇯🇵</div>
+          <div class="lang-info">
+            <div class="lang-name">Japanese — 日本語</div>
+            <div class="lang-desc">Urdu se Japanese seekho — Anime, Manga aur Japan ki amazing culture ki zubaan! Konnichiwa!</div>
+            <div class="lang-speakers">👥 125M speakers</div><div class="lang-sel-indicator" id="langSel_ja"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-tr observed" onclick="pickLanguage('tr')" style="opacity: 1; transform: translateX(0px) scale(1);position:relative;">
+        <div class="lang-badge">Turkey 🌙</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#E8414222;border-color:#E8414244;">🇹🇷</div>
+          <div class="lang-info">
+            <div class="lang-name">Turkish — Türkçe</div>
+            <div class="lang-desc">Urdu se Turkish seekho — Ertugrul jaise dramas, Ottoman history aur 85 million logon ki zubaan!</div>
+            <div class="lang-speakers">👥 88M speakers</div><div class="lang-sel-indicator" id="langSel_tr"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-ie observed" onclick="pickLanguage('ie')" style="opacity: 1; transform: translateX(0px) scale(1);position:relative;">
+        <div class="lang-badge">Celtic 🍀</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#169B6222;border-color:#169B6244;">🇮🇪</div>
+          <div class="lang-info">
+            <div class="lang-name">Irish — Gaeilge</div>
+            <div class="lang-desc">Urdu se Irish (Gaelic) seekho — Europe ki qadeemi zubaan, Ireland ka national language. Slán!</div>
+            <div class="lang-speakers">👥 2M speakers</div><div class="lang-sel-indicator" id="langSel_ie"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-es observed" onclick="pickLanguage('es')" style="opacity: 1; transform: translateX(0px) scale(1);position:relative;">
+        <div class="lang-badge">Popular 🌍</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#F5A62322;border-color:#F5A62344;">🇪🇸</div>
+          <div class="lang-info">
+            <div class="lang-name">Spanish — Español</div>
+            <div class="lang-desc">Urdu se Spanish seekho — 500 million logon ki zubaan! Latin America, Spain aur poori duniya mein boli jati hai. ¡Hola!</div>
+            <div class="lang-speakers">👥 500M speakers</div><div class="lang-sel-indicator" id="langSel_es"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-de observed" onclick="pickLanguage('de')" style="opacity: 1; transform: translateX(0px) scale(1);position:relative;">
+        <div class="lang-badge">Europe 🏔️</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#5B9BD522;border-color:#5B9BD544;">🇩🇪</div>
+          <div class="lang-info">
+            <div class="lang-name">German — Deutsch</div>
+            <div class="lang-desc">Urdu se German seekho — Europe ki sab se badi economy ki zubaan! Engineering, science aur business ke liye must. Guten Tag!</div>
+            <div class="lang-speakers">👥 135M speakers</div><div class="lang-sel-indicator" id="langSel_de"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lang-card lang-ru observed" onclick="pickLanguage('ru')" style="opacity: 1; transform: translateX(0px) scale(1);position:relative;">
+        <div class="lang-badge">Superpower 🐻</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#E5393522;border-color:#E5393544;">🇷🇺</div>
+          <div class="lang-info">
+            <div class="lang-name">Russian — Русский</div>
+            <div class="lang-desc">Urdu se Russian seekho — Cyrillic script, Eastern Europe aur Central Asia ki taaqatwar zubaan! 258 million log bolte hain. Привет!</div>
+            <div class="lang-speakers">👥 258M speakers</div><div class="lang-sel-indicator" id="langSel_ru"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DIVIDER ══ -->
+    <div style="height:1px;background:linear-gradient(90deg,transparent,var(--bdr),transparent);margin-bottom:24px;"></div>
+
+    <!-- ══ SECTION 2: CHESS ══ -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#2ECC71,#1A9E55);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 3px 10px rgba(46,204,113,.3);">♟️</div>
+      <div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:18px;color:#2ECC71;text-shadow:0 0 12px rgba(46,204,113,.4);">Chess Seekho</div>
+        <div style="font-size:11px;color:var(--mut);">Sirf 7 din mein pura chess — beginner se pro!</div>
+      </div>
+    </div>
+    <div class="lang-grid" style="margin-bottom:24px;">
+      <div class="lang-card lang-chess observed" onclick="pickLanguage('chess')" style="opacity: 1; transform: translateX(0px) scale(1);">
+        <div class="lang-badge">7 Day ♟️ NEW</div>
+        <div class="lang-card-inner">
+          <div class="lang-flag-box" style="background:#2ECC7122;border-color:#2ECC7144;font-size:32px;">♟️</div>
+          <div class="lang-info">
+            <div class="lang-name">Chess — Shatranj</div>
+            <div class="lang-desc">Sirf 7 din mein poora chess seekho! Pieces, rules, openings, tactics, endgame aur tournament strategy — sab kuch ek hi course mein. Certificate bhi milega!</div>
+            <div class="lang-speakers">🌍 800M+ players worldwide</div><div class="lang-sel-indicator" id="langSel_chess"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DIVIDER ══ -->
+    <div style="height:1px;background:linear-gradient(90deg,transparent,var(--bdr),transparent);margin-bottom:24px;"></div>
+
+    <!-- ══ SECTION 3: PROGRAMMING LANGUAGES ══ -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#3776AB,#1a4a6e);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 3px 10px rgba(55,118,171,.3);">💻</div>
+      <div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:18px;color:#3776AB;text-shadow:0 0 12px rgba(55,118,171,.4);">Programming Seekho</div>
+        <div style="font-size:11px;color:var(--mut);">Python, Java, JS — coding ki duniya mein qadam rakho!</div>
+      </div>
+    </div>
+
+    <!-- Programming Languages — Admin se enable/disable hoga -->
+    <div style="font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">💻 Programming Languages</div>
+    <div id="progLangGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      <!-- Dynamically rendered by renderProgLangs() -->
+    </div>
+
+    <!-- Arts & Skills section -->
+    <div style="font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">🎨 Arts &amp; Skills</div>
+    <div id="artsSkillsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      <!-- Dynamically rendered by renderArtsSkills() -->
+    </div>
+
+    <!-- Hidden old cards for backup reference -->
+    <div style="display:none;" id="hiddenLegacyProgCards">
+      <div onclick="showToast('Python — Jald Aa Raha Hai! 🚀','#3776AB')" style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid #3776AB33;border-radius:14px;padding:11px 12px;cursor:pointer;transition:transform .15s;" onmousedown="this.style.transform='scale(.96)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.96)'" ontouchend="this.style.transform=''">
+        <div style="width:38px;height:38px;border-radius:11px;background:#3776AB22;border:2px solid #3776AB55;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🐍</div>
+        <div style="flex:1;"><div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Python</div><div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div></div>
+        <div style="font-size:14px;opacity:.4;">🔒</div>
+      </div>
+      <div onclick="showToast('Java — Jald Aa Raha Hai! 🚀','#E76F00')" style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid #E76F0033;border-radius:14px;padding:11px 12px;cursor:pointer;transition:transform .15s;" onmousedown="this.style.transform='scale(.96)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.96)'" ontouchend="this.style.transform=''">
+        <div style="width:38px;height:38px;border-radius:11px;background:#E76F0022;border:2px solid #E76F0055;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">☕</div>
+        <div style="flex:1;"><div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Java</div><div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div></div>
+        <div style="font-size:14px;opacity:.4;">🔒</div>
+      </div>
+      <div onclick="showToast('JavaScript — Jald Aa Raha Hai! 🚀','#F7DF1E')" style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid #F7DF1E33;border-radius:14px;padding:11px 12px;cursor:pointer;transition:transform .15s;" onmousedown="this.style.transform='scale(.96)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.96)'" ontouchend="this.style.transform=''">
+        <div style="width:38px;height:38px;border-radius:11px;background:#F7DF1E22;border:2px solid #F7DF1E55;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💛</div>
+        <div style="flex:1;"><div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">JavaScript</div><div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div></div>
+        <div style="font-size:14px;opacity:.4;">🔒</div>
+      </div>
+      <div onclick="showToast('Rust — Jald Aa Raha Hai! 🚀','#CE412B')" style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid #CE412B33;border-radius:14px;padding:11px 12px;cursor:pointer;transition:transform .15s;" onmousedown="this.style.transform='scale(.96)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.96)'" ontouchend="this.style.transform=''">
+        <div style="width:38px;height:38px;border-radius:11px;background:#CE412B22;border:2px solid #CE412B55;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🦀</div>
+        <div style="flex:1;"><div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Rust</div><div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div></div>
+        <div style="font-size:14px;opacity:.4;">🔒</div>
+      </div>
+    </div><!-- end hiddenLegacyProgCards -->
+
+  </div>
+</div>
+
+<!-- COURSE SELECT -->
+
