@@ -1,0 +1,30 @@
+<!-- ═══ Share Card Overlay ═══ -->
+<div id="shareCardOverlay" onclick="if(event.target===this) closeShareCard()">
+  <div id="shareCardSheet">
+    <div class="scs-handle"></div>
+    <div class="scs-title">📤 Progress Share Karo</div>
+    <div class="scs-sub">Canvas pe tumhara streak card tayyar ho raha hai...</div>
+    <!-- Canvas preview -->
+    <div id="shareCanvasWrap">
+      <canvas id="shareCardCanvas" width="800" height="440"></canvas>
+    </div>
+    <!-- Action buttons -->
+    <div class="share-actions">
+      <button class="share-act-btn sab-share" onclick="doShareCard()">
+        <span class="sab-icon">🚀</span>Share Karo
+      </button>
+      <button class="share-act-btn sab-download" onclick="doDownloadCard()">
+        <span class="sab-icon">⬇️</span>Download PNG
+      </button>
+      <button class="share-act-btn sab-copy" onclick="doCopyShareText()">
+        <span class="sab-icon">📋</span>Text Copy
+      </button>
+    </div>
+    <button class="share-close-btn" onclick="closeShareCard()">Wapas Jao ✕</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PROGRESS SHARE — Canvas Card System
+══════════════════════════════════════════════ -->
+
