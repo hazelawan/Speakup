@@ -1,0 +1,594 @@
+<!-- ═══ Pro Screen ═══ -->
+<div class="screen pb80" id="proScreen">
+  <!-- Back Button -->
+  <button onclick="history.back();if(typeof showScreen==='function'){showScreen('dashboard');renderDash();}" 
+    style="position:fixed;top:14px;left:14px;z-index:999;background:rgba(15,14,23,.85);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:7px 14px;color:rgba(255,255,255,.75);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;backdrop-filter:blur(8px);">← Wapas</button>
+
+  <!-- Hero -->
+  <div class="pro-hero">
+    <div class="pro-crown">👑</div>
+    <div class="pro-hero-title">SpeakUp Pro</div>
+    <div class="pro-hero-sub">Apni language journey ko <b>turbo mode</b> mein daal do!<br>Unlimited access, zero limits.</div>
+
+    <!-- Free vs Pro Quick Compare -->
+    <div class="pro-compare-banner">
+      <div class="pro-compare-free">
+        <div class="pcf-label">🆓 Free</div>
+        <div class="pcf-item">📅 Sirf 3 Days</div>
+        <div class="pcf-item">❤️ 5 Hearts</div>
+        <div class="pcf-item">🔒 Locked Content</div>
+        <div class="pcf-item">❌ No Streak Freeze</div>
+      </div>
+      <div class="pro-compare-vs">VS</div>
+      <div class="pro-compare-pro">
+        <div class="pcf-label">👑 Pro</div>
+        <div class="pcf-item">🗓️ Sab Days Unlock</div>
+        <div class="pcf-item">💚 Unlimited Hearts</div>
+        <div class="pcf-item">🔓 Poora Content</div>
+        <div class="pcf-item">❄️ Streak Freeze</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pro Already Active Banner -->
+  <div class="pro-active-banner" id="proActiveBanner">
+    <div style="font-size:60px;margin-bottom:6px;">👑</div>
+    <div style="font-family:'Fredoka One',sans-serif;font-size:28px;background:linear-gradient(135deg,#FFD700,#FF9500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;">You Are Pro!</div>
+    <div style="font-size:14px;color:var(--g);margin-bottom:14px;">Saari features unlock hain 🎉</div>
+    <div id="proExpiryInfo" style="font-size:13px;color:var(--g);background:rgba(46,229,157,.1);border:1.5px solid rgba(46,229,157,.3);border-radius:14px;padding:11px 18px;display:inline-block;margin-bottom:16px;font-weight:700;">Checking...</div>
+    <div style="text-align:left;background:rgba(255,255,255,.04);border-radius:16px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Aapke Pro Features</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#128197;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Sab Days Unlock</div><div style="font-size:11px;color:var(--mut);">Day 4 se Day 90 tak</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#128154;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Unlimited Hearts</div><div style="font-size:11px;color:var(--mut);">Galti karo, koi tension nahi</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">📄</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Past Papers Access</div><div style="font-size:11px;color:var(--mut);">9th se 12th saare papers</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#10052;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Streak Freeze</div><div style="font-size:11px;color:var(--mut);">Din miss hone pe streak bachao</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#127891;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Course Certificate</div><div style="font-size:11px;color:var(--mut);">Course complete karo aur official certificate pao</div></div></div>
+      </div>
+    </div>
+    <div id="proUpgradePlans" style="margin-bottom:14px;display:none;">
+      <div style="font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Upgrade Karo</div>
+      <div id="proUpgradeCards"></div>
+    </div>
+    <button onclick="showScreen('dashboard');renderDash();" style="width:100%;padding:13px;background:linear-gradient(135deg,#FFD700,#FF9500);border:none;border-radius:14px;color:#000;font-family:'Fredoka One',sans-serif;font-size:16px;cursor:pointer;font-weight:800;margin-bottom:10px;">&#128640; Seekhna Shuru Karo!</button>
+    <button onclick="var waNum=window._primaryWA||'923410101415';window.open('https://wa.me/'+waNum+'?text=SpeakUp%20Support','_blank')" style="width:100%;padding:12px;background:#25D366;border:none;border-radius:14px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:15px;cursor:pointer;font-weight:800;margin-bottom:10px;">💬 Admin se Contact (WhatsApp)</button>
+    <button onclick="showCancelSubPopup()" style="width:100%;padding:11px;background:transparent;border:1.5px solid rgba(255,107,107,.4);border-radius:14px;color:rgba(255,107,107,.8);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">&#10060; Subscription Cancel Karo</button>
+  </div>
+
+  <!-- Features List -->
+  <div class="pro-features-section" id="proFeaturesSection">
+    <div class="pro-section-label">🚀 Pro Mein Kya Milta Hai</div>
+
+    <div class="pro-feat-card" style="animation-delay:.05s">
+      <div class="pro-feat-icon green">♾️</div>
+      <div class="pro-feat-text">
+        <div class="pro-feat-title">Unlimited Hearts</div>
+        <div class="pro-feat-desc">Galti ki chinta nahi — jitna chaaho seekho, hearts kabhi khatam nahi honge!</div>
+      </div>
+      <div class="pro-feat-badge">FREE: 5 ❤️</div>
+    </div>
+
+    <div class="pro-feat-card" style="animation-delay:.1s">
+      <div class="pro-feat-icon gold">🗓️</div>
+      <div class="pro-feat-text">
+        <div class="pro-feat-title">Sab Days Unlock</div>
+        <div class="pro-feat-desc">Day 4 se lekar Day 90 tak — pura content ek baar mein access karo!</div>
+      </div>
+      <div class="pro-feat-badge">FREE: Day 1-3</div>
+    </div>
+
+    <div class="pro-feat-card" style="animation-delay:.15s">
+      <div class="pro-feat-icon orange">❄️</div>
+      <div class="pro-feat-text">
+        <div class="pro-feat-title">Streak Freeze</div>
+        <div class="pro-feat-desc">Ek din miss ho gaya? Koi baat nahi! Streak Freeze use karo aur apna record bachao.</div>
+      </div>
+      <div class="pro-feat-badge">Pro Only 👑</div>
+    </div>
+
+    <div class="pro-feat-card" style="animation-delay:.2s">
+      <div class="pro-feat-icon purple">🏆</div>
+      <div class="pro-feat-text">
+        <div class="pro-feat-title">Leaderboard Pro Badge</div>
+        <div class="pro-feat-desc">Leaderboard pe apna naam 👑 Pro badge ke saath dikhao — sab jaanein ke tum serious ho!</div>
+      </div>
+      <div class="pro-feat-badge">Pro Only 👑</div>
+    </div>
+
+    <div class="pro-feat-card" style="animation-delay:.25s">
+      <div class="pro-feat-icon blue">🎓</div>
+      <div class="pro-feat-text">
+        <div class="pro-feat-title">Course Certificate</div>
+        <div class="pro-feat-desc">Course complete karo aur official SpeakUp certificate pao — download aur share karo!</div>
+      </div>
+      <div class="pro-feat-badge">Pro Only 👑</div>
+    </div>
+
+    <div class="pro-feat-card" style="animation-delay:.3s">
+      <div class="pro-feat-icon red">⚡</div>
+      <div class="pro-feat-text">
+        <div class="pro-feat-title">Priority Support</div>
+        <div class="pro-feat-desc">Koi masla ho toh WhatsApp pe seedha message karo — 24 ghante mein jawab guarantee!</div>
+      </div>
+      <div class="pro-feat-badge">Pro Only 👑</div>
+    </div>
+  </div>
+
+  <!-- Pricing Cards -->
+  <div class="pro-pricing-section">
+    <div class="pro-section-label">💰 Plan Chunno</div>
+    <div class="pro-plans-wrap">
+
+      <!-- 2 Week Plan -->
+      <div class="pro-plan-card" id="planCard_2week" onclick="proSelectPlan('2week')">
+        <div class="plan-emoji">🔥</div>
+        <div class="plan-duration">2 Hafta</div>
+        <div class="plan-price">Rs. 300</div>
+        <div class="plan-per-day">~Rs. 21/din</div>
+        <button class="plan-select-btn">Chunno</button>
+      </div>
+
+      <!-- 1 Month Plan (Popular) -->
+      <div class="pro-plan-card popular" id="planCard_month" onclick="proSelectPlan('month')">
+        <div class="plan-popular-badge">⭐ MOST POPULAR</div>
+        <div class="plan-emoji">👑</div>
+        <div class="plan-duration">1 Mahina</div>
+        <div class="plan-price">Rs. 500</div>
+        <div class="plan-per-day">~Rs. 17/din</div>
+        <button class="plan-select-btn">Chunno</button>
+      </div>
+
+      <!-- 1 Year Plan -->
+      <div class="pro-plan-card" id="planCard_year" onclick="proSelectPlan('year')">
+        <div class="plan-emoji">💎</div>
+        <div class="plan-duration">1 Saal</div>
+        <div class="plan-price">Rs. 4000</div>
+        <div class="plan-per-day">~Rs. 11/din</div>
+        <button class="plan-select-btn">Chunno</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Payment Section -->
+  <div class="pro-pay-section">
+    <div class="pro-section-label">💳 Payment Karo</div>
+
+    <!-- Selected Plan Badge -->
+    <div id="proSelectedPlan">
+      <div>
+        <div style="font-size:11px;color:var(--mut);margin-bottom:2px;">Selected Plan</div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:var(--txt);" id="proSelPlanLabel">1 Mahina Plan</div>
+      </div>
+      <div style="font-family:'Fredoka One',sans-serif;font-size:22px;color:#FFD700;" id="proSelPlanPrice">Rs. 500</div>
+    </div>
+
+    <!-- Payment Method Tabs — dynamically loaded from Firebase -->
+    <div class="pro-pay-tabs" id="proPayTabsRow">
+      <!-- tabs rendered by renderProPaymentUI() -->
+    </div>
+
+    <!-- Dynamic Payment Panels -->
+    <div id="proPayPanels">
+      <!-- panels rendered by renderProPaymentUI() -->
+    </div>
+
+    <!-- Steps Card -->
+    <div class="pro-steps-card">
+      <div style="font-size:12px;font-weight:800;color:#FFD700;margin-bottom:10px;">📋 3 Aasaan Steps</div>
+      <div class="pro-step-item">
+        <div class="pro-step-num">1</div>
+        <div>Upar se payment method chunno aur <b style="color:var(--txt)">number copy karo</b></div>
+      </div>
+      <div class="pro-step-item">
+        <div class="pro-step-num">2</div>
+        <div>Apne selected plan ki <b style="color:var(--txt)">payment send karo</b> — screenshot lo</div>
+      </div>
+      <div class="pro-step-item">
+        <div class="pro-step-num">3</div>
+        <div>Neeche WhatsApp button se <b style="color:var(--txt)">screenshot bhejo</b> — 24 ghante mein Pro mil jayega!</div>
+      </div>
+    </div>
+
+    <!-- WhatsApp Button -->
+    <a id="proWhatsappBtn" href="#" target="_blank" class="pro-whatsapp-btn" onclick="proOpenWhatsapp(event)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.528 5.855L.057 23.886l6.194-1.623A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.516-5.16-1.416l-.369-.22-3.675.963.981-3.582-.241-.378A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+      </svg>
+      WhatsApp Pe Screenshot Bhejo 📸
+    </a>
+
+    <button onclick="showScreen('dashboard');renderDash();" style="width:100%;padding:12px;background:transparent;border:1px solid var(--bdr);border-radius:12px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;margin-bottom:8px;">Baad Mein Karunga</button>
+  </div>
+
+  <!-- Trust Badges -->
+  <div class="pro-trust-section">
+    <div class="pro-trust-badge">
+      <div class="pro-trust-icon">🔒</div>
+      <div class="pro-trust-text">Safe &<br>Secure</div>
+    </div>
+    <div class="pro-trust-badge">
+      <div class="pro-trust-icon">⚡</div>
+      <div class="pro-trust-text">24hr<br>Activation</div>
+    </div>
+    <div class="pro-trust-badge">
+      <div class="pro-trust-icon">💬</div>
+      <div class="pro-trust-text">WhatsApp<br>Support</div>
+    </div>
+    <div class="pro-trust-badge">
+      <div class="pro-trust-icon">🇵🇰</div>
+      <div class="pro-trust-text">Pak-Made<br>App</div>
+    </div>
+  </div>
+
+  <div style="height: 30px;"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// PHASE 2 — PRO SCREEN LOGIC
+// ═══════════════════════════════════════════════
+
+const PRO_PLANS = {
+  '2week': { label: '2 Hafta Plan',  price: 'Rs. 300',  days: 14,  perDay: '~Rs. 21/din' },
+  'month':  { label: '1 Mahina Plan', price: 'Rs. 500',  days: 30,  perDay: '~Rs. 17/din' },
+  'year':   { label: '1 Saal Plan',   price: 'Rs. 4000', days: 365, perDay: '~Rs. 11/din' },
+};
+
+// Map admin paymentPlans IDs → PRO_PLANS keys
+const _PLAN_ID_MAP = { '15din':'2week', '2week':'2week', 'monthly':'month', 'month':'month', 'yearly':'year', 'year':'year' };
+
+// Load plan prices from Firebase adminData.paymentPlans and update PRO_PLANS + UI
+function loadAndApplyPlanPrices(){
+  function applyPlans(plans){
+    if(!plans || !Array.isArray(plans)) return;
+    plans.forEach(p => {
+      const key = _PLAN_ID_MAP[p.id];
+      if(!key || !PRO_PLANS[key]) return;
+      if(p.price && p.price > 0){
+        const curr = p.currency || 'PKR';
+        const formatted = curr === 'PKR' ? 'Rs. ' + p.price : curr + ' ' + p.price;
+        PRO_PLANS[key].price = formatted;
+        // Update per-day
+        const d = PRO_PLANS[key].days;
+        if(d) PRO_PLANS[key].perDay = '~Rs. ' + Math.round(p.price/d) + '/din';
+      }
+      if(p.name) PRO_PLANS[key].label = p.name + ' Plan';
+    });
+    // Refresh UI cards
+    _refreshPlanCardsUI();
+  }
+
+  if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET){
+    window.FB_GET(window.FB_REF(window.FB_DB, 'adminData/paymentPlans'))
+      .then(snap => { applyPlans(snap && snap.val ? snap.val() : null); })
+      .catch(() => {});
+  } else {
+    try{
+      const raw = localStorage.getItem('speakup_admin');
+      if(raw){ const ad = JSON.parse(raw); applyPlans(ad.paymentPlans); }
+    }catch(e){}
+  }
+}
+
+function _refreshPlanCardsUI(){
+  // Update card prices in DOM
+  const cardMap = { '2week': 'planCard_2week', 'month': 'planCard_month', 'year': 'planCard_year' };
+  Object.entries(cardMap).forEach(([key, cardId]) => {
+    const card = document.getElementById(cardId);
+    if(!card) return;
+    const p = PRO_PLANS[key];
+    const priceEl  = card.querySelector('.plan-price');
+    const perDayEl = card.querySelector('.plan-per-day');
+    if(priceEl)  priceEl.textContent  = p.price;
+    if(perDayEl) perDayEl.textContent = p.perDay;
+  });
+  // Refresh selected plan badge
+  if(_proActivePlan && PRO_PLANS[_proActivePlan]){
+    const lblEl   = document.getElementById('proSelPlanLabel');
+    const priceEl = document.getElementById('proSelPlanPrice');
+    if(lblEl)   lblEl.textContent   = PRO_PLANS[_proActivePlan].label;
+    if(priceEl) priceEl.textContent = PRO_PLANS[_proActivePlan].price;
+  }
+}
+
+// Dynamic payment accounts — loaded from Firebase adminData
+let _proPaymentAccounts = [
+  { method:'jazzcash', name:'Adeel Younas', number:'03410101415', wa:'923410101415' }
+];
+
+const _PAY_METHOD_META = {
+  jazzcash:  { label:'📱 JazzCash',  id:'jc', color:'#FF5C00' },
+  easypaisa: { label:'💚 EasyPaisa', id:'ep', color:'#4CAF50' },
+  nayapay:   { label:'💜 Naya Pay',  id:'np', color:'#7C3AED' },
+  bank:      { label:'🏦 Bank',      id:'bk', color:'#5B8DEF' },
+  other:     { label:'💳 Other',     id:'ot', color:'#aaa'    },
+};
+
+// Load payment accounts from Firebase then rebuild UI
+function loadAndRenderPaymentAccounts(){
+  // Try Firebase first
+  if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET){
+    window.FB_GET(window.FB_REF(window.FB_DB, 'adminData/paymentAccounts'))
+      .then(snap => {
+        const val = snap && snap.val ? snap.val() : null;
+        if(val && Array.isArray(val) && val.length){
+          _proPaymentAccounts = val;
+        }
+        renderProPaymentUI();
+      })
+      .catch(() => { renderProPaymentUI(); });
+  } else {
+    // Fallback: try localStorage adminData
+    try{
+      const raw = localStorage.getItem('su_admin_data');
+      if(raw){
+        const ad = JSON.parse(raw);
+        if(ad.paymentAccounts && ad.paymentAccounts.length) _proPaymentAccounts = ad.paymentAccounts;
+      }
+    }catch(e){}
+    renderProPaymentUI();
+  }
+}
+
+function renderProPaymentUI(){
+  const tabs   = document.getElementById('proPayTabsRow');
+  const panels = document.getElementById('proPayPanels');
+  if(!tabs || !panels) return;
+
+  const accs = _proPaymentAccounts;
+  if(!accs || !accs.length){
+    tabs.innerHTML   = '';
+    panels.innerHTML = '<div style="color:var(--mut);text-align:center;padding:16px;font-size:13px;">Admin ne payment accounts set nahi kiye abhi</div>';
+    return;
+  }
+
+  // Build tabs
+  tabs.innerHTML = accs.map((acc, i) => {
+    const m = _PAY_METHOD_META[acc.method] || { label: acc.method, id:'m'+i, color:'#aaa' };
+    const active = i === 0 ? 'active' : '';
+    return `<button class="pro-pay-tab ${active}" id="proTab_dyn${i}" onclick="proSwitchDynTab(${i})" style="${active ? 'border-color:'+m.color+';color:'+m.color+';background:'+m.color+'22;' : ''}">${m.label}</button>`;
+  }).join('');
+
+  // Build panels
+  panels.innerHTML = accs.map((acc, i) => {
+    const m = _PAY_METHOD_META[acc.method] || { label: acc.method, id:'m'+i, color:'#aaa' };
+    const active = i === 0 ? 'active' : '';
+    return `
+    <div class="pro-pay-content ${active}" id="proPay_dyn${i}">
+      <div class="pro-account-card">
+        <div class="pro-account-label">${m.label} Account</div>
+        <div class="pro-account-name">${acc.name}</div>
+        <div class="pro-account-num-row">
+          <div class="pro-account-num">${acc.number.replace(/(\d{4})(?=\d)/g,'$1-')}</div>
+          <button class="pro-copy-btn" onclick="proyCopyNum('${acc.number}','${m.label}')">📋 Copy</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Update WhatsApp button number to first account's WA
+  const primaryWA = (accs[0] && accs[0].wa) ? accs[0].wa : '923410101415';
+  window._primaryWA = primaryWA;
+}
+
+function proSwitchDynTab(idx){
+  const accs = _proPaymentAccounts;
+  accs.forEach((_,i) => {
+    const btn  = document.getElementById('proTab_dyn'+i);
+    const pan  = document.getElementById('proPay_dyn'+i);
+    if(i === idx){
+      if(btn){ btn.classList.add('active'); const m=_PAY_METHOD_META[accs[i].method]; if(m){ btn.style.borderColor=m.color; btn.style.color=m.color; btn.style.background=m.color+'22'; } }
+      if(pan) pan.classList.add('active');
+    } else {
+      if(btn){ btn.classList.remove('active'); btn.style.borderColor=''; btn.style.color=''; btn.style.background=''; }
+      if(pan) pan.classList.remove('active');
+    }
+  });
+}
+
+let _proActivePlan = 'month'; // Default selected
+
+function showProScreen(fromDayNum) {
+  showScreen('proScreen');
+  // Update nav URL bar
+  if (typeof updateUrlBar === 'function') updateUrlBar('pro');
+
+  // Load payment accounts dynamically from Firebase
+  loadAndRenderPaymentAccounts();
+  // Load plan prices from Firebase
+  loadAndApplyPlanPrices();
+
+  const banner = document.getElementById('proActiveBanner');
+  const featSec = document.getElementById('proFeaturesSection');
+  const priceSec = document.querySelector('.pro-pricing-section');
+  const paySec   = document.querySelector('.pro-pay-section');
+  const trustSec = document.querySelector('.pro-trust-section');
+
+  const _heroSec  = document.querySelector('.pro-hero');
+  const _priceSec = document.querySelector('.pro-pricing-section');
+  const _paySec   = document.querySelector('.pro-pay-section');
+  const _trustSec = document.querySelector('.pro-trust-section');
+
+  // ✅ FIX: Guest mode ya logged-out user ko kabhi Pro screen mat dikhao
+  const _isActuallyPro = isPro() && !IS_GUEST && (typeof getLoggedInUser === 'function' ? !!getLoggedInUser() : true);
+
+  if (_isActuallyPro) {
+    if (_heroSec)  _heroSec.style.display  = 'none';
+    if (banner)    banner.classList.add('show');
+    if (featSec)   featSec.style.display   = 'none';
+    if (_priceSec) _priceSec.style.display = 'none';
+    if (_paySec)   _paySec.style.display   = 'none';
+    if (_trustSec) _trustSec.style.display = 'none';
+
+    try {
+      const uid = window.FB_AUTH?.currentUser?.uid;
+      // ✅ FIX: localStorage nahi — in-memory cache
+      const d = uid ? (window._PRO_CACHE || null) : null;
+      const exEl = document.getElementById('proExpiryInfo');
+      if (d && d.expiry && exEl) {
+        const diff = Math.ceil((d.expiry - Date.now()) / (1000*60*60*24));
+        const expDate = new Date(d.expiry).toLocaleDateString('en-PK');
+        exEl.innerHTML = diff > 0
+          ? '<b>' + diff + ' din baaki</b> &mdash; ' + expDate + ' tak active'
+          : 'Pro expire ho gaya &mdash; Renew karo!';
+        if(diff <= 0){
+          exEl.style.borderColor = 'rgba(255,107,107,.4)';
+          exEl.style.background  = 'rgba(255,107,107,.08)';
+        }
+      } else if (exEl) {
+        exEl.textContent = 'Pro Active';
+      }
+
+      // Upgrade plans
+      var upgSec   = document.getElementById('proUpgradePlans');
+      var upgCards = document.getElementById('proUpgradeCards');
+      if(upgCards && upgSec){
+        upgCards.innerHTML = '';
+        var cp = d && d.plan ? d.plan : '';
+        var uPlans = [];
+        if(cp === '2week' || cp === '15din'){
+          uPlans.push({key:'month', lbl:'1 Mahina', price: PRO_PLANS['month']?.price || 'Rs. 500', pop:true});
+          uPlans.push({key:'year',  lbl:'1 Saal',   price: PRO_PLANS['year']?.price  || 'Rs. 4000', pop:false});
+        } else if(cp === 'month'){
+          uPlans.push({key:'year',  lbl:'1 Saal',   price: PRO_PLANS['year']?.price  || 'Rs. 4000', pop:false});
+        }
+        if(uPlans.length){
+          uPlans.forEach(function(p){
+            var c = document.createElement('div');
+            c.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:rgba(255,215,0,.08);border:1.5px solid rgba(255,215,0,.3);border-radius:14px;padding:12px 16px;cursor:pointer;margin-bottom:6px;';
+            var badge = p.pop ? '<span style="background:#FFD700;color:#000;font-size:9px;padding:2px 6px;border-radius:8px;font-weight:800;margin-left:4px;">POPULAR</span>' : '';
+            c.innerHTML = '<div><div style="font-size:15px;color:#FFD700;font-weight:700;">' + p.lbl + badge + '</div><div style="font-size:11px;color:var(--mut);">Abhi upgrade karo</div></div>'
+                        + '<div style="font-size:18px;color:#FFD700;font-weight:700;">' + p.price + '</div>';
+            c.onclick = function(){ showPayPopup(p.key); };
+            upgCards.appendChild(c);
+          });
+          upgSec.style.display = 'block';
+        } else {
+          upgSec.style.display = 'none';
+        }
+      }
+    } catch(e){}
+  } else {
+    if (_heroSec)  _heroSec.style.display  = '';
+    if (banner)    banner.classList.remove('show');
+    if (featSec)   { featSec.style.display = ''; featSec.style.opacity = '1'; }
+    if (_priceSec) _priceSec.style.display = '';
+    if (_paySec)   _paySec.style.display   = '';
+    if (_trustSec) _trustSec.style.display = '';
+  }
+
+  // Default select month plan
+  proSelectPlan(_proActivePlan);
+}
+
+function proSelectPlan(plan) {
+  _proActivePlan = plan;
+  const p = PRO_PLANS[plan];
+  if (!p) return;
+
+  // Update selected plan badge
+  const lblEl = document.getElementById('proSelPlanLabel');
+  const priceEl = document.getElementById('proSelPlanPrice');
+  if (lblEl) lblEl.textContent = p.label;
+  if (priceEl) priceEl.textContent = p.price;
+
+  // Highlight active card
+  Object.keys(PRO_PLANS).forEach(k => {
+    const card = document.getElementById('planCard_' + k);
+    if (!card) return;
+    if (k === plan) {
+      card.style.transform = 'scale(1.04)';
+      card.style.boxShadow = '0 8px 32px rgba(255,215,0,.35)';
+      card.style.borderColor = '#FFD700';
+      const btn = card.querySelector('.plan-select-btn');
+      if (btn) {
+        btn.style.background = 'linear-gradient(135deg,#FFD700,#FF9500)';
+        btn.style.color = '#000';
+        btn.textContent = '✅ Chuna Gaya';
+      }
+    } else {
+      // Reset non-popular cards
+      if (!card.classList.contains('popular')) {
+        card.style.transform = '';
+        card.style.boxShadow = '';
+        card.style.borderColor = '';
+      } else {
+        card.style.transform = '';
+        card.style.boxShadow = '0 4px 24px rgba(255,215,0,.2)';
+        card.style.borderColor = '#FFD700';
+      }
+      const btn = card.querySelector('.plan-select-btn');
+      if (btn) {
+        if (card.classList.contains('popular') && k !== plan) {
+          btn.style.background = 'linear-gradient(135deg,#FFD700,#FF9500)';
+          btn.style.color = '#000';
+          btn.textContent = 'Chunno';
+        } else {
+          btn.style.background = 'rgba(255,255,255,.08)';
+          btn.style.color = 'var(--txt, #fff)';
+          btn.textContent = 'Chunno';
+        }
+      }
+    }
+  });
+
+  // Scroll to payment section smoothly
+  setTimeout(() => {
+    const payEl = document.querySelector('.pro-pay-section');
+    if (payEl) payEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 200);
+}
+
+function proSwitchTab(tab) {
+  // Update tab buttons
+  ['jc','ep','np'].forEach(t => {
+    const btn = document.getElementById('proTab_' + t);
+    const content = document.getElementById('proPay_' + t);
+    if (t === tab) {
+      if (btn) {
+        btn.classList.add('active');
+        btn.classList.toggle('ep', t === 'ep');
+        btn.classList.toggle('np', t === 'np');
+      }
+      if (content) content.classList.add('active');
+    } else {
+      if (btn) { btn.classList.remove('active','ep','np'); }
+      if (content) content.classList.remove('active');
+    }
+  });
+}
+
+function proyCopyNum(num, method) {
+  navigator.clipboard.writeText(num).then(() => {
+    if (typeof showToast === 'function') showToast('✅ ' + method + ' number copy ho gaya!', 'var(--g)');
+  }).catch(() => {
+    if (typeof showToast === 'function') showToast('📋 ' + num, 'var(--b)');
+  });
+}
+
+function proOpenWhatsapp(e) {
+  e.preventDefault();
+  const p = PRO_PLANS[_proActivePlan] || PRO_PLANS['month'];
+  const email = (typeof getLoggedInUser === 'function' ? getLoggedInUser() : '') || '';
+  const msg = encodeURIComponent(
+    'Assalam o Alaikum! 👋\n' +
+    'Maine SpeakUp ' + p.label + ' (' + p.price + ') ki payment ki hai.\n' +
+    'Mera email: ' + email + '\n' +
+    'Kripaya mera Pro account activate kar dein. Screenshot attach kar raha/rahi hoon. Shukriya! 🙏'
+  );
+  const waNum = window._primaryWA || (typeof WHATSAPP_NUM !== 'undefined' ? WHATSAPP_NUM : '923410101415');
+  const wa = 'https://wa.me/' + waNum + '?text=' + msg;
+  window.open(wa, '_blank');
+}
+
+// Override showProPopup to show full Pro Screen instead of bottom sheet
+// (Keep old function as fallback for hearts-fail popup, add new full screen)
+function openProUpgradeScreen(dayNum) {
+  showProScreen(dayNum);
+}
+</script>
+
+<!-- SETTINGS -->
+
