@@ -1,0 +1,72 @@
+<!-- ═══ Goal Modal ═══ -->
+  <div onclick="closeGoalModal()" style="position:absolute;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);"></div>
+  <div style="position:relative;background:var(--card);border-radius:28px 28px 0 0;padding:0 0 40px;width:100%;max-width:480px;animation:slideUp .35s cubic-bezier(.34,1.56,.64,1);">
+    <!-- Handle -->
+    <div style="width:36px;height:4px;background:rgba(255,255,255,.2);border-radius:4px;margin:12px auto 0;"></div>
+    <!-- Header -->
+    <div style="padding:20px 20px 0;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+      <div style="width:52px;height:52px;border-radius:18px;background:linear-gradient(135deg,rgba(46,229,157,.2),rgba(91,141,239,.15));border:2px solid rgba(46,229,157,.35);display:flex;align-items:center;justify-content:center;font-size:28px;">⏱️</div>
+      <div style="flex:1;">
+        <div style="font-family:'Fredoka One',sans-serif;font-size:20px;">Aaj Ka Goal</div>
+        <div style="font-size:12px;color:var(--mut);" id="goalModalSub">Roz seekhne ka plan</div>
+      </div>
+      <button onclick="closeGoalModal()" style="background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:12px;width:34px;height:34px;cursor:pointer;color:var(--txt);font-size:18px;flex-shrink:0;">✕</button>
+    </div>
+
+    <!-- Big ring + stats -->
+    <div style="padding:0 20px;">
+
+      <!-- Centre ring visual -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:22px;">
+        <div style="position:relative;width:130px;height:130px;">
+          <svg width="130" height="130" viewBox="0 0 130 130" style="transform:rotate(-90deg);">
+            <defs>
+              <linearGradient id="modalGoalGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%"   stop-color="#2EE59D"/>
+                <stop offset="100%" stop-color="#5B8DEF"/>
+              </linearGradient>
+            </defs>
+            <circle cx="65" cy="65" r="55" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12"/>
+            <circle id="modalGoalArc" cx="65" cy="65" r="55" fill="none"
+              stroke="url(#modalGoalGrad)" stroke-width="12" stroke-linecap="round"
+              stroke-dasharray="345.4"
+              stroke-dashoffset="345.4"
+              style="transition:stroke-dashoffset 1.2s cubic-bezier(.34,1.56,.64,1)"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+            <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:var(--g);line-height:1;" id="modalGoalMinsDone">0</div>
+            <div style="font-size:10px;color:var(--mut);font-weight:700;">/ <span id="modalGoalTarget">30</span> min</div>
+          </div>
+        </div>
+        <div id="modalGoalMsg" style="font-family:'Fredoka One',sans-serif;font-size:15px;color:var(--g);text-align:center;">Shuru karo aaj! 💪</div>
+      </div>
+
+      <!-- Stat chips -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <div style="flex:1;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:14px;padding:12px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:4px;">📅</div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:16px;" id="modalGoalStreak">0</div>
+          <div style="font-size:10px;color:var(--mut);font-weight:700;">Din goal poora</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:14px;padding:12px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:4px;">⏰</div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:16px;" id="modalGoalLeft">30</div>
+          <div style="font-size:10px;color:var(--mut);font-weight:700;">Min baaki aaj</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:14px;padding:12px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:4px;">🏆</div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:16px;" id="modalGoalTotal">0</div>
+          <div style="font-size:10px;color:var(--mut);font-weight:700;">Total min aaj tak</div>
+        </div>
+      </div>
+
+      <!-- Go to settings -->
+      <button onclick="closeGoalModal();tab('settings');" style="width:100%;padding:14px;background:linear-gradient(135deg,rgba(46,229,157,.15),rgba(91,141,239,.1));border:2px solid rgba(46,229,157,.4);border-radius:16px;color:#2EE59D;font-family:'Fredoka One',sans-serif;font-size:15px;cursor:pointer;">⚙️ Goal Change Karo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     DAILY GOAL SYSTEM — JS
+══════════════════════════════════════════════ -->
+
