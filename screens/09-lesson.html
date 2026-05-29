@@ -1,0 +1,154 @@
+<!-- ═══ Lesson + Past Papers + PP Attempt ═══ -->
+<div class="screen" id="lesson" style="">
+  <div class="lh" style="display:flex;align-items:center;gap:6px;">
+    <button class="lc" onclick="exitLesson()" style="position:relative;overflow:hidden;flex-shrink:0;">✕</button>
+    <div class="lpb" style="flex:1;"><div class="lpf" id="lPf" style="width:2%;"></div></div>
+    <div class="lhts" id="lHt" style="flex-shrink:0;">❤️❤️❤️❤️❤️</div>
+    <button id="pauseBtn" onclick="showPauseScreen()" style="background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;">⏸️</button>
+  </div>
+  <div class="lb" id="lBd" style="opacity: 1; transform: translateX(0px);"><div class="vc a observed anim-entrance" id="vc3" style="animation-delay: 0s; position: relative; overflow: hidden;"><div class="vct"><div class="vcn">2</div><div><div class="vcw">Bread</div><div class="vcu">روٹی / ڈبل روٹی</div><div class="vcp">/BRED/</div></div></div><div class="vcb"><div class="vce">"Give me some bread."</div></div><div class="vcp2">💡 Naan, chapati, aur double roti sab ke liye</div><div class="vmcard" style="border-color:#FF6B35;background:linear-gradient(135deg,#FF6B3518,#FF6B3508);"><div class="vmcard-emoji">🍞</div><div class="vmcard-body"><div class="vmcard-scene">Roti / Slice</div><div class="vmcard-trick" style="color:#FF6B35">🧠 Bread = Roti</div></div></div><div class="vsits"><div class="vsits-title">📍 Kahaan Use Karein:</div><div class="vsit"><span class="vsit-em">🍳</span><div><div class="vsit-pl">Breakfast</div><div class="vsit-ex">"Bread and butter."</div></div></div><div class="vsit"><span class="vsit-em">🍽️</span><div><div class="vsit-pl">Dinner</div><div class="vsit-ex">"Eat with bread."</div></div></div><div class="vsit"><span class="vsit-em">🛒</span><div><div class="vsit-pl">Market</div><div class="vsit-ex">"Buy some bread."</div></div></div></div><div class="vmistake">⚠️ ⚠️ Galti: Bread qabil-e-ginti nahi, "a bread" ghalat hai, "a piece of bread" kahein.</div><div class="spk-bar"><button class="spk-btn spk-listen" onclick="ttsPlay(3)" style="position: relative; overflow: hidden;">🔊 Word + Example</button><button class="spk-btn spk-slow" onclick="ttsSlow(3)">🐢 Dheere Suno</button></div><div id="ram_container_2"><div class="ram-box"><div class="ram-title">🎤 Repeat After Me</div><div class="ram-word" id="ram_word_2">Bread</div><div class="ram-pron" id="ram_pron_2">/BRED/</div><div class="ram-steps" id="ram_steps_2"><div class="ram-step active" id="ram_s1_2">🔊 Step 1: Pehle suno</div><div class="ram-step" id="ram_s2_2">🎤 Step 2: Mic mein bolo</div><div class="ram-step" id="ram_s3_2">📊 Step 3: Score dekho</div></div><div style="display:flex;gap:8px;margin-top:12px;"><button class="spk-btn spk-listen" data-ramid="2" onclick="ramListenById(this)">🔊 Suno</button><button class="spk-btn spk-mic" id="ram_micbtn_2" data-ramid="2" onclick="ramRecordById(this)">🎤 Bolo</button><button class="spk-btn spk-slow" data-ramid="2" onclick="ramSlowById(this)">🐢 Dheere</button></div><div id="ram_result_2"></div></div></div></div><div class="a" style="padding:8px 0 20px;"><button class="bg" onclick="markL(3)">✅ Samajh Gaya! →</button><button class="bo" onclick="ttsPlay(3)">🔊 Dobara Suno</button></div></div>
+</div>
+
+<!-- PAST PAPERS SCREEN -->
+<div class="screen pb80" id="pastpapers">
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#1a1040,#251a5a);padding:52px 20px 20px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(199,125,255,.15),transparent 70%);"></div>
+    <div style="font-size:11px;color:var(--p);font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">📄 Punjab Boards</div>
+    <div style="font-family:'Fredoka One',sans-serif;font-size:26px;margin-bottom:4px;">Past Papers 📝</div>
+    <div style="font-size:13px;color:var(--mut);">9th · 10th · 11th · 12th — 5 Sala Papers</div>
+  </div>
+
+  <!-- STEP 1: Class Select -->
+  <div id="ppClassSelect" style="padding:16px 16px 80px;">
+    <div style="font-family:'Fredoka One',sans-serif;font-size:15px;color:var(--mut);margin-bottom:14px;text-align:center;">Class Select Karo:</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="pp-class-card" onclick="ppSelectClass(9)" style="background:linear-gradient(135deg,rgba(91,141,239,.15),rgba(91,141,239,.08));border:2px solid rgba(91,141,239,.4);border-radius:20px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s;" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''">
+        <div style="width:52px;height:52px;background:rgba(91,141,239,.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;">📗</div>
+        <div style="flex:1;">
+          <div style="font-family:'Fredoka One',sans-serif;font-size:18px;color:var(--b);">9th Class</div>
+          <div style="font-size:12px;color:var(--mut);margin-top:2px;">Matriculation Part 1</div>
+        </div>
+        <div style="font-size:20px;color:var(--b);">›</div>
+      </div>
+      <div class="pp-class-card" onclick="ppSelectClass(10)" style="background:linear-gradient(135deg,rgba(46,229,157,.15),rgba(46,229,157,.08));border:2px solid rgba(46,229,157,.4);border-radius:20px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s;" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''">
+        <div style="width:52px;height:52px;background:rgba(46,229,157,.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;">📘</div>
+        <div style="flex:1;">
+          <div style="font-family:'Fredoka One',sans-serif;font-size:18px;color:var(--g);">10th Class</div>
+          <div style="font-size:12px;color:var(--mut);margin-top:2px;">Matriculation Part 2</div>
+        </div>
+        <div style="font-size:20px;color:var(--g);">›</div>
+      </div>
+      <div class="pp-class-card" onclick="ppSelectClass(11)" style="background:linear-gradient(135deg,rgba(255,209,102,.15),rgba(255,209,102,.08));border:2px solid rgba(255,209,102,.4);border-radius:20px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s;" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''">
+        <div style="width:52px;height:52px;background:rgba(255,209,102,.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;">📙</div>
+        <div style="flex:1;">
+          <div style="font-family:'Fredoka One',sans-serif;font-size:18px;color:var(--y);">11th Class</div>
+          <div style="font-size:12px;color:var(--mut);margin-top:2px;">F.A / F.Sc / I.Com / ICS — Part 1</div>
+        </div>
+        <div style="font-size:20px;color:var(--y);">›</div>
+      </div>
+      <div class="pp-class-card" onclick="ppSelectClass(12)" style="background:linear-gradient(135deg,rgba(199,125,255,.15),rgba(199,125,255,.08));border:2px solid rgba(199,125,255,.4);border-radius:20px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s;" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''">
+        <div style="width:52px;height:52px;background:rgba(199,125,255,.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;">📕</div>
+        <div style="flex:1;">
+          <div style="font-family:'Fredoka One',sans-serif;font-size:18px;color:var(--p);">12th Class</div>
+          <div style="font-size:12px;color:var(--mut);margin-top:2px;">F.A / F.Sc / I.Com / ICS — Part 2</div>
+        </div>
+        <div style="font-size:20px;color:var(--p);">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Subject Select -->
+  <div id="ppSubjectSelect" style="display:none;padding:0 16px 80px;">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 0 12px;">
+      <button onclick="ppBack('class')" style="background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:12px;padding:8px 14px;color:var(--txt);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">← Back</button>
+      <div id="ppSubjectTitle" style="font-family:'Fredoka One',sans-serif;font-size:17px;flex:1;"></div>
+    </div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:12px;">Subject Select Karo:</div>
+    <div id="ppSubjectGrid" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <!-- STEP 3: Board Select -->
+  <div id="ppBoardSelect" style="display:none;padding:0 16px 80px;">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 0 12px;">
+      <button onclick="ppBack('subject')" style="background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:12px;padding:8px 14px;color:var(--txt);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">← Back</button>
+      <div id="ppBoardTitle" style="font-family:'Fredoka One',sans-serif;font-size:17px;flex:1;"></div>
+    </div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:12px;">Board Select Karo:</div>
+    <div id="ppBoardGrid" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <!-- STEP 4: Papers List (Morning / Evening / Supply sections with years) -->
+  <div id="ppYearSelect" style="display:none;padding:0 16px 80px;">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 0 8px;">
+      <button onclick="ppBack('board')" style="background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:12px;padding:8px 14px;color:var(--txt);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">← Back</button>
+      <div id="ppYearTitle" style="font-family:'Fredoka One',sans-serif;font-size:15px;flex:1;"></div>
+    </div>
+    <!-- Morning Group Section -->
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 12px;background:rgba(255,209,102,.08);border-radius:14px;border-left:3px solid var(--y);">
+        <span style="font-size:20px;">🌅</span>
+        <div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:var(--y);">Morning Group</div>
+          <div style="font-size:11px;color:var(--mut);">Pehle session ka paper</div>
+        </div>
+      </div>
+      <div id="ppMorningYears" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+    <!-- Evening Group Section -->
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 12px;background:rgba(199,125,255,.08);border-radius:14px;border-left:3px solid var(--p);">
+        <span style="font-size:20px;">🌆</span>
+        <div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:var(--p);">Evening Group</div>
+          <div style="font-size:11px;color:var(--mut);">Doosre session ka paper</div>
+        </div>
+      </div>
+      <div id="ppEveningYears" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+    <!-- Supply Section -->
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 12px;background:rgba(255,107,107,.08);border-radius:14px;border-left:3px solid var(--r);">
+        <span style="font-size:20px;">🔄</span>
+        <div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:var(--r);">Supply</div>
+          <div style="font-size:11px;color:var(--mut);">Supplementary / compartment paper</div>
+        </div>
+      </div>
+      <div id="ppSupplyYears" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- STEP 5: Paper View -->
+  <div id="ppPaperView" style="display:none;padding:0 0 80px;">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 16px 0;">
+      <button onclick="ppBack('years')" style="background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:12px;padding:8px 14px;color:var(--txt);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">← Back</button>
+      <div id="ppPaperTitle" style="font-family:'Fredoka One',sans-serif;font-size:15px;flex:1;"></div>
+    </div>
+    <div id="ppPaperContent" style="padding:14px 16px;"></div>
+    <!-- Next / Prev paper nav at bottom of paper view -->
+    <div id="ppPaperNav" style="display:flex;gap:8px;padding:0 16px 10px;"></div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bn">
+    <button class="nb" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
+    <button class="nb on" id="pp_nb_papers"><span class="ni">📄</span>Papers</button>
+    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
+    <button class="nb" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" onclick="tab('settings')"><span class="ni">⚙️</span>Settings</button>
+  </div>
+</div>
+
+<!-- PAST PAPERS ATTEMPT SCREEN (full screen paper attempt) -->
+<div class="screen" id="ppAttempt">
+  <div class="lh" style="background:linear-gradient(135deg,#1a1040,#251a5a);">
+    <button class="lc" onclick="ppExitAttempt()" style="position:relative;overflow:hidden;">✕</button>
+    <div class="lpb"><div class="lpf" id="ppAttemptPf" style="width:0%;background:var(--p);"></div></div>
+    <div class="lhts" id="ppAttemptHt">❤️❤️❤️❤️❤️</div>
+  </div>
+  <div class="lb" id="ppAttemptBd" style="padding:16px;"></div>
+</div>
+
+<!-- PROFILE -->
+
