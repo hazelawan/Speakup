@@ -1,0 +1,217 @@
+<!-- ═══ Auth Screens (Guest / Auth / Email Verify) ═══ -->
+<!-- Confetti Container -->
+<div id="confettiBox"></div>
+
+<!-- AUTH SCREEN (Login / Signup) -->
+<!-- ── GUEST PROMPT SCREEN ── -->
+<div class="screen" id="guestPromptScreen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;min-height:100vh;padding:32px 24px;background:var(--bg,#0F0E17);text-align:center;">
+    <!-- Owl icon -->
+    <div style="font-size:72px;margin-bottom:16px;animation:bounceBig 2.5s ease infinite;">🦉</div>
+    <!-- Title -->
+    <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:var(--p);margin-bottom:8px;">You're a Guest!</div>
+    <div style="font-size:14px;color:var(--mut);margin-bottom:32px;line-height:1.6;max-width:280px;">
+      Apna progress save karne ke liye<br>login ya signup karo 🚀<br>
+      <span style="font-size:12px;color:var(--mut);opacity:0.7;">Guest mode mein progress save nahi hota</span>
+    </div>
+    <!-- Login Button -->
+    <button onclick="guestGoLogin()" style="width:100%;max-width:320px;padding:16px;background:linear-gradient(135deg,var(--p),var(--p2));border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 var(--p2);margin-bottom:12px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
+      🔑 Login Karo
+    </button>
+    <!-- Signup Button -->
+    <button onclick="guestGoSignup()" style="width:100%;max-width:320px;padding:16px;background:linear-gradient(135deg,#2EE59D,#58CC02);border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 #46A300;margin-bottom:24px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
+      ✨ Signup Karo
+    </button>
+    <!-- Back button -->
+    <button onclick="showScreen('langSelect')" style="background:transparent;border:1px solid var(--bdr);border-radius:12px;padding:10px 24px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">
+      ← Wapas Jao
+    </button>
+  </div>
+</div>
+
+<!-- ══ Guest Profile Screen ══ -->
+<div class="screen" id="guestProfileScreen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;min-height:100vh;padding:32px 24px;background:var(--bg,#0F0E17);text-align:center;">
+    <div style="font-size:64px;margin-bottom:16px;">👤</div>
+    <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:var(--txt);margin-bottom:8px;">You are in Guest Mode</div>
+    <div style="font-size:14px;color:var(--mut);margin-bottom:10px;line-height:1.7;max-width:280px;">
+      Guest mode mein profile nahi hoti<br>aur progress save nahi hota 💾<br>
+      <span style="font-size:12px;opacity:0.7;">Gmail se login karo aur apna progress save karo!</span>
+    </div>
+    <div style="background:rgba(255,150,0,0.1);border:1px solid rgba(255,150,0,0.35);border-radius:14px;padding:12px 18px;margin-bottom:28px;max-width:300px;">
+      <div style="font-size:12px;color:rgba(255,180,50,0.9);font-family:'Nunito',sans-serif;font-weight:700;line-height:1.6;">⚠️ Account banana bilkul free hai!<br>Ek account pe 3 alag profiles bana sakte ho</div>
+    </div>
+    <button onclick="guestGoSignup()" style="width:100%;max-width:300px;padding:16px;background:linear-gradient(135deg,#2EE59D,#58CC02);border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 #46A300;margin-bottom:12px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
+      ✨ Signup Karo — Free!
+    </button>
+    <button onclick="guestGoLogin()" style="width:100%;max-width:300px;padding:16px;background:linear-gradient(135deg,#7C3AED,#5B21B6);border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 #4C1D95;margin-bottom:20px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
+      🔑 Login Karo
+    </button>
+    <button onclick="showScreen('dashboard');renderDash();" style="background:transparent;border:1px solid var(--bdr);border-radius:12px;padding:10px 24px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">
+      ← Wapas Jao
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAINTENANCE MODE SCREEN
+══════════════════════════════════════════ -->
+<div id="maintenanceScreen" style="display:none;position:fixed;inset:0;z-index:99998;background:linear-gradient(135deg,#0A0A12,#12101f,#0A0A12);flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
+
+  <!-- Animated gear -->
+  <div style="font-size:72px;margin-bottom:24px;animation:maintGearSpin 3s linear infinite;">⚙️</div>
+
+  <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:#FF6B6B;margin-bottom:8px;text-shadow:0 0 20px rgba(255,107,107,.4);">App Update Ho Rahi Hai</div>
+
+  <div id="maintenanceMsgDisplay" style="font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:32px;max-width:300px;">Thodi der mein wapas aayein! 🔧</div>
+
+  <!-- Progress bar animation -->
+  <div style="width:200px;height:6px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;margin-bottom:24px;">
+    <div style="height:100%;border-radius:6px;background:linear-gradient(90deg,#FF6B6B,#FF9A3C);animation:maintProgress 2.5s ease-in-out infinite;"></div>
+  </div>
+
+  <div style="font-size:12px;color:rgba(255,255,255,.3);font-family:'Nunito',sans-serif;">SpeakUp — Jald wapas aayenge 🚀</div>
+
+  <!-- Dots loader -->
+  <div style="display:flex;gap:6px;margin-top:20px;">
+    <div style="width:8px;height:8px;border-radius:50%;background:#FF6B6B;animation:maintDot 1.4s ease-in-out infinite;"></div>
+    <div style="width:8px;height:8px;border-radius:50%;background:#FF9A3C;animation:maintDot 1.4s ease-in-out .2s infinite;"></div>
+    <div style="width:8px;height:8px;border-radius:50%;background:#FFD166;animation:maintDot 1.4s ease-in-out .4s infinite;"></div>
+  </div>
+</div>
+
+<style>
+@keyframes maintGearSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes maintProgress {
+  0%   { width:0%;   margin-left:0; }
+  50%  { width:100%; margin-left:0; }
+  100% { width:0%;   margin-left:100%; }
+}
+@keyframes maintDot {
+  0%,80%,100% { transform:scale(0.6); opacity:.4; }
+  40%          { transform:scale(1);   opacity:1; }
+}
+#maintenanceScreen.show { display:flex !important; }
+</style>
+
+<div class="screen" id="authScreen" style="">
+  <div class="auth-header" style="position:relative;">
+    <!-- Skip button top-right -->
+    <button class="auth-skip-top" onclick="skipAuth()" style="top: 14px; right: 14px; position: fixed; overflow: hidden;">Skip →</button>
+    <div class="auth-logo">🦉</div>
+    <div class="auth-title">SpeakUp</div>
+    <div class="auth-sub">Apna account banao ya login karo</div>
+  </div>
+  <div class="auth-body">
+    <!-- Tabs: Login / Signup -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">🔑 Login</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">✨ Signup</button>
+    </div>
+
+    <!-- Error message -->
+    <div class="auth-err" id="authErr" style="display: none;"></div>
+    <!-- Success message -->
+    <div class="auth-success" id="authSuccess" style="display:none;"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="loginEmail" type="email" placeholder="Apni email likho..." autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <div style="position:relative;">
+          <input class="auth-input" id="loginPass" type="password" placeholder="Password likho..." autocomplete="current-password" style="padding-right:48px;">
+          <button type="button" onclick="togglePass('loginPass','loginPassEye')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:20px;color:var(--mut);padding:0;line-height:1;" id="loginPassEye">👁️</button>
+        </div>
+      </div>
+      <!-- Forgot Password Link -->
+      <div style="text-align:right;margin-top:-8px;margin-bottom:14px;">
+        <span onclick="showForgotPassword()" style="font-size:12px;color:var(--g);cursor:pointer;font-weight:700;text-decoration:underline;">Forgot Password?</span>
+      </div>
+      <!-- Forgot Password Panel (inline) -->
+      <div id="forgotPasswordPanel" style="display:none;background:rgba(46,229,157,0.07);border:1.5px solid rgba(46,229,157,0.25);border-radius:16px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:13px;color:var(--txt);font-weight:700;margin-bottom:10px;">🔐 Password Reset</div>
+        <input class="auth-input" id="forgotEmail" type="email" placeholder="Apni email daalo..." style="margin-bottom:10px;">
+        <div style="display:flex;gap:8px;">
+          <button onclick="doForgotPassword()" style="flex:1;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--g),#3aaf00);color:#fff;font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">📧 Reset Link Bhejo</button>
+          <button onclick="hideForgotPassword()" style="padding:12px 16px;border-radius:12px;border:1.5px solid var(--bdr);background:transparent;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">✕</button>
+        </div>
+      </div>
+      <!-- Remember Me -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--mut);font-weight:700;">
+          <input type="checkbox" id="rememberMe" style="width:18px;height:18px;accent-color:var(--g);cursor:pointer;" checked>
+          Mujhe yaad rakho ✓
+        </label>
+      </div>
+      <button class="auth-btn" id="loginEmailBtn" onclick="doLoginEmail()">🔑 Login Karo</button>
+      <div id="loginLockoutTimer" style="display:none;text-align:center;font-size:13px;color:var(--r);font-weight:700;margin-top:8px;padding:8px;background:rgba(255,75,75,.1);border-radius:10px;"></div>
+      <!-- Google Sign-In -->
+      <div class="auth-divider" style="margin:16px 0 14px;">ya</div>
+      <button class="auth-google-btn" onclick="doGoogleSignIn()">
+        <svg width="20" height="20" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Continue with Google
+      </button>
+    </div>
+
+    <!-- SIGNUP FORM (hidden by default) -->
+    <div id="signupForm" style="display:none;">
+      <div class="auth-field">
+        <label class="auth-label">Apna Naam</label>
+        <input class="auth-input" id="signupName" type="text" placeholder="e.g. Ahmed, Sara..." maxlength="28">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="signupEmail" type="email" placeholder="Apni Gmail likho..." autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password (6+ characters)</label>
+        <div style="position:relative;">
+          <input class="auth-input" id="signupPass" type="password" placeholder="Apna password..." autocomplete="new-password" style="padding-right:48px;">
+          <button type="button" onclick="togglePass('signupPass','signupPassEye')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:20px;color:var(--mut);padding:0;line-height:1;" id="signupPassEye">👁️</button>
+        </div>
+      </div>
+      <button class="auth-btn" onclick="doSignupEmail()">✅ Account Banao</button>
+      <!-- Google Sign-In -->
+      <div class="auth-divider" style="margin:16px 0 14px;">ya</div>
+      <button class="auth-google-btn" onclick="doGoogleSignIn()">
+        <svg width="20" height="20" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Continue with Google
+      </button>
+    </div>
+
+    <div class="auth-divider">ya</div>
+    <button class="skip-btn" onclick="skipAuth()">👻 Guest ki tarah continue karo</button>
+    <div style="margin-top:12px;text-align:center;font-size:11px;color:var(--mut);line-height:1.6;">
+      Account banane se tumhara progress save rehta hai.<br>App band karo, dobara kholo — sab kuch wahan milega 🔥
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL VERIFICATION SCREEN -->
+<div class="screen" id="emailVerifyScreen" style="display:none;background:var(--bg);overflow-y:auto;">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 24px;text-align:center;">
+    <div style="font-size:72px;margin-bottom:20px;animation:ob 2.2s ease infinite;">📧</div>
+    <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:var(--g);margin-bottom:10px;text-shadow:var(--neon-g);">Email Verify Karo!</div>
+    <div style="color:var(--mut);font-size:14px;line-height:1.7;margin-bottom:28px;max-width:320px;">
+      Verification email bhej diya! Gmail check karo aur link pe click karo. Iske baad hi app khulega 🔐
+    </div>
+    <div id="verifyEmailDisplay" style="background:rgba(46,229,157,0.1);border:1.5px solid rgba(46,229,157,0.3);border-radius:14px;padding:12px 20px;font-size:13px;color:var(--g);font-weight:700;margin-bottom:24px;word-break:break-all;"></div>
+    <button onclick="checkEmailVerified()" style="width:100%;max-width:320px;padding:16px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--g),#3aaf00);color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;margin-bottom:12px;box-shadow:var(--neon-g);">
+      ✅ Maine Verify Kar Diya!
+    </button>
+    <button onclick="resendVerificationEmail()" style="width:100%;max-width:320px;padding:14px;border-radius:16px;border:1.5px solid var(--bdr);background:transparent;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:15px;cursor:pointer;margin-bottom:12px;">
+      📨 Dobara Email Bhejo
+    </button>
+    <button onclick="doFirebaseSignOut()" style="background:transparent;border:none;color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;padding:8px;">
+      ← Wapas jao / Logout
+    </button>
+    <div id="verifyMsg" style="margin-top:12px;font-size:13px;font-weight:700;"></div>
+  </div>
+</div>
+
+<!-- PROFILE SELECT SCREEN -->
+
