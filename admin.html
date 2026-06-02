@@ -7641,10 +7641,11 @@ function parseJsonLesson(){
     const dayNumFromJson = parsed.day || parsed.dayNum || parsed.dayNumber || null;
     const extractedDayNum = dayNumMatch ? dayNumMatch[1] : (dayNumFromJson ? String(dayNumFromJson) : '');
 
-    if(numEl   && !numEl.value)   numEl.value   = extractedDayNum;
-    if(titleEl && !titleEl.value) titleEl.value = parsed.themeEn || parsed.theme || '';
-    if(themeEl && !themeEl.value) themeEl.value = parsed.theme   || parsed.themeEn || '';
-    if(emojiEl && !emojiEl.value) emojiEl.value = parsed.emoji   || '';
+    // JSON se aaya data hamesha override karo (modal defaults overwrite)
+    if(numEl   && extractedDayNum)              numEl.value   = extractedDayNum;
+    if(titleEl && (parsed.themeEn||parsed.theme)) titleEl.value = parsed.themeEn || parsed.theme;
+    if(themeEl && (parsed.theme||parsed.themeEn)) themeEl.value = parsed.theme   || parsed.themeEn;
+    if(emojiEl && parsed.emoji)                 emojiEl.value = parsed.emoji;
 
     // Result summary
     const vocabCount = (parsed.vocab||[]).length;
