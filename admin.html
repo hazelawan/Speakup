@@ -679,6 +679,20 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6;}
 ════════════════════════════ -->
 <div class="page" id="page-lessons">
 
+  <!-- ══════════════════════════════════════
+       📊 LESSON STATS OVERVIEW (All Languages)
+  ══════════════════════════════════════ -->
+  <div class="card" id="lessonStatsCard">
+    <div class="card-title" style="justify-content:space-between;">
+      <span>📊 Lesson Stats — Sari Languages</span>
+      <button class="btn btn-small" onclick="refreshLessonStats()" style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);color:var(--p);font-size:12px;padding:5px 12px;border-radius:8px;">🔄 Refresh</button>
+    </div>
+    <div class="card-sub" style="margin-bottom:12px;">30 days tak — Built-in + Firebase (aapke add kiye hue)</div>
+    <div id="lessonStatsGrid" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">⏳ Loading stats...</div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-title">📚 Day Manager</div>
     <div class="card-sub">Language choose karo, phir days lock/unlock aur edit karo</div>
@@ -6433,7 +6447,7 @@ function showPage(name,btn){
   pg.classList.add('active');
   if(btn) btn.classList.add('active');
   if(name==='dashboard') renderDashboard();
-  if(name==='lessons'){ if(typeof _syncEnabledSkillsToLangInfo==='function') _syncEnabledSkillsToLangInfo(); loadDaysList(); }
+  if(name==='lessons'){ if(typeof _syncEnabledSkillsToLangInfo==='function') _syncEnabledSkillsToLangInfo(); loadDaysList(); refreshLessonStats(); }
   if(name==='languages') renderLangManager();
   if(name==='users') renderUsers();
   if(name==='admin-access'){
@@ -6856,6 +6870,93 @@ function loadDaysList(){
     <div style="font-size:10px;color:var(--mut);margin-top:3px;">Total: ${totalCount} days available</div>`;
   }
   renderDaysList();
+}
+
+// ══════════════════════════════════════════════
+// 📊 LESSON STATS — All Languages Overview
+// ══════════════════════════════════════════════
+const INBUILT_DAYS = {
+  'en': 3, 'fr': 2, 'es': 2, 'de': 2,
+  'zh': 2, 'ar': 9, 'ko': 1, 'ja': 1,
+  'tr': 1, 'ru': 1, 'ie': 1, 'chess': 7
+};
+
+function refreshLessonStats(){
+  const grid = document.getElementById('lessonStatsGrid');
+  if(!grid) return;
+
+  const TOTAL = 30; // 30 days tak dikhana hai
+
+  const langs = [
+    {code:'en', flag:'🇬🇧', name:'English'},
+    {code:'fr', flag:'🇫🇷', name:'French'},
+    {code:'es', flag:'🇪🇸', name:'Spanish'},
+    {code:'de', flag:'🇩🇪', name:'German'},
+    {code:'zh', flag:'🇨🇳', name:'Chinese'},
+    {code:'ar', flag:'🇸🇦', name:'Arabic'},
+    {code:'ko', flag:'🇰🇷', name:'Korean'},
+    {code:'ja', flag:'🇯🇵', name:'Japanese'},
+    {code:'tr', flag:'🇹🇷', name:'Turkish'},
+    {code:'ru', flag:'🇷🇺', name:'Russian'},
+    {code:'ie', flag:'🇮🇪', name:'Irish'},
+    {code:'chess', flag:'♟️', name:'Chess'},
+  ];
+
+  let html = '';
+
+  // Header row
+  html += `<div style="display:grid;grid-template-columns:1fr 60px 60px 60px 80px;gap:6px;padding:6px 10px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:4px;">
+    <div style="font-size:10px;color:var(--mut);font-weight:700;">LANGUAGE</div>
+    <div style="font-size:10px;color:#58CC02;font-weight:700;text-align:center;">BUILT-IN</div>
+    <div style="font-size:10px;color:#5B8DEF;font-weight:700;text-align:center;">FIREBASE</div>
+    <div style="font-size:10px;color:var(--y);font-weight:700;text-align:center;">TOTAL</div>
+    <div style="font-size:10px;color:var(--mut);font-weight:700;text-align:center;">30 DAYS</div>
+  </div>`;
+
+  langs.forEach(({code, flag, name}) => {
+    const builtIn = INBUILT_DAYS[code] || 0;
+    const fbDays = AD.langs?.[code]?.days || {};
+    const firebase = Object.keys(fbDays).filter(k => Number(k) > 0).length;
+    const total = builtIn + firebase;
+    const pct = Math.min(100, Math.round(total / TOTAL * 100));
+
+    // Color based on progress
+    const barColor = total >= 30 ? '#58CC02' : total >= 15 ? '#5B8DEF' : total >= 5 ? '#FFD166' : '#FF6B6B';
+    const totalColor = total >= 30 ? '#58CC02' : total >= 15 ? '#5B8DEF' : 'var(--y)';
+
+    html += `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;">
+      <div style="display:grid;grid-template-columns:1fr 60px 60px 60px 80px;gap:6px;align-items:center;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;color:var(--txt);">${flag} ${name}</div>
+        <div style="font-size:13px;font-weight:800;color:#58CC02;text-align:center;">${builtIn}</div>
+        <div style="font-size:13px;font-weight:800;color:#5B8DEF;text-align:center;">${firebase > 0 ? '+'+firebase : '—'}</div>
+        <div style="font-size:14px;font-weight:800;color:${totalColor};text-align:center;">${total}</div>
+        <div style="text-align:center;">
+          <span style="font-size:10px;color:var(--mut);">${pct}%</span>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.08);border-radius:4px;height:5px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:.3s;"></div>
+      </div>
+      <div style="font-size:10px;color:var(--mut);margin-top:4px;">${total}/30 days ready${total < 30 ? ' · '+(30-total)+' baaki' : ' ✅ Complete!'}</div>
+    </div>`;
+  });
+
+  // Summary row
+  const totalBuiltIn = langs.reduce((s,l) => s + (INBUILT_DAYS[l.code]||0), 0);
+  const totalFirebase = langs.reduce((s,l) => s + Object.keys(AD.langs?.[l.code]?.days||{}).filter(k=>Number(k)>0).length, 0);
+  const totalAll = totalBuiltIn + totalFirebase;
+
+  html += `<div style="background:rgba(91,141,239,.08);border:1px solid rgba(91,141,239,.2);border-radius:10px;padding:10px 12px;margin-top:4px;">
+    <div style="display:grid;grid-template-columns:1fr 60px 60px 60px 80px;gap:6px;align-items:center;">
+      <div style="font-size:12px;font-weight:800;color:var(--p);">📦 TOTAL</div>
+      <div style="font-size:13px;font-weight:800;color:#58CC02;text-align:center;">${totalBuiltIn}</div>
+      <div style="font-size:13px;font-weight:800;color:#5B8DEF;text-align:center;">+${totalFirebase}</div>
+      <div style="font-size:14px;font-weight:800;color:var(--y);text-align:center;">${totalAll}</div>
+      <div style="font-size:11px;color:var(--mut);text-align:center;">${langs.length} lang</div>
+    </div>
+  </div>`;
+
+  grid.innerHTML = html;
 }
 
 function renderDaysList(){
@@ -7365,6 +7466,89 @@ function addNewDay(){
   });
   switchLessonTab('vocab');
   openModal('addDayModal');
+}
+
+// ════════════════════════════════════════════
+// ✅ Save Day From Add Day Modal
+// ════════════════════════════════════════════
+function saveDayFromModal(){
+  const lang = document.getElementById('modalEditLang')?.value || currentLang;
+  const dayNum = parseInt(document.getElementById('modalEditDayNum')?.value || document.getElementById('modalDayNum')?.value) || 1;
+  const title = document.getElementById('modalDayTitle')?.value || document.getElementById('modalDayTheme')?.value || 'Day '+dayNum;
+  const emoji = document.getElementById('modalDayEmoji')?.value || '📚';
+  const status = document.getElementById('modalDayStatus')?.value || 'unlocked';
+
+  // JSON tab se content lo
+  const jsonRaw = document.getElementById('lessonJson')?.value || '';
+
+  if(!AD.langs) AD.langs = {};
+  if(!AD.langs[lang]) AD.langs[lang] = {enabled:true, days:{}};
+  if(!AD.langs[lang].days) AD.langs[lang].days = {};
+
+  const key = String(dayNum);
+  const day = AD.langs[lang].days[key] || {num: dayNum};
+  day.title = title;
+  day.emoji = emoji;
+  day.status = status;
+
+  // Agar JSON tab mein content hai to parse karo
+  if(jsonRaw.trim()){
+    try{
+      let cleaned = jsonRaw
+        .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')  // Gemini format clean
+        .replace(/;?\s*\/\/.*end.*$/,'')                            // end comment hatao
+        .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+      // Trailing semicolon hatao
+      if(cleaned.endsWith(';')) cleaned = cleaned.slice(0,-1).trim();
+      const parsed = JSON.parse(cleaned);
+      day.lessonContent = parsed;
+      day.title = parsed.themeEn || parsed.theme || title;
+      day.emoji = parsed.emoji || emoji;
+      day.lessonCount = (parsed.vocab||[]).length || day.lessonCount || 15;
+    } catch(e){
+      showToast('❌ JSON error: '+e.message,'#FF6B6B');
+      return;
+    }
+  }
+
+  // Vocab/Sentences/Grammar separate tabs se bhi lo
+  const vocabRaw = document.getElementById('lessonVocab')?.value || '';
+  const sentRaw = document.getElementById('lessonSentences')?.value || '';
+  const gramRaw = document.getElementById('lessonGrammar')?.value || '';
+  const storyRaw = document.getElementById('lessonStory')?.value || '';
+  const quizRaw = document.getElementById('lessonQuizzes')?.value || '';
+
+  if(!day.lessonContent) day.lessonContent = {};
+
+  if(vocabRaw.trim()){
+    try{ day.lessonContent.vocab = JSON.parse(vocabRaw.trim()); }catch(e){}
+  }
+  if(sentRaw.trim()){
+    try{ day.lessonContent.sentences = JSON.parse(sentRaw.trim()); }catch(e){}
+  }
+  if(gramRaw.trim()){
+    try{ day.lessonContent.grammar = JSON.parse(gramRaw.trim()); }catch(e){}
+  }
+  if(storyRaw.trim()){
+    try{ day.lessonContent.story = JSON.parse(storyRaw.trim()); }catch(e){}
+  }
+  if(quizRaw.trim()){
+    try{ day.lessonContent.quizzes = JSON.parse(quizRaw.trim()); }catch(e){}
+  }
+
+  // Agar kuch bhi nahi to error
+  const hasContent = jsonRaw.trim() || vocabRaw.trim() || sentRaw.trim() || gramRaw.trim() || quizRaw.trim();
+  if(!hasContent){
+    showToast('❌ Koi bhi content nahi! JSON ya Vocab tab mein kuch likho.','#FF6B6B');
+    return;
+  }
+
+  AD.langs[lang].days[key] = day;
+  saveAdminData();
+  closeModal('addDayModal');
+  renderDaysList();
+  if(typeof renderLessonStatus === 'function') renderLessonStatus();
+  showToast('✅ Day '+dayNum+' save ho gaya! ('+lang.toUpperCase()+')','#2EE59D');
 }
 
 function parseJsonLesson(){
