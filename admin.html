@@ -7494,19 +7494,25 @@ function saveDayFromModal(){
   // Agar JSON tab mein content hai to parse karo
   if(jsonRaw.trim()){
     try{
-      let cleaned = jsonRaw
-        .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')  // Gemini format clean
-        .replace(/;?\s*\/\/.*end.*$/,'')                            // end comment hatao
-        .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-      // Trailing semicolon hatao
-      if(cleaned.endsWith(';')) cleaned = cleaned.slice(0,-1).trim();
-      const parsed = JSON.parse(cleaned);
+      let parsed;
+      try{
+        const cleaned = jsObjectToJson(jsonRaw);
+        parsed = JSON.parse(cleaned);
+      } catch(e1){
+        try{
+          let raw2 = jsonRaw
+            .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')
+            .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+          if(raw2.endsWith(';')) raw2 = raw2.slice(0,-1).trim();
+          parsed = (new Function('return ('+raw2+')'))();
+        } catch(e2){ throw new Error(e1.message); }
+      }
       day.lessonContent = parsed;
       day.title = parsed.themeEn || parsed.theme || title;
       day.emoji = parsed.emoji || emoji;
       day.lessonCount = (parsed.vocab||[]).length || day.lessonCount || 15;
     } catch(e){
-      showToast('❌ JSON error: '+e.message,'#FF6B6B');
+      showToast('\u274c JSON error: '+e.message,'#FF6B6B');
       return;
     }
   }
@@ -7551,16 +7557,55 @@ function saveDayFromModal(){
   showToast('✅ Day '+dayNum+' save ho gaya! ('+lang.toUpperCase()+')','#2EE59D');
 }
 
+// JS object string ko valid JSON mein convert karo
+function jsObjectToJson(str){
+  // Step 1: Gemini/JS format strip
+  str = str
+    .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')
+    .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+  if(str.endsWith(';')) str = str.slice(0,-1).trim();
+
+  // Step 2: Single-quoted strings → double-quoted
+  // Escaped single quotes handle karo
+  str = str.replace(/'/g, '\u0001'); // temp replace escaped \'
+  // Property values aur keys mein single quotes → double
+  str = str.replace(/\u0001([^\u0001]*)\u0001/g, (m, inner) => {
+    // inner mein double quotes escape karo
+    inner = inner.replace(/"/g, '\\"');
+    return '"' + inner + '"';
+  });
+
+  // Step 3: Unquoted property names → quoted
+  // { key: value } → { "key": value }
+  str = str.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+
+  // Step 4: Trailing commas hatao  }, ] aur ] }
+  str = str.replace(/,(\s*[}\]])/g, '$1');
+
+  return str;
+}
+
 function parseJsonLesson(){
   // Add Day modal ya Edit modal — dono check karo
   const raw=(document.getElementById('edJsonInp')?.value||document.getElementById('lessonJson')?.value||'');
   if(!raw.trim()){ showToast('❌ JSON khali hai','#FF6B6B'); return; }
   try{
-    let cleaned=raw
-      .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')  // Gemini format
-      .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-    if(cleaned.endsWith(';')) cleaned=cleaned.slice(0,-1).trim();
-    const parsed=JSON.parse(cleaned);
+    let cleaned = jsObjectToJson(raw);
+    let parsed;
+    try{
+      parsed = JSON.parse(cleaned);
+    } catch(e1){
+      // Fallback: eval-safe parse via Function (JS object format ke liye)
+      try{
+        let raw2 = raw
+          .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')
+          .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+        if(raw2.endsWith(';')) raw2 = raw2.slice(0,-1).trim();
+        parsed = (new Function('return ('+raw2+')'))();
+      } catch(e2){
+        throw new Error(e1.message);
+      }
+    }
 
     // Edit modal mein hain?
     if(document.getElementById('edJsonInp') && document.getElementById('edTitle')){
