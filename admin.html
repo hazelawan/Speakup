@@ -7586,51 +7586,57 @@ function jsObjectToJson(str){
 }
 
 function parseJsonLesson(){
-  // Add Day modal ya Edit modal — dono check karo
-  const raw=(document.getElementById('edJsonInp')?.value||document.getElementById('lessonJson')?.value||'');
-  if(!raw.trim()){ showToast('❌ JSON khali hai','#FF6B6B'); return; }
-  try{
-    let cleaned = jsObjectToJson(raw);
-    let parsed;
-    try{
-      parsed = JSON.parse(cleaned);
-    } catch(e1){
-      // Fallback: eval-safe parse via Function (JS object format ke liye)
-      try{
-        let raw2 = raw
-          .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')
-          .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-        if(raw2.endsWith(';')) raw2 = raw2.slice(0,-1).trim();
-        parsed = (new Function('return ('+raw2+')'))();
-      } catch(e2){
-        throw new Error(e1.message);
-      }
-    }
+  // Kaunsa modal open hai? Visibility se check karo — element existence se nahi
+  const editModal = document.getElementById('editDayModal');
+  const addModal  = document.getElementById('addDayModal');
+  const isEditOpen = editModal && (editModal.classList.contains('open') || editModal.style.display === 'flex');
 
-    // Edit modal mein hain?
-    if(document.getElementById('edJsonInp') && document.getElementById('edTitle')){
-      const day=AD.langs[_editLang]?.days[_editDay]||{};
-      day.lessonContent=parsed;
-      day.title=parsed.themeEn||parsed.theme||day.title;
-      day.lessonCount=(parsed.vocab||[]).length||day.lessonCount;
-      day.ai_generated=true;
-      AD.langs[_editLang].days[_editDay]=day;
-      document.getElementById('edTitle').value=day.title;
-      document.getElementById('edLessonCount').value=day.lessonCount;
-      saveAdminData(); renderDaysList(); showToast('✅ JSON parsed aur save ho gaya!','#2EE59D');
-    } else {
-      // Add Day modal — sirf textarea mein preview show karo
-      if(parsed.themeEn||parsed.theme){
-        const titleEl=document.getElementById('dayTitle');
-        if(titleEl && !titleEl.value) titleEl.value=parsed.themeEn||parsed.theme;
-      }
-      if(parsed.emoji){
-        const emojiEl=document.getElementById('dayEmoji');
-        if(emojiEl && !emojiEl.value) emojiEl.value=parsed.emoji;
-      }
-      showToast('✅ JSON theek hai! Save Day dabao.','#2EE59D');
+  const raw = isEditOpen
+    ? (document.getElementById('edJsonInp')?.value || '')
+    : (document.getElementById('lessonJson')?.value || '');
+
+  if(!raw.trim()){ showToast('\u274c JSON khali hai','#FF6B6B'); return; }
+
+  // Parse — JS object aur JSON dono handle
+  let parsed;
+  try{
+    const cleaned = jsObjectToJson(raw);
+    parsed = JSON.parse(cleaned);
+  } catch(e1){
+    try{
+      let raw2 = raw
+        .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')
+        .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+      if(raw2.endsWith(';')) raw2 = raw2.slice(0,-1).trim();
+      parsed = (new Function('return ('+raw2+')'))();
+    } catch(e2){
+      showToast('\u274c JSON error: '+e1.message,'#FF6B6B'); return;
     }
-  }catch(e){ showToast('❌ JSON error: '+e.message,'#FF6B6B'); }
+  }
+
+  if(isEditOpen){
+    // Edit Day modal
+    const day = AD.langs[_editLang]?.days[_editDay] || {};
+    day.lessonContent = parsed;
+    day.title = parsed.themeEn || parsed.theme || day.title;
+    day.lessonCount = (parsed.vocab||[]).length || day.lessonCount;
+    day.ai_generated = true;
+    if(!AD.langs[_editLang]) AD.langs[_editLang] = { days:{} };
+    AD.langs[_editLang].days[_editDay] = day;
+    const t = document.getElementById('edTitle');
+    const lc = document.getElementById('edLessonCount');
+    if(t) t.value = day.title;
+    if(lc) lc.value = day.lessonCount;
+    saveAdminData(); renderDaysList();
+    showToast('\u2705 JSON parsed aur save ho gaya!','#2EE59D');
+  } else {
+    // Add Day modal — Title/Emoji fill karo, Save Day dabao
+    const titleEl = document.getElementById('dayTitle');
+    const emojiEl = document.getElementById('dayEmoji');
+    if(titleEl && !titleEl.value) titleEl.value = parsed.themeEn || parsed.theme || '';
+    if(emojiEl && !emojiEl.value) emojiEl.value = parsed.emoji || '';
+    showToast('\u2705 JSON theek hai! Ab Save Day dabao.','#2EE59D');
+  }
 }
 
 // ════════════════════════════════════════════
