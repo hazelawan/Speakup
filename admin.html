@@ -1198,6 +1198,21 @@ ZAROORI RULES:
       <div style="font-size:11px;color:var(--mut);">Permanent · Koi change nahi kar sakta</div>
     </div>
 
+    <!-- ══ CREATE FIREBASE AUTH ACCOUNT ══ -->
+    <div style="background:rgba(91,141,239,.08);border:1.5px solid rgba(91,141,239,.3);border-radius:14px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:4px;color:var(--p);">🔑 Naya Admin Account Banao</div>
+      <div style="font-size:11px;color:var(--mut);margin-bottom:12px;">Firebase Auth mein naya login account create karo — phir neeche sub-admin mein add karo</div>
+      <input class="inp" id="newAdminEmailInput" type="email" placeholder="Naya admin ka Gmail" style="margin-bottom:8px;">
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input class="inp" id="newAdminPassInput" type="password" placeholder="Password (min 6 characters)" style="margin:0;flex:1;">
+        <button onclick="toggleNewAdminPass()" style="padding:10px 12px;background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:10px;color:var(--txt);font-size:13px;cursor:pointer;" id="newAdminPassToggle">👁️</button>
+      </div>
+      <div id="createAdminStatus" style="display:none;font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:10px;"></div>
+      <button onclick="createFirebaseAdminAccount()" style="width:100%;padding:12px;background:linear-gradient(135deg,#5B8DEF,#3a6bd4);border:none;border-radius:12px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:15px;cursor:pointer;">🔑 Account Banao + Add Karo</button>
+      <div style="font-size:10px;color:var(--mut);margin-top:8px;text-align:center;">⚡ Account ban'ne ke baad email automatically neeche fill ho jaayega</div>
+    </div>
+    <!-- ══════════════════════════════════ -->
+
     <div style="font-size:13px;font-weight:800;margin-bottom:10px;">➕ Sub-Admin Add Karo</div>
     <div class="inp-group">
       <input class="inp" id="subAdminEmail" placeholder="Gmail address" type="email" style="margin-bottom:8px;">
@@ -6063,6 +6078,73 @@ async function loadProUsers(){
     container.innerHTML = html || '<div style="color:var(--mut);text-align:center;padding:16px;font-size:13px;">Koi Pro user nahi</div>';
   } catch(e){
     container.innerHTML='<div style="color:var(--r);text-align:center;padding:16px;font-size:13px;">Error: '+e.message+'</div>';
+  }
+}
+
+function toggleNewAdminPass(){
+  const inp = document.getElementById('newAdminPassInput');
+  const btn = document.getElementById('newAdminPassToggle');
+  if(!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+}
+
+async function createFirebaseAdminAccount(){
+  if(!isMainAdmin()) return;
+  const email = document.getElementById('newAdminEmailInput')?.value?.trim();
+  const pass = document.getElementById('newAdminPassInput')?.value?.trim();
+  const statusEl = document.getElementById('createAdminStatus');
+
+  if(!email || !email.includes('@')){ showToast('❌ Sahi email likho','#FF6B6B'); return; }
+  if(!pass || pass.length < 6){ showToast('❌ Password kam az kam 6 characters ka hona chahiye','#FF6B6B'); return; }
+
+  statusEl.style.display='block';
+  statusEl.style.background='rgba(91,141,239,.1)';
+  statusEl.style.border='1px solid rgba(91,141,239,.3)';
+  statusEl.style.color='var(--p)';
+  statusEl.textContent='⏳ Account ban raha hai...';
+
+  try{
+    // Firebase Auth REST API se naya user create karo
+    const FIREBASE_API_KEY = 'AIzaSyDOvvwpwfsd8sMXpTmTNZkIBdYjy_mt3zU';
+    const res = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`,
+      {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password: pass, returnSecureToken: true })
+      }
+    );
+    const data = await res.json();
+    if(data.error){
+      const errMsg = data.error.message;
+      const urduErr = errMsg === 'EMAIL_EXISTS' ? 'Yeh email pehle se registered hai'
+        : errMsg === 'INVALID_EMAIL' ? 'Email format galat hai'
+        : errMsg === 'WEAK_PASSWORD : Password should be at least 6 characters' ? 'Password kam az kam 6 characters ka ho'
+        : errMsg;
+      statusEl.style.background='rgba(255,75,75,.1)';
+      statusEl.style.border='1px solid rgba(255,75,75,.3)';
+      statusEl.style.color='var(--r)';
+      statusEl.textContent='❌ '+urduErr;
+      return;
+    }
+    // Success — email sub-admin field mein fill karo
+    const emailField = document.getElementById('subAdminEmail');
+    if(emailField) emailField.value = email;
+    document.getElementById('newAdminEmailInput').value='';
+    document.getElementById('newAdminPassInput').value='';
+    statusEl.style.background='rgba(46,229,157,.1)';
+    statusEl.style.border='1px solid rgba(46,229,157,.3)';
+    statusEl.style.color='var(--g)';
+    statusEl.textContent='✅ Account ban gaya! Neeche level + expiry set karo aur "Add Sub-Admin" dabao';
+    showToast('✅ Firebase account ready! '+email,'#2EE59D');
+    // 5 sec baad status hide
+    setTimeout(()=>{ statusEl.style.display='none'; }, 7000);
+  }catch(e){
+    statusEl.style.background='rgba(255,75,75,.1)';
+    statusEl.style.border='1px solid rgba(255,75,75,.3)';
+    statusEl.style.color='var(--r)';
+    statusEl.textContent='❌ Network error: '+e.message;
   }
 }
 
