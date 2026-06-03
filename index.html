@@ -7626,10 +7626,26 @@ function isPro(){
     const uid = window.FB_AUTH?.currentUser?.uid;
     if(!uid) return false;
     if(isDemo()) return true;
-    // Sirf in-memory cache check karo
-    if(!window._PRO_CACHE) return false;
-    if(!window._PRO_CACHE.expiry) return true; // lifetime
-    return Date.now() <= window._PRO_CACHE.expiry;
+    // 1. In-memory cache check
+    if(window._PRO_CACHE){
+      if(!window._PRO_CACHE.expiry) return true; // lifetime
+      if(Date.now() <= window._PRO_CACHE.expiry) return true;
+    }
+    // 2. localStorage fallback — refresh ke baad bhi kaam kare
+    try{
+      const lsKey = 'speakup_pro_' + uid;
+      const cached = JSON.parse(localStorage.getItem(lsKey) || 'null');
+      if(cached){
+        if(!cached.expiry) return true; // lifetime
+        if(Date.now() <= cached.expiry){
+          window._PRO_CACHE = cached; // memory mein restore karo
+          return true;
+        } else {
+          localStorage.removeItem(lsKey); // expire ho gaya
+        }
+      }
+    } catch(e2){}
+    return false;
   } catch(e){ return false; }
 }
 
@@ -7712,6 +7728,8 @@ async function checkProFromFirebase(){
         window._PRO_CACHE.plan === data.plan;
       if(sameData) return; // koi change nahi — render mat karo
       window._PRO_CACHE = data;
+      // localStorage mein bhi save karo — refresh ke baad bhi Pro rahe
+      try{ localStorage.setItem('speakup_pro_'+uid, JSON.stringify(data)); }catch(e2){}
       try{ window.FB_SET(window.FB_REF(window.FB_DB,'emailToUid/'+emailKey), uid).catch(function(){}); }catch(e2){}
       setTimeout(function(){
         try{ if(typeof renderDash==='function') renderDash(); }catch(e){}
@@ -7724,6 +7742,8 @@ async function checkProFromFirebase(){
     function _clearPro(){
       if(window._PRO_CACHE === null) return; // pehle se null — render mat karo
       window._PRO_CACHE = null;
+      // localStorage bhi clear karo
+      try{ localStorage.removeItem('speakup_pro_'+uid); }catch(e2){}
       setTimeout(function(){
         try{ if(typeof renderDash==='function') renderDash(); }catch(e){}
         try{ if(typeof renderProf==='function') renderProf(); }catch(e){}
