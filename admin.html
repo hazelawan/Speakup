@@ -10132,13 +10132,22 @@ function loadFirebasePapersIntoAdmin(){
   window.FB_ON_VALUE(papersRef, function(snap){
     if(!snap.exists()){ window._firebasePapersLoaded = true; ppAdminRenderList(); return; }
     const data = snap.val();
-    Object.values(data).forEach(p=>{
+    Object.entries(data).forEach(([key, entry])=>{
+      // New format: entry.meta + entry.sections
+      // Old format: entry directly has class/year etc
+      const p = (entry && entry.meta) ? entry.meta : entry;
+      const secs = (entry && entry.sections) ? entry.sections.sections : (entry ? entry.sections : null);
       if(!p || !p.class || !p.year || !p.board || !p.subject || !p.session) return;
       PP_DATA[p.class] = PP_DATA[p.class] || {};
       PP_DATA[p.class][p.year] = PP_DATA[p.class][p.year] || {};
       PP_DATA[p.class][p.year][p.board] = PP_DATA[p.class][p.year][p.board] || {};
       PP_DATA[p.class][p.year][p.board][p.subject] = PP_DATA[p.class][p.year][p.board][p.subject] || {};
-      PP_DATA[p.class][p.year][p.board][p.subject][p.session] = {...p, _fbLoaded:true};
+      PP_DATA[p.class][p.year][p.board][p.subject][p.session] = {
+        ...p,
+        sections: secs || [],
+        _fbKey: key,
+        _fbLoaded: true
+      };
     });
     window._firebasePapersLoaded = true;
     ppAdminRenderList();
@@ -10560,17 +10569,32 @@ function ppSaveFullJson(){
     var di=deleted.indexOf(key); if(di>-1){deleted.splice(di,1);localStorage.setItem('speakup_pp_deleted',JSON.stringify(deleted));}
   }catch(e){}
 
-  // ── Firebase save ──
+  // ── Firebase save — Meta aur Sections alag alag ──
   if(window.FIREBASE_READY && window.FB_DB){
     showToast('☁️ Firebase pe save ho raha hai...','#FFD166');
-    var fbRef = window.FB_REF(window.FB_DB, 'pastPapers/' + key);
-    window.FB_SET(fbRef, paperObj)
-      .then(function(){
-        showToast('✅ Paper Firebase pe save! '+clsLabel+' · '+sub+' · '+board+' · '+yr+' · '+sess,'#2EE59D');
-      })
-      .catch(function(err){
-        showToast('⚠️ localStorage mein save hua, Firebase error: '+err.message,'#FF9A3C');
-      });
+    // Meta (chhota) — har user fetch karega
+    var metaObj = {
+      title: paperObj.title,
+      class: paperObj.class,
+      year: paperObj.year,
+      board: paperObj.board,
+      subject: paperObj.subject,
+      session: paperObj.session
+    };
+    // Sections (bara) — sirf jab Pro user paper khole tab fetch hoga
+    var sectionsObj = { sections: paperObj.sections };
+
+    var metaRef     = window.FB_REF(window.FB_DB, 'pastPapers/' + key + '/meta');
+    var sectionsRef = window.FB_REF(window.FB_DB, 'pastPapers/' + key + '/sections');
+
+    Promise.all([
+      window.FB_SET(metaRef, metaObj),
+      window.FB_SET(sectionsRef, sectionsObj)
+    ]).then(function(){
+      showToast('✅ Paper Firebase pe save! '+clsLabel+' · '+sub+' · '+board+' · '+yr+' · '+sess,'#2EE59D');
+    }).catch(function(err){
+      showToast('⚠️ localStorage mein save hua, Firebase error: '+err.message,'#FF9A3C');
+    });
   } else {
     showToast('✅ Paper save! (Firebase ready nahi — sirf local)','#FFD166');
   }
