@@ -14831,6 +14831,8 @@ function onFirebaseAuthChange(user){
     // 2️⃣ Notification system init — sirf yahan, alag onAuthStateChanged nahi
     if(window.FB_DB && window.FB_REF && window.FB_ON_VALUE){
       setTimeout(function(){ if(typeof initNotifSystem==='function') initNotifSystem(); }, 1000);
+      // 📄 Firebase paper meta load karo (sirf titles — sections baad mein)
+      setTimeout(function(){ if(typeof loadFirebasePapersMeta==='function') loadFirebasePapersMeta(); }, 1500);
       // 2b. Maintenance mode real-time listener
       setTimeout(function(){ if(typeof initMaintenanceListener==='function') initMaintenanceListener(); }, 800);
     }
@@ -16541,6 +16543,33 @@ function ppSelectYearSession(yr, sess){
   }
   if(!isPro()){ showPaperProPopup(); return; }
 
+  // Agar sirf meta hai (sections abhi nahi) toh Firebase se fetch karo
+  if(d._metaOnly || !d.sections || d.sections.length === 0){
+    if(!d._fbKey){
+      showToast('⚠️ Paper key nahi mili', 'var(--o)'); return;
+    }
+    showToast('⏳ Paper load ho raha hai...', 'var(--b)');
+    loadPaperSectionsFromFirebase(d._fbKey, function(sections, err){
+      if(err || !sections){
+        showToast('❌ Paper load nahi hua: '+(err||'unknown'), '#FF6B6B'); return;
+      }
+      // Sections save karo aur meta flag hatao
+      PP_DATA[cls][yr][board][sub][sess].sections = sections;
+      PP_DATA[cls][yr][board][sub][sess]._metaOnly = false;
+      // Ab render karo
+      ppRenderPaperView(cls, yr, board, sub, sess);
+    });
+    return;
+  }
+
+  ppRenderPaperView(cls, yr, board, sub, sess);
+}
+
+// Separate render function — lazy load callback se bhi call hoti hai
+function ppRenderPaperView(cls, yr, board, sub, sess){
+  const d = PP_DATA[cls]?.[yr]?.[board]?.[sub]?.[sess];
+  if(!d) return;
+
   document.getElementById('ppYearSelect').style.display = 'none';
   document.getElementById('ppPaperView').style.display = 'block';
 
@@ -17006,6 +17035,65 @@ function ppBack(to){
     });
   } catch(e){}
 })();
+
+// ── Firebase Papers — Lazy Loader ──
+
+// Step 1: Sirf META fetch karo (login ke baad) — chhota data
+function loadFirebasePapersMeta(){
+  try{
+    if(!window.FB_DB || !window.FB_REF || !window.FB_GET) return;
+    const papersRef = window.FB_REF(window.FB_DB, 'pastPapers');
+    window.FB_GET(papersRef).then(function(snap){
+      if(!snap.exists()) return;
+      const data = snap.val();
+      let count = 0;
+      Object.entries(data).forEach(function([key, entry]){
+        // New format: entry.meta | Old format: entry directly
+        const p = (entry && entry.meta) ? entry.meta : entry;
+        if(!p || !p.class || !p.year || !p.board || !p.subject || !p.session) return;
+        const cls = parseInt(p.class);
+        const yr  = parseInt(p.year);
+        PP_DATA[cls] = PP_DATA[cls] || {};
+        PP_DATA[cls][yr] = PP_DATA[cls][yr] || {};
+        PP_DATA[cls][yr][p.board] = PP_DATA[cls][yr][p.board] || {};
+        PP_DATA[cls][yr][p.board][p.subject] = PP_DATA[cls][yr][p.board][p.subject] || {};
+        // Sirf meta save karo — sections baad mein fetch honge
+        PP_DATA[cls][yr][p.board][p.subject][p.session] = {
+          title: p.title, class: cls, year: yr,
+          board: p.board, subject: p.subject, session: p.session,
+          sections: [], // placeholder — baad mein load hoga
+          _fbKey: key,
+          _metaOnly: true  // flag — sections abhi nahi hain
+        };
+        count++;
+      });
+      console.log('✅ Firebase paper meta loaded:', count, 'papers');
+      // Agar year screen open hai toh refresh
+      try{
+        const yrScreen = document.getElementById('ppYearSelect');
+        if(yrScreen && yrScreen.style.display !== 'none' && typeof ppState !== 'undefined' && ppState.board){
+          ppSelectBoard(ppState.board);
+        }
+      }catch(e){}
+    }).catch(function(e){ console.warn('Papers meta load error:', e); });
+  }catch(e){ console.warn('loadFirebasePapersMeta error:', e); }
+}
+
+// Step 2: Jab user paper select kare tab sirf us paper ka sections fetch karo
+function loadPaperSectionsFromFirebase(fbKey, callback){
+  try{
+    if(!window.FB_DB || !window.FB_REF || !window.FB_GET){
+      callback(null, 'Firebase ready nahi'); return;
+    }
+    const sectRef = window.FB_REF(window.FB_DB, 'pastPapers/' + fbKey + '/sections');
+    window.FB_GET(sectRef).then(function(snap){
+      if(!snap.exists()){ callback(null, 'Sections nahi mile'); return; }
+      const data = snap.val();
+      const sections = data.sections || (Array.isArray(data) ? data : []);
+      callback(sections, null);
+    }).catch(function(e){ callback(null, e.message); });
+  }catch(e){ callback(null, e.message); }
+}
 
 </script>
 
