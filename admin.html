@@ -6579,7 +6579,34 @@ function showPage(name,btn){
   pg.classList.add('active');
   if(btn) btn.classList.add('active');
   if(name==='dashboard') renderDashboard();
-  if(name==='lessons'){ if(typeof _syncEnabledSkillsToLangInfo==='function') _syncEnabledSkillsToLangInfo(); loadDaysList(); refreshLessonStats(); }
+  if(name==='lessons'){
+    if(typeof _syncEnabledSkillsToLangInfo==='function') _syncEnabledSkillsToLangInfo();
+    // ✅ FIX: Firebase se fresh data pull karo phir render karo
+    if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_ONVALUE){
+      const ref = window.FB_REF(window.FB_DB, 'adminData');
+      window.FB_ONVALUE(ref, snap => {
+        if(snap.exists()){
+          const data = snap.val();
+          // Normalize keys
+          if(data.langs){
+            Object.keys(data.langs).forEach(lang => {
+              if(data.langs[lang]?.days){
+                const norm = {};
+                Object.keys(data.langs[lang].days).forEach(k => { norm[String(k)] = data.langs[lang].days[k]; });
+                data.langs[lang].days = norm;
+              }
+            });
+          }
+          Object.assign(AD, data);
+        }
+        loadDaysList();
+        refreshLessonStats();
+      }, { onlyOnce: true });
+    } else {
+      loadDaysList();
+      refreshLessonStats();
+    }
+  }
   if(name==='languages') renderLangManager();
   if(name==='users') renderUsers();
   if(name==='admin-access'){
@@ -7922,29 +7949,71 @@ function saveDayFromModal(){
 }
 
 // JS object string ko valid JSON mein convert karo
+// ROBUST: escaped apostrophes, all edge cases handle
 function jsObjectToJson(str){
-  // Step 1: Gemini/JS format strip
-  str = str
-    .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')
-    .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+  // Step 1: Strip Gemini format prefix and code fences
+  str = str.trim();
+  // Remove ALL_DAYS['en'][4] = prefix
+  str = str.replace(/^ALL_DAYS\s*\[.+?\]\s*\[\s*\d+\s*\]\s*=\s*/, '');
+  // Remove code fences
+  str = str.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+  // Remove trailing semicolon
   if(str.endsWith(';')) str = str.slice(0,-1).trim();
 
-  // Step 2: Single-quoted strings → double-quoted
-  // Escaped single quotes handle karo
-  str = str.replace(/'/g, '\u0001'); // temp replace escaped \'
-  // Property values aur keys mein single quotes → double
-  str = str.replace(/\u0001([^\u0001]*)\u0001/g, (m, inner) => {
-    // inner mein double quotes escape karo
-    inner = inner.replace(/"/g, '\\"');
-    return '"' + inner + '"';
-  });
+  // Step 2: Character-by-character parser
+  // Converts single-quoted JS strings to double-quoted JSON strings
+  // Correctly handles escaped apostrophes like Mother\'s
+  let result = '';
+  let i = 0;
+  while(i < str.length){
+    const ch = str[i];
 
-  // Step 3: Unquoted property names → quoted
-  // { key: value } → { "key": value }
+    // Already double-quoted string — copy as-is
+    if(ch === '"'){
+      result += ch; i++;
+      while(i < str.length){
+        const c2 = str[i];
+        result += c2; i++;
+        if(c2 === '\\' && i < str.length){ result += str[i]; i++; continue; }
+        if(c2 === '"') break;
+      }
+      continue;
+    }
+
+    // Single-quoted string — convert to double-quoted
+    if(ch === "'"){
+      result += '"'; i++;
+      while(i < str.length){
+        const c2 = str[i];
+        // Escaped apostrophe \' inside single-quoted → keep as plain apostrophe
+        if(c2 === '\\' && i+1 < str.length && str[i+1] === "'"){
+          result += "'"; i += 2; continue;
+        }
+        // End of single-quoted string
+        if(c2 === "'"){
+          result += '"'; i++; break;
+        }
+        // Double quote inside → escape it
+        if(c2 === '"'){
+          result += '\\"'; i++; continue;
+        }
+        result += c2; i++;
+      }
+      continue;
+    }
+
+    result += ch; i++;
+  }
+  str = result;
+
+  // Step 3: Unquoted property names → quoted  {key:} → {"key":}
   str = str.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
 
-  // Step 4: Trailing commas hatao  }, ] aur ] }
+  // Step 4: Remove trailing commas before } or ]
   str = str.replace(/,(\s*[}\]])/g, '$1');
+
+  // Step 5: undefined → null
+  str = str.replace(/:\s*undefined\b/g, ': null');
 
   return str;
 }
