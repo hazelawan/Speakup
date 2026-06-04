@@ -7194,14 +7194,32 @@ function renderDaysList(){
 
     // 30-day: direct card, edit/lock/delete sab active
     if(courseKey === '30'){
-      const lockBtn = isBuiltIn
-        ? `<button onclick="event.stopPropagation();toggleBuiltinDayLock('${currentLang}',${d},${locked})" style="background:${locked?'rgba(46,229,157,.15)':'rgba(255,107,107,.15)'};border:1px solid ${locked?'rgba(46,229,157,.3)':'rgba(255,107,107,.3)'};border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:${locked?'var(--g)':'var(--r)'};">${locked?'🔓':'🔒'}</button>`
-        : `<button onclick="event.stopPropagation();toggleDayLock('${currentLang}',${d})" style="background:${locked?'rgba(46,229,157,.15)':'rgba(255,107,107,.15)'};border:1px solid ${locked?'rgba(46,229,157,.3)':'rgba(255,107,107,.3)'};border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:${locked?'var(--g)':'var(--r)'};">${locked?'🔓':'🔒'}</button>`;
+      // Card border: custom=blue, locked=red, built-in edited=purple, normal=default
+      const cardBorder = locked
+        ? 'border-color:rgba(255,107,107,.35);'
+        : !isBuiltIn
+          ? 'border:1.5px solid rgba(91,141,239,.45);'
+          : overridden
+            ? 'border:1.5px solid rgba(206,130,255,.4);'
+            : '';
+      const numBg = locked
+        ? 'background:rgba(255,107,107,.15);color:var(--r)'
+        : !isBuiltIn
+          ? 'background:rgba(91,141,239,.2);color:#5B8DEF'
+          : 'background:rgba(88,204,2,.12);color:#58CC02';
+      // Lock button
+      const lockFn = isBuiltIn
+        ? `toggleBuiltinDayLock('${currentLang}',${d},${locked})`
+        : `toggleDayLock('${currentLang}',${d})`;
+      const lockBtn = `<button onclick="event.stopPropagation();${lockFn}" style="background:${locked?'rgba(46,229,157,.15)':'rgba(255,107,107,.15)'};border:1px solid ${locked?'rgba(46,229,157,.3)':'rgba(255,107,107,.3)'};border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:${locked?'var(--g)':'var(--r)'};">${locked?'🔓':'🔒'}</button>`;
+      // Delete: custom days full delete, built-in override reset
       const deleteBtn = !isBuiltIn
-        ? `<button onclick="event.stopPropagation();deleteDay('${currentLang}',${d})" style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--r);">🗑️</button>`
-        : '';
-      return `<div class="day-item" style="cursor:pointer;margin-bottom:8px;${overridden?'border:1.5px solid rgba(91,141,239,.4);':locked?'border-color:rgba(255,107,107,.25);':''}" onclick="editDay('${currentLang}',${d})">
-        <div class="day-num" style="${locked?'background:rgba(255,107,107,.12);color:var(--r)':isBuiltIn?'background:rgba(88,204,2,.12);color:#58CC02':'background:rgba(46,229,157,.12);color:var(--g)'}">${d}</div>
+        ? `<button onclick="event.stopPropagation();deleteDay('${currentLang}',${d})" style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--r);" title="Day delete karo">🗑️</button>`
+        : overridden
+          ? `<button onclick="event.stopPropagation();resetBuiltinOverride('${currentLang}',${d})" style="background:rgba(255,149,0,.15);border:1px solid rgba(255,149,0,.3);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--o);" title="Override reset — original built-in restore karo">↺</button>`
+          : '';
+      return `<div class="day-item" style="cursor:pointer;margin-bottom:8px;${cardBorder}" onclick="editDay('${currentLang}',${d})">
+        <div class="day-num" style="${numBg}">${d}</div>
         <div class="day-info">
           <div class="day-title">${emoji} ${title}</div>
           <div class="day-meta">${wordCount} words · ${locked?'🔒 Locked':'🔓 Unlocked'} · ${metaTag}</div>
@@ -7263,8 +7281,9 @@ function renderDaysList(){
   courses.forEach(course => {
     const accId = `acc-days-${course.key}-${currentLang}`;
     const arrowId = `acc-arrow-${course.key}-${currentLang}`;
-    // Default: 30 Days open, baaki band
-    const isOpen = course.key === '30';
+    // ✅ FIX: DOM se current state preserve karo, default 30 open
+    const existingPanel = document.getElementById(accId);
+    const isOpen = existingPanel ? existingPanel.style.display !== 'none' : course.key === '30';
 
     // Lock count calculate karo
     const lockedCount = sortedDays.filter(d=>{
@@ -7301,8 +7320,23 @@ function renderDaysList(){
         </div>
       </div>
       <div id="${accId}" style="display:${isOpen?'block':'none'};padding:10px;">
-        ${sortedDays.map(d=>makeDayCard(d, course.key)).join('')}
-        ${sortedDays.length===0?'<div style="color:var(--mut);font-size:12px;text-align:center;padding:12px;">📭 Koi day nahi — Add Day se add karo</div>':''}
+        ${(()=>{
+          if(sortedDays.length === 0) return '<div style="color:var(--mut);font-size:12px;text-align:center;padding:12px;">📭 Koi day nahi — Add Day se add karo</div>';
+          if(course.key !== '30') return sortedDays.map(d=>makeDayCard(d, course.key)).join('');
+          // 30-day: Built-in aur Firebase sections alag karo
+          const biDays = sortedDays.filter(d => builtInDayNums.includes(d));
+          const fbDays = sortedDays.filter(d => !builtInDayNums.includes(d));
+          let html = '';
+          if(biDays.length > 0){
+            html += `<div style="font-size:10px;font-weight:800;color:#58CC02;letter-spacing:1px;margin:6px 2px 4px;opacity:.8;">📦 BUILT-IN DAYS</div>`;
+            html += biDays.map(d=>makeDayCard(d,'30')).join('');
+          }
+          if(fbDays.length > 0){
+            html += `<div style="font-size:10px;font-weight:800;color:#5B8DEF;letter-spacing:1px;margin:10px 2px 4px;opacity:.8;">☁️ FIREBASE DAYS (Aapke Add Kiye)</div>`;
+            html += fbDays.map(d=>makeDayCard(d,'30')).join('');
+          }
+          return html;
+        })()}
       </div>
     </div>`;
 
@@ -7562,6 +7596,18 @@ function toggleDayLock(lang,dayNum){
   saveAdminData(); renderDaysList(); showToast(d.status==='locked'?'🔒 Locked!':'🔓 Unlocked!','#FFD166');
 }
 
+// ✅ Built-in day ka firebase override reset karo — original restore hoga
+function resetBuiltinOverride(lang, dayNum){
+  showConfirm('↺','Override Reset Karo?','Day '+dayNum+' ki firebase edit delete ho jayegi. Original built-in lesson wapas aa jayega.','Reset','#FF9500','#CC7A00',()=>{
+    const key = String(dayNum);
+    if(AD.langs?.[lang]?.days?.[key]){
+      delete AD.langs[lang].days[key];
+      saveAdminData(); loadDaysList();
+      showToast('↺ Override reset! Built-in lesson wapas aa gaya.','#FF9500');
+    }
+  });
+}
+
 function deleteDay(lang,dayNum){
   showConfirm('🗑️','Day Delete Karo?','Day '+dayNum+' hamesha ke liye delete ho jayega!','Delete','#FF6B6B','#CC3333',()=>{
     delete AD.langs[lang].days[dayNum];
@@ -7646,9 +7692,17 @@ function addNewDay(){
   if(!AD.langs) AD.langs={};
   if(!AD.langs[currentLang]) AD.langs[currentLang]={enabled:true,days:{}};
   if(!AD.langs[currentLang].days) AD.langs[currentLang].days={};
-  // Modal se add karo
-  const existing=Object.keys(AD.langs[currentLang].days).map(Number);
-  const nextDay=existing.length>0?Math.max(...existing)+1:1;
+  // ✅ FIX: nextDay = max of ALL existing days (built-in + admin), Day 0 exclude
+  const adminNums = Object.keys(AD.langs[currentLang].days)
+    .map(Number).filter(n=>!isNaN(n) && n > 0);
+  const builtInDaysObj = window.ALL_DAYS ? ALL_DAYS[currentLang] : null;
+  const builtInNums = builtInDaysObj
+    ? (Array.isArray(builtInDaysObj)
+        ? builtInDaysObj.map((_,i)=>i).filter(i=>i>0 && builtInDaysObj[i])
+        : Object.keys(builtInDaysObj).map(Number).filter(n=>n>0))
+    : [];
+  const allNums = [...new Set([...adminNums, ...builtInNums])];
+  const nextDay = allNums.length > 0 ? Math.max(...allNums) + 1 : 1;
   // Prefill modal
   document.getElementById('modalDayNum').value=nextDay;
   document.getElementById('modalDayTitle').value='';
@@ -7663,6 +7717,89 @@ function addNewDay(){
   });
   switchLessonTab('vocab');
   openModal('addDayModal');
+}
+
+// ════════════════════════════════════════════
+// ✅ New Day Added Banner — Paper jesi notification
+// ════════════════════════════════════════════
+function showNewDayBanner(lang, dayNum, title, emoji){
+  // Purana banner remove karo
+  const old = document.getElementById('newDayBanner');
+  if(old) old.remove();
+
+  const langInfo = (typeof LANG_INFO !== 'undefined' && LANG_INFO[lang]) || {flag:'🌍', name: lang.toUpperCase()};
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+
+  const banner = document.createElement('div');
+  banner.id = 'newDayBanner';
+  banner.style.cssText = `
+    position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(30px);
+    width:92%; max-width:420px; z-index:9999;
+    background:linear-gradient(135deg,rgba(91,141,239,.18),rgba(46,229,157,.12));
+    border:1.5px solid rgba(91,141,239,.5);
+    border-left:4px solid #5B8DEF;
+    border-radius:16px; padding:14px 16px;
+    box-shadow:0 8px 32px rgba(0,0,0,.4);
+    opacity:0; transition:all .4s cubic-bezier(.34,1.56,.64,1);
+    backdrop-filter:blur(12px);
+  `;
+  banner.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;">
+        <div style="font-size:28px;line-height:1;">${emoji}</div>
+        <div style="flex:1;">
+          <div style="font-size:11px;font-weight:800;color:#5B8DEF;letter-spacing:.8px;margin-bottom:2px;">
+            ☁️ FIREBASE DAY ADDED
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;">
+            Day ${dayNum} — ${title}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span style="background:rgba(91,141,239,.2);border:1px solid rgba(91,141,239,.35);border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;color:#5B8DEF;">
+              ${langInfo.flag} ${langInfo.name}
+            </span>
+            <span style="background:rgba(46,229,157,.12);border:1px solid rgba(46,229,157,.25);border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;color:#2EE59D;">
+              ✅ Saved
+            </span>
+            <span style="font-size:10px;color:var(--mut);">${timeStr}</span>
+          </div>
+        </div>
+      </div>
+      <button onclick="document.getElementById('newDayBanner').remove()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:4px 8px;font-size:12px;cursor:pointer;color:var(--mut);flex-shrink:0;">✕</button>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;">
+      <div style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;text-align:center;">
+        <div style="font-size:18px;font-weight:800;color:#5B8DEF;">${dayNum}</div>
+        <div style="font-size:9px;color:var(--mut);margin-top:1px;">Day Number</div>
+      </div>
+      <div style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;text-align:center;">
+        <div style="font-size:18px;font-weight:800;color:#2EE59D;">☁️</div>
+        <div style="font-size:9px;color:var(--mut);margin-top:1px;">Firebase Sync</div>
+      </div>
+      <div style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;text-align:center;">
+        <div style="font-size:11px;font-weight:800;color:#58CC02;">30/60/90</div>
+        <div style="font-size:9px;color:var(--mut);margin-top:1px;">Courses Updated</div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(banner);
+  // Animate in
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      banner.style.opacity = '1';
+      banner.style.transform = 'translateX(-50%) translateY(0)';
+    });
+  });
+  // Auto remove after 6 seconds
+  setTimeout(()=>{
+    if(banner.parentNode){
+      banner.style.opacity = '0';
+      banner.style.transform = 'translateX(-50%) translateY(20px)';
+      setTimeout(()=>banner.remove(), 400);
+    }
+  }, 6000);
 }
 
 // ════════════════════════════════════════════
@@ -7749,9 +7886,38 @@ function saveDayFromModal(){
   AD.langs[lang].days[key] = day;
   saveAdminData();
   closeModal('addDayModal');
-  loadDaysList(); // ✅ FIX: Info box (X din ka lesson data) bhi update hoga
+  loadDaysList();
   if(typeof renderLessonStatus === 'function') renderLessonStatus();
-  if(typeof refreshLessonStats === 'function') refreshLessonStats(); // ✅ FIX: Lesson Stats auto-update
+  if(typeof refreshLessonStats === 'function') refreshLessonStats();
+
+  // ✅ FIX: Teeno accordions (30/60/90) open karo taake naya day foran dikh jaye
+  setTimeout(()=>{
+    ['30','60','90'].forEach(k=>{
+      const panel = document.getElementById('acc-days-'+k+'-'+lang);
+      const arrow = document.getElementById('acc-arrow-'+k+'-'+lang);
+      if(panel){ panel.style.display='block'; }
+      if(arrow){ arrow.textContent='▲'; }
+    });
+    // Naye day card ko highlight + scroll karo
+    // Day card mein data-day attribute se find karo
+    const allCards = document.querySelectorAll('.day-item');
+    allCards.forEach(card=>{
+      const numEl = card.querySelector('.day-num');
+      if(numEl && numEl.textContent.trim() === String(dayNum)){
+        // Flash highlight
+        card.style.transition='box-shadow .3s, transform .3s';
+        card.style.boxShadow='0 0 0 3px rgba(91,141,239,.7)';
+        card.style.transform='scale(1.02)';
+        card.scrollIntoView({behavior:'smooth', block:'center'});
+        setTimeout(()=>{
+          card.style.boxShadow='';
+          card.style.transform='';
+        }, 2000);
+      }
+    });
+  }, 150);
+
+  showNewDayBanner(lang, dayNum, day.title || 'Day '+dayNum, day.emoji || '📖');
   showToast('✅ Day '+dayNum+' save ho gaya! ('+lang.toUpperCase()+')','#2EE59D');
 }
 
