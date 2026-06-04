@@ -7127,12 +7127,12 @@ function renderDaysList(){
   }
 
   // ── Helper: ek day ka card HTML banana ──
+  // ── Base card builder — ek 30-day lesson ka card ──
   function makeDayCard(d, courseKey){
     const bd = hasBuiltIn ? (Array.isArray(builtInDays) ? builtInDays[d] : builtInDays[d]) : null;
     const adminDay = adminDays[d] || adminDays[String(d)];
     const locked = adminDay ? adminDay.status === 'locked' : false;
     const isBuiltIn = !!bd;
-    const isCustom = !isBuiltIn && !!adminDay;
     const overridden = isBuiltIn && !!adminDay;
     const title = adminDay?.title || bd?.themeEn || bd?.theme || 'Day '+d;
     const emoji = bd?.emoji || adminDay?.emoji || '📖';
@@ -7145,26 +7145,47 @@ function renderDaysList(){
     else if(isAI) metaTag = `<span style="color:#CE82FF;font-weight:700;">🤖 AI</span>`;
     else metaTag = `<span style="color:var(--y);font-weight:700;">✏️ Custom</span>`;
 
-    const lockBtn = isBuiltIn
-      ? `<button onclick="event.stopPropagation();toggleBuiltinDayLock('${currentLang}',${d},${locked})" style="background:${locked?'rgba(46,229,157,.15)':'rgba(255,107,107,.15)'};border:1px solid ${locked?'rgba(46,229,157,.3)':'rgba(255,107,107,.3)'};border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:${locked?'var(--g)':'var(--r)'};">${locked?'🔓':'🔒'}</button>`
-      : `<button onclick="event.stopPropagation();toggleDayLock('${currentLang}',${d})" style="background:${locked?'rgba(46,229,157,.15)':'rgba(255,107,107,.15)'};border:1px solid ${locked?'rgba(46,229,157,.3)':'rgba(255,107,107,.3)'};border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:${locked?'var(--g)':'var(--r)'};">${locked?'🔓':'🔒'}</button>`;
+    // 30-day: direct card, edit/lock/delete sab active
+    if(courseKey === '30'){
+      const lockBtn = isBuiltIn
+        ? `<button onclick="event.stopPropagation();toggleBuiltinDayLock('${currentLang}',${d},${locked})" style="background:${locked?'rgba(46,229,157,.15)':'rgba(255,107,107,.15)'};border:1px solid ${locked?'rgba(46,229,157,.3)':'rgba(255,107,107,.3)'};border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:${locked?'var(--g)':'var(--r)'};">${locked?'🔓':'🔒'}</button>`
+        : `<button onclick="event.stopPropagation();toggleDayLock('${currentLang}',${d})" style="background:${locked?'rgba(46,229,157,.15)':'rgba(255,107,107,.15)'};border:1px solid ${locked?'rgba(46,229,157,.3)':'rgba(255,107,107,.3)'};border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:${locked?'var(--g)':'var(--r)'};">${locked?'🔓':'🔒'}</button>`;
+      const deleteBtn = !isBuiltIn
+        ? `<button onclick="event.stopPropagation();deleteDay('${currentLang}',${d})" style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--r);">🗑️</button>`
+        : '';
+      return `<div class="day-item" style="cursor:pointer;margin-bottom:8px;${overridden?'border:1.5px solid rgba(91,141,239,.4);':locked?'border-color:rgba(255,107,107,.25);':''}" onclick="editDay('${currentLang}',${d})">
+        <div class="day-num" style="${locked?'background:rgba(255,107,107,.12);color:var(--r)':isBuiltIn?'background:rgba(88,204,2,.12);color:#58CC02':'background:rgba(46,229,157,.12);color:var(--g)'}">${d}</div>
+        <div class="day-info">
+          <div class="day-title">${emoji} ${title}</div>
+          <div class="day-meta">${wordCount} words · ${locked?'🔒 Locked':'🔓 Unlocked'} · ${metaTag}</div>
+        </div>
+        <div class="day-actions">
+          <button onclick="event.stopPropagation();editDay('${currentLang}',${d})" style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--b);">✏️</button>
+          ${lockBtn}
+          ${deleteBtn}
+        </div>
+      </div>`;
+    }
 
-    const deleteBtn = !isBuiltIn
-      ? `<button onclick="event.stopPropagation();deleteDay('${currentLang}',${d})" style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--r);">🗑️</button>`
-      : '';
-
-    return `<div class="day-item" style="cursor:pointer;margin-bottom:8px;${overridden?'border:1.5px solid rgba(91,141,239,.4);':locked?'border-color:rgba(255,107,107,.25);':''}" onclick="editDay('${currentLang}',${d})">
-      <div class="day-num" style="${locked?'background:rgba(255,107,107,.12);color:var(--r)':isBuiltIn?'background:rgba(88,204,2,.12);color:#58CC02':'background:rgba(46,229,157,.12);color:var(--g)'}">${d}</div>
-      <div class="day-info">
-        <div class="day-title">${emoji} ${title}</div>
-        <div class="day-meta">${wordCount} words · ${locked?'🔒 Locked':'🔓 Unlocked'} · ${metaTag}</div>
-      </div>
-      <div class="day-actions">
-        <button onclick="event.stopPropagation();editDay('${currentLang}',${d})" style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--b);">✏️</button>
-        ${lockBtn}
-        ${deleteBtn}
-      </div>
-    </div>`;
+    // 60/90-day: mapped cards — read-only display, edit 30-day wale se hoga
+    const mult = courseKey === '60' ? 2 : 3;
+    const parts = courseKey === '60' ? ['a','b'] : ['a','b','c'];
+    const paceLabel = courseKey === '60' ? '1 hr/day' : '30 min/day';
+    let html = '';
+    parts.forEach((part, i) => {
+      const mappedDay = (d - 1) * mult + (i + 1); // Day 1a=1, 1b=2, 2a=3, 2b=4...
+      html += `<div class="day-item" style="cursor:default;margin-bottom:6px;opacity:${locked?'.6':'1'};${locked?'border-color:rgba(255,107,107,.25);':'border-color:rgba(255,255,255,.06);'}">
+        <div class="day-num" style="font-size:11px;${locked?'background:rgba(255,107,107,.12);color:var(--r)':isBuiltIn?'background:rgba(88,204,2,.08);color:#58CC02':'background:rgba(46,229,157,.08);color:var(--g)'}">${mappedDay}</div>
+        <div class="day-info">
+          <div class="day-title" style="font-size:13px;">${emoji} ${title} <span style="font-size:10px;color:var(--mut);font-weight:600;">(Part ${part.toUpperCase()})</span></div>
+          <div class="day-meta" style="font-size:10px;">📌 30-Day Base: Day ${d} · ${paceLabel} · ${metaTag}</div>
+        </div>
+        <div class="day-actions">
+          <span style="font-size:10px;color:var(--mut);padding:4px 8px;">✏️ 30-Day se edit karo</span>
+        </div>
+      </div>`;
+    });
+    return html;
   }
 
   // ── 3 Course Accordions — 30 / 60 / 90 Days ──
@@ -7186,7 +7207,10 @@ function renderDaysList(){
       const ad = adminDays[d] || adminDays[String(d)];
       return ad && ad.status === 'locked';
     }).length;
-    const totalDays = sortedDays.length;
+    const baseDays = sortedDays.length;
+    // 60-day = baseDays * 2, 90-day = baseDays * 3
+    const mult = course.key==='60' ? 2 : course.key==='90' ? 3 : 1;
+    const totalDays = baseDays * mult;
 
     const accordionHtml = `
     <div style="margin-bottom:12px;border-radius:14px;overflow:hidden;border:2px solid ${course.border};">
