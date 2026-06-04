@@ -10681,32 +10681,31 @@ function ppSwitchAddTab(tab){
 }
 
 // ── ppJsonUpdateSubjects — JSON tab subject dropdown refresh ──
+function _buildSubjectOptions(cls){
+  const subs = PP_SUBJECTS[cls] || PP_SUBJECTS[9];
+  // Group karo
+  const groups = {};
+  subs.forEach(s => {
+    if(!groups[s.group]) groups[s.group] = [];
+    groups[s.group].push(s);
+  });
+  return Object.entries(groups).map(([grp, items]) =>
+    `<optgroup label="── ${grp} ──">${items.map(s=>`<option value="${s.name}">${s.emoji} ${s.name}</option>`).join('')}</optgroup>`
+  ).join('');
+}
+
 function ppJsonUpdateSubjects(){
   const cls = parseInt(document.getElementById('ppJsonClass')?.value||'9');
   const sel = document.getElementById('ppJsonSubject');
   if(!sel) return;
-  const subjects = {
-    9:  ['English','Urdu','Mathematics','Physics','Chemistry','Biology','Computer Science','Pak Studies','Islamiyat'],
-    10: ['English','Urdu','Mathematics','Physics','Chemistry','Biology','Computer Science','Pak Studies','Islamiyat'],
-    11: ['English','Urdu','Mathematics','Physics','Chemistry','Biology','Computer Science','Pak Studies','Islamiyat','Economics','Accounting'],
-    12: ['English','Urdu','Mathematics','Physics','Chemistry','Biology','Computer Science','Pak Studies','Islamiyat','Economics','Accounting']
-  };
-  const subs = subjects[cls] || subjects[9];
-  sel.innerHTML = subs.map(s=>`<option value="${s}">${s}</option>`).join('');
+  sel.innerHTML = _buildSubjectOptions(cls);
 }
 
 function ppAdminUpdateSubjects(){
   const cls = parseInt(document.getElementById('ppAdminClass')?.value||'9');
   const sel = document.getElementById('ppAdminSubject');
   if(!sel) return;
-  const subjects = {
-    9:  ['English','Urdu','Mathematics','Physics','Chemistry','Biology','Computer Science','Pak Studies','Islamiyat'],
-    10: ['English','Urdu','Mathematics','Physics','Chemistry','Biology','Computer Science','Pak Studies','Islamiyat'],
-    11: ['English','Urdu','Mathematics','Physics','Chemistry','Biology','Computer Science','Pak Studies','Islamiyat','Economics','Accounting'],
-    12: ['English','Urdu','Mathematics','Physics','Chemistry','Biology','Computer Science','Pak Studies','Islamiyat','Economics','Accounting']
-  };
-  const subs = subjects[cls] || subjects[9];
-  sel.innerHTML = subs.map(s=>`<option value="${s}">${s}</option>`).join('');
+  sel.innerHTML = _buildSubjectOptions(cls);
 }
 
 // Live validate — ab sirf sections array validate hoga
