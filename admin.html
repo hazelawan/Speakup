@@ -102,11 +102,26 @@
           localStorage.setItem('speakup_admin', JSON.stringify(data));
           if(typeof AD !== 'undefined' && AD) {
             const prevSettings = AD.settings ? {...AD.settings} : {};
+            // ✅ FIX: Deep merge — sirf top-level nahi, langs bhi merge karo
             Object.assign(AD, data);
             if(data.settings) {
               AD.settings = Object.assign({}, prevSettings, data.settings);
             }
+            // Firebase numeric keys ko string mein normalize karo AD.langs mein
+            if(AD.langs) {
+              Object.keys(AD.langs).forEach(lang => {
+                if(AD.langs[lang]?.days) {
+                  const norm = {};
+                  Object.keys(AD.langs[lang].days).forEach(k => {
+                    norm[String(k)] = AD.langs[lang].days[k];
+                  });
+                  AD.langs[lang].days = norm;
+                }
+              });
+            }
           }
+          // ✅ FIX: Firebase sync ke baad Day Manager bhi refresh karo
+          if(typeof loadDaysList === 'function') setTimeout(loadDaysList, 100);
           if (typeof renderDashboard === 'function') renderDashboard();
           if (typeof renderLangManager === 'function') renderLangManager();
           if (typeof renderLessonStatus === 'function') renderLessonStatus();
@@ -6439,11 +6454,17 @@ function loadAdminData(){
       if(saved.paymentPlans) fresh.paymentPlans=saved.paymentPlans;
       if(saved.generatedLessons) fresh.generatedLessons=saved.generatedLessons;
       if(saved.langs){
-        Object.keys(fresh.langs).forEach(code=>{
+        // ✅ FIX: Saved langs mein bhi custom keys normalize karo
+        Object.keys(saved.langs).forEach(code=>{
+          if(!fresh.langs[code]) fresh.langs[code] = {enabled:false, days:{}};
           const sl=saved.langs[code];
           if(sl){
             if(sl.enabled!==undefined) fresh.langs[code].enabled=sl.enabled;
-            if(sl.days) fresh.langs[code].days=sl.days;
+            if(sl.days){
+              const normalized = {};
+              Object.keys(sl.days).forEach(k=>{ normalized[String(k)] = sl.days[k]; });
+              fresh.langs[code].days = normalized;
+            }
           }
         });
       }
