@@ -87,6 +87,18 @@
       onValue(adminRef, (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
+          // ✅ FIX: Firebase numeric keys ko string mein normalize karo
+          if(data.langs) {
+            Object.keys(data.langs).forEach(lang => {
+              if(data.langs[lang]?.days) {
+                const normalized = {};
+                Object.keys(data.langs[lang].days).forEach(k => {
+                  normalized[String(k)] = data.langs[lang].days[k];
+                });
+                data.langs[lang].days = normalized;
+              }
+            });
+          }
           localStorage.setItem('speakup_admin', JSON.stringify(data));
           if(typeof AD !== 'undefined' && AD) {
             const prevSettings = AD.settings ? {...AD.settings} : {};
@@ -7077,8 +7089,10 @@ function renderDaysList(){
   const builtInDays = ALL_DAYS[currentLang];
   const hasBuiltIn = builtInDays && (Array.isArray(builtInDays) ? builtInDays.some(Boolean) : Object.keys(builtInDays).length > 0);
 
-  // Admin days (Firebase se)
-  const adminDays = langData?.days || {};
+  // Admin days (Firebase se) — keys normalize karo (Firebase numeric keys handle)
+  const rawAdminDays = langData?.days || {};
+  const adminDays = {};
+  Object.keys(rawAdminDays).forEach(k => { adminDays[String(k)] = rawAdminDays[k]; });
   const hasAdmin = Object.keys(adminDays).length > 0;
 
   if(!hasAdmin && !hasBuiltIn){
@@ -7087,7 +7101,7 @@ function renderDaysList(){
   }
 
   // ── Day 0 (Alphabet Pre-Class) — bilkul same, Pic 1 jesa ──
-  const day0 = adminDays[0] || adminDays['0'];
+  const day0 = adminDays['0'] || adminDays[0];
   let day0Html = '';
   if(day0){
     const letterCount = day0.letters ? day0.letters.length : 0;
@@ -7125,8 +7139,11 @@ function renderDaysList(){
     builtInNums.forEach(n=>allDayNums.add(n));
   }
 
-  // Admin-added custom days
-  Object.keys(adminDays).map(Number).filter(n=>!isNaN(n)&&n>0).forEach(n=>allDayNums.add(n));
+  // Admin-added custom days (string keys se number mein convert)
+  Object.keys(adminDays).forEach(k => {
+    const n = Number(k);
+    if(!isNaN(n) && n > 0) allDayNums.add(n);
+  });
 
   const sortedDays = Array.from(allDayNums).sort((a,b)=>a-b);
 
@@ -7139,7 +7156,7 @@ function renderDaysList(){
   // ── Base card builder — ek 30-day lesson ka card ──
   function makeDayCard(d, courseKey){
     const bd = hasBuiltIn ? (Array.isArray(builtInDays) ? builtInDays[d] : builtInDays[d]) : null;
-    const adminDay = adminDays[d] || adminDays[String(d)];
+    const adminDay = adminDays[String(d)] || adminDays[d];
     const locked = adminDay ? adminDay.status === 'locked' : false;
     const isBuiltIn = !!bd;
     const overridden = isBuiltIn && !!adminDay;
