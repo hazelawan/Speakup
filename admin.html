@@ -7180,17 +7180,34 @@ function renderDaysList(){
     const mult = courseKey === '60' ? 2 : 3;
     const parts = courseKey === '60' ? ['a','b'] : ['a','b','c'];
     const paceLabel = courseKey === '60' ? '1 hr/day' : '30 min/day';
+    // ✅ Custom (Firebase) days ko alag border/color se dikhao
+    const isCustomOnly = !isBuiltIn && !!adminDay;
+    const cardBorder = locked
+      ? 'border-color:rgba(255,107,107,.25);'
+      : isCustomOnly
+        ? 'border-color:rgba(91,141,239,.35);border-left:3px solid #5B8DEF;'
+        : 'border-color:rgba(255,255,255,.06);';
+    const numStyle = locked
+      ? 'background:rgba(255,107,107,.12);color:var(--r)'
+      : isCustomOnly
+        ? 'background:rgba(91,141,239,.15);color:#5B8DEF'
+        : isBuiltIn
+          ? 'background:rgba(88,204,2,.08);color:#58CC02'
+          : 'background:rgba(46,229,157,.08);color:var(--g)';
     let html = '';
     parts.forEach((part, i) => {
       const mappedDay = (d - 1) * mult + (i + 1); // Day 1a=1, 1b=2, 2a=3, 2b=4...
-      html += `<div class="day-item" style="cursor:default;margin-bottom:6px;opacity:${locked?'.6':'1'};${locked?'border-color:rgba(255,107,107,.25);':'border-color:rgba(255,255,255,.06);'}">
-        <div class="day-num" style="font-size:11px;${locked?'background:rgba(255,107,107,.12);color:var(--r)':isBuiltIn?'background:rgba(88,204,2,.08);color:#58CC02':'background:rgba(46,229,157,.08);color:var(--g)'}">${mappedDay}</div>
+      html += `<div class="day-item" style="cursor:default;margin-bottom:6px;opacity:${locked?'.6':'1'};${cardBorder}">
+        <div class="day-num" style="font-size:11px;${numStyle}">${mappedDay}</div>
         <div class="day-info">
           <div class="day-title" style="font-size:13px;">${emoji} ${title} <span style="font-size:10px;color:var(--mut);font-weight:600;">(Part ${part.toUpperCase()})</span></div>
           <div class="day-meta" style="font-size:10px;">📌 30-Day Base: Day ${d} · ${paceLabel} · ${metaTag}</div>
         </div>
         <div class="day-actions">
-          <span style="font-size:10px;color:var(--mut);padding:4px 8px;">✏️ 30-Day se edit karo</span>
+          ${isCustomOnly
+            ? `<button onclick="event.stopPropagation();editDay('${currentLang}',${d})" style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--b);">✏️ Edit</button>`
+            : `<span style="font-size:10px;color:var(--mut);padding:4px 8px;">✏️ 30-Day se edit karo</span>`
+          }
         </div>
       </div>`;
     });
@@ -7216,6 +7233,15 @@ function renderDaysList(){
       const ad = adminDays[d] || adminDays[String(d)];
       return ad && ad.status === 'locked';
     }).length;
+    // ✅ Built-in vs Custom breakdown
+    const builtInDayNums = hasBuiltIn
+      ? (Array.isArray(builtInDays)
+          ? builtInDays.map((_,i)=>i).filter(i=>i>0 && builtInDays[i])
+          : Object.keys(builtInDays).map(Number).filter(n=>n>0))
+      : [];
+    const builtInCount = builtInDayNums.length;
+    const customOnlyDays = sortedDays.filter(d => !builtInDayNums.includes(d));
+    const customCount = customOnlyDays.length;
     const baseDays = sortedDays.length;
     // 60-day = baseDays * 2, 90-day = baseDays * 3
     const mult = course.key==='60' ? 2 : course.key==='90' ? 3 : 1;
@@ -7230,6 +7256,7 @@ function renderDaysList(){
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-size:11px;font-weight:800;color:${course.color};">${totalDays} days · 🔒${lockedCount}</span>
+          <span style="font-size:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:2px 6px;white-space:nowrap;"><span style="color:#58CC02;font-weight:700;">📦${builtInCount}</span>${customCount > 0 ? ` <span style="color:#5B8DEF;font-weight:700;">+✏️${customCount}</span>` : ''}</span>
           <button onclick="event.stopPropagation();lockAllCourse('${currentLang}','${course.key}','locked')" style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:8px;padding:3px 8px;color:#FF6B6B;font-size:10px;cursor:pointer;font-weight:800;">🔒 All</button>
           <button onclick="event.stopPropagation();lockAllCourse('${currentLang}','${course.key}','unlocked')" style="background:rgba(46,229,157,.12);border:1px solid rgba(46,229,157,.3);border-radius:8px;padding:3px 8px;color:#2EE59D;font-size:10px;cursor:pointer;font-weight:800;">🔓 All</button>
           <span id="${arrowId}" style="color:${course.color};font-size:14px;transition:transform .2s;">${isOpen?'▲':'▼'}</span>
