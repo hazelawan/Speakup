@@ -6582,30 +6582,38 @@ function showPage(name,btn){
   if(name==='lessons'){
     if(typeof _syncEnabledSkillsToLangInfo==='function') _syncEnabledSkillsToLangInfo();
     // ✅ FIX: Firebase se fresh data pull karo phir render karo
-    if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_ONVALUE){
-      const ref = window.FB_REF(window.FB_DB, 'adminData');
-      window.FB_ONVALUE(ref, snap => {
-        if(snap.exists()){
-          const data = snap.val();
-          // Normalize keys
-          if(data.langs){
-            Object.keys(data.langs).forEach(lang => {
-              if(data.langs[lang]?.days){
-                const norm = {};
-                Object.keys(data.langs[lang].days).forEach(k => { norm[String(k)] = data.langs[lang].days[k]; });
-                data.langs[lang].days = norm;
-              }
-            });
+    // ✅ FIX: Firebase se fresh data pull karke render karo
+    (function refreshFromFirebase(){
+      const onVal = window.FB_ON_VALUE || window.FB_ONVALUE;
+      const fbRef = window.FB_REF;
+      const fbDb  = window.FB_DB;
+      if(window.FIREBASE_READY && fbDb && fbRef && onVal){
+        const ref = fbRef(fbDb, 'adminData');
+        onVal(ref, function(snap){
+          if(snap.exists()){
+            const data = snap.val();
+            // Normalize numeric keys to string
+            if(data.langs){
+              Object.keys(data.langs).forEach(function(lang){
+                if(data.langs[lang] && data.langs[lang].days){
+                  const norm = {};
+                  Object.keys(data.langs[lang].days).forEach(function(k){
+                    norm[String(k)] = data.langs[lang].days[k];
+                  });
+                  data.langs[lang].days = norm;
+                }
+              });
+            }
+            Object.assign(AD, data);
           }
-          Object.assign(AD, data);
-        }
+          loadDaysList();
+          if(typeof refreshLessonStats === 'function') refreshLessonStats();
+        }, { onlyOnce: true });
+      } else {
         loadDaysList();
-        refreshLessonStats();
-      }, { onlyOnce: true });
-    } else {
-      loadDaysList();
-      refreshLessonStats();
-    }
+        if(typeof refreshLessonStats === 'function') refreshLessonStats();
+      }
+    })();
   }
   if(name==='languages') renderLangManager();
   if(name==='users') renderUsers();
@@ -7913,7 +7921,23 @@ function saveDayFromModal(){
   AD.langs[lang].days[key] = day;
   saveAdminData();
   closeModal('addDayModal');
-  loadDaysList();
+
+  // ✅ FIX: Firebase save ke baad fresh data pull karke render karo
+  const _onVal = window.FB_ON_VALUE || window.FB_ONVALUE;
+  if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && _onVal){
+    _onVal(window.FB_REF(window.FB_DB,'adminData'), function(snap){
+      if(snap.exists()){
+        const data = snap.val();
+        if(data.langs){ Object.keys(data.langs).forEach(function(l){ if(data.langs[l]&&data.langs[l].days){ const n={}; Object.keys(data.langs[l].days).forEach(function(k){ n[String(k)]=data.langs[l].days[k]; }); data.langs[l].days=n; } }); }
+        Object.assign(AD, data);
+      }
+      loadDaysList();
+      if(typeof refreshLessonStats === 'function') refreshLessonStats();
+    }, { onlyOnce: true });
+  } else {
+    loadDaysList();
+  }
+
   if(typeof renderLessonStatus === 'function') renderLessonStatus();
   if(typeof refreshLessonStats === 'function') refreshLessonStats();
 
