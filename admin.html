@@ -6974,7 +6974,16 @@ function loadDaysList(){
 // ══════════════════════════════════════════════
 // 📊 LESSON STATS — All Languages Overview
 // ══════════════════════════════════════════════
-const INBUILT_DAYS = {
+// ✅ FIX: INBUILT_DAYS ab ALL_DAYS se dynamically calculate hoga
+// Hardcoded values ki zarurat nahi — ALL_DAYS add/update hone par automatically sahi count milega
+function getInbuiltDayCount(code) {
+  if (!window.ALL_DAYS || !ALL_DAYS[code]) return 0;
+  const d = ALL_DAYS[code];
+  if (Array.isArray(d)) return d.filter((x, i) => i > 0 && x).length;
+  return Object.keys(d).filter(k => Number(k) > 0).length;
+}
+// Legacy fallback object (agar ALL_DAYS load na ho)
+const INBUILT_DAYS_FALLBACK = {
   'en': 3, 'fr': 2, 'es': 2, 'de': 2,
   'zh': 2, 'ar': 9, 'ko': 1, 'ja': 1,
   'tr': 1, 'ru': 1, 'ie': 1, 'chess': 7
@@ -7013,7 +7022,7 @@ function refreshLessonStats(){
   </div>`;
 
   langs.forEach(({code, flag, name}) => {
-    const builtIn = INBUILT_DAYS[code] || 0;
+    const builtIn = getInbuiltDayCount(code) || INBUILT_DAYS_FALLBACK[code] || 0;
     const fbDays = AD.langs?.[code]?.days || {};
     const firebase = Object.keys(fbDays).filter(k => Number(k) > 0).length;
     const total = builtIn + firebase;
@@ -7041,7 +7050,7 @@ function refreshLessonStats(){
   });
 
   // Summary row
-  const totalBuiltIn = langs.reduce((s,l) => s + (INBUILT_DAYS[l.code]||0), 0);
+  const totalBuiltIn = langs.reduce((s,l) => s + (getInbuiltDayCount(l.code) || INBUILT_DAYS_FALLBACK[l.code]||0), 0);
   const totalFirebase = langs.reduce((s,l) => s + Object.keys(AD.langs?.[l.code]?.days||{}).filter(k=>Number(k)>0).length, 0);
   const totalAll = totalBuiltIn + totalFirebase;
 
@@ -7675,8 +7684,9 @@ function saveDayFromModal(){
   AD.langs[lang].days[key] = day;
   saveAdminData();
   closeModal('addDayModal');
-  renderDaysList();
+  loadDaysList(); // ✅ FIX: Info box (X din ka lesson data) bhi update hoga
   if(typeof renderLessonStatus === 'function') renderLessonStatus();
+  if(typeof refreshLessonStats === 'function') refreshLessonStats(); // ✅ FIX: Lesson Stats auto-update
   showToast('✅ Day '+dayNum+' save ho gaya! ('+lang.toUpperCase()+')','#2EE59D');
 }
 
