@@ -1177,6 +1177,15 @@ ZAROORI RULES:
       <button onclick="ppFilterClear()" style="padding:10px 14px;border-radius:10px;border:1px solid var(--bdr);background:rgba(255,255,255,.06);color:var(--mut);font-size:13px;cursor:pointer;white-space:nowrap;">🔄 Clear</button>
     </div>
     <div id="ppAdminListCount" style="font-size:11px;color:var(--mut);margin-bottom:8px;"></div>
+    <!-- Bulk Actions Bar -->
+    <div id="ppBulkBar" style="display:none;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25);border-radius:12px;padding:10px 12px;margin-bottom:10px;display:none;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span id="ppSelectedCount" style="font-size:12px;font-weight:800;color:var(--r);flex:1;">0 selected</span>
+      <button onclick="ppDeleteSelected()" style="padding:7px 14px;background:rgba(255,107,107,.2);border:1px solid rgba(255,107,107,.4);border-radius:8px;color:var(--r);font-size:12px;font-weight:700;cursor:pointer;font-family:'Fredoka One',sans-serif;">🗑️ Delete Selected</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;">
+      <button onclick="ppToggleSelectAll()" id="ppSelectAllBtn" style="padding:8px 14px;background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.3);border-radius:10px;color:var(--p);font-size:12px;font-weight:700;cursor:pointer;font-family:'Fredoka One',sans-serif;">☑️ Select All</button>
+      <button onclick="ppDeleteAllFirebase()" style="padding:8px 14px;background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.3);border-radius:10px;color:var(--r);font-size:12px;font-weight:700;cursor:pointer;font-family:'Fredoka One',sans-serif;">🔥 Delete All Firebase</button>
+    </div>
     <div id="ppAdminList" style="display:flex;flex-direction:column;gap:8px;">
       <div style="text-align:center;color:var(--mut);padding:20px;font-size:13px;">Loading...</div>
     </div>
@@ -6128,7 +6137,8 @@ async function createFirebaseAdminAccount(){
       statusEl.textContent='❌ '+urduErr;
       return;
     }
-    // Success — email sub-admin field mein fill karo
+    // Success — email + password store karo aur sub-admin field fill karo
+    window._newAdminPassword = pass; // addSubAdmin mein use hoga
     const emailField = document.getElementById('subAdminEmail');
     if(emailField) emailField.value = email;
     document.getElementById('newAdminEmailInput').value='';
@@ -6138,7 +6148,6 @@ async function createFirebaseAdminAccount(){
     statusEl.style.color='var(--g)';
     statusEl.textContent='✅ Account ban gaya! Neeche level + expiry set karo aur "Add Sub-Admin" dabao';
     showToast('✅ Firebase account ready! '+email,'#2EE59D');
-    // 5 sec baad status hide
     setTimeout(()=>{ statusEl.style.display='none'; }, 7000);
   }catch(e){
     statusEl.style.background='rgba(255,75,75,.1)';
@@ -6156,12 +6165,15 @@ async function addSubAdmin(email, level, expiryDays){
   const levelNum = parseInt(level);
   const levelLabel = levelNum===1 ? 'Level 1 — Pro Management' : levelNum===2 ? 'Level 2 — Content Management' : 'Level 3 — Full Access';
   const expiryTs = Date.now() + (parseInt(expiryDays)*24*60*60*1000);
+  const savedPass = window._newAdminPassword || null;
+  window._newAdminPassword = null;
   const data = {
     email: email.toLowerCase(), level: levelNum,
     levelLabel: levelLabel,
     addedAt: Date.now(), addedBy: MAIN_ADMIN_EMAIL,
     expiry: expiryTs,
-    expiryDays: parseInt(expiryDays)
+    expiryDays: parseInt(expiryDays),
+    ...(savedPass && { adminPassword: savedPass })
   };
   try{
     await window.FB_SET_DOC(window.FB_DOC(window.FB_FSDB,'adminAccess',key), data);
@@ -6209,11 +6221,16 @@ async function renderAdminAccessManager(){
       const levelIcon = levelNum===1 ? '👑' : levelNum===2 ? '📚' : '🛡️';
       const levelName = levelNum===1 ? 'Level 1 — Pro Management' : levelNum===2 ? 'Level 2 — Content Management' : 'Level 3 — Full Access';
       const levelColor = levelNum===1 ? '#FFD166' : levelNum===2 ? '#5B8DEF' : '#2EE59D';
+      const passId = 'pass_'+count;
+      const passRow = data.adminPassword
+        ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="font-size:11px;color:var(--mut);">🔑 Password:</span><span id="${passId}" style="font-size:12px;font-weight:700;font-family:monospace;color:var(--txt);">••••••••</span><button onclick="var el=document.getElementById('${passId}');el.textContent=el.textContent==='${data.adminPassword}'?'••••••••':'${data.adminPassword}'" style="padding:2px 8px;background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:6px;color:var(--mut);font-size:10px;cursor:pointer;">👁️</button></div>`
+        : '';
       html+=`<div style="background:var(--card);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid ${expired?'rgba(255,75,75,.4)':'var(--bdr)'};">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="flex:1">
             <div style="font-weight:800;font-size:13px">${data.email}</div>
             <div style="font-size:12px;font-weight:700;color:${levelColor};margin-top:2px;">${levelIcon} ${levelName}</div>
+            ${passRow}
             <div style="font-size:11px;color:var(--mut);margin-top:2px;">${expiryStr}</div>
             <div style="font-size:11px;font-weight:700;margin-top:2px;color:${expired?'var(--r)':'var(--g)'};">${expired?'❌ Inactive — Login nahi kar sakta':'✅ Active'}</div>
           </div>
@@ -10316,8 +10333,12 @@ function ppAdminRenderList(){
       ? '<span style="background:rgba(46,229,157,.1);color:var(--g);border:1px solid rgba(46,229,157,.25);border-radius:6px;padding:1px 6px;font-size:10px;font-weight:800;">📌 Built-in</span>'
       : '<span style="background:rgba(91,141,239,.12);color:var(--b);border:1px solid rgba(91,141,239,.25);border-radius:6px;padding:1px 6px;font-size:10px;font-weight:800;">💾 Local</span>';
     const borderColor = p._source==='firebase'?'rgba(255,154,60,.35)':p._source==='builtin'?'rgba(46,229,157,.2)':'var(--bdr)';
-    return `<div style="background:var(--card2);border:1.5px solid ${borderColor};border-radius:12px;padding:12px 14px;margin-bottom:6px;">
+    const paperKey = p._fbKey || p._key || null;
+    const isFirebase = p._source === 'firebase';
+    const cbId = 'ppchk_'+i;
+    return `<div id="ppcard_${i}" style="background:var(--card2);border:1.5px solid ${borderColor};border-radius:12px;padding:12px 14px;margin-bottom:6px;transition:border .15s;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        ${isFirebase ? `<input type="checkbox" id="${cbId}" data-idx="${i}" onchange="ppCheckboxChanged()" style="margin-top:3px;width:16px;height:16px;accent-color:var(--r);cursor:pointer;flex-shrink:0;">` : '<div style="width:16px;flex-shrink:0;"></div>'}
         <div style="flex:1;">
           <div style="font-weight:800;font-size:14px;color:var(--txt);">${cls}th ${sub} — ${board} Board ${yr}</div>
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px;">
@@ -10383,6 +10404,108 @@ function ppDeleteLocalPaper(paperIndex){
       }
     }
   }catch(e){ showToast('❌ Error: '+e.message,'#FF6B6B'); }
+}
+
+// ── Bulk Select / Delete Functions ──
+let _ppSelectAll = false;
+
+function ppCheckboxChanged(){
+  const checked = document.querySelectorAll('#ppAdminList input[type=checkbox]:checked');
+  const bar = document.getElementById('ppBulkBar');
+  const countEl = document.getElementById('ppSelectedCount');
+  if(checked.length > 0){
+    bar.style.display = 'flex';
+    countEl.textContent = checked.length + ' paper(s) selected';
+  } else {
+    bar.style.display = 'none';
+  }
+  // Select All button update
+  const allCbs = document.querySelectorAll('#ppAdminList input[type=checkbox]');
+  const btn = document.getElementById('ppSelectAllBtn');
+  if(btn) btn.textContent = (checked.length === allCbs.length && allCbs.length > 0) ? '☒ Deselect All' : '☑️ Select All';
+}
+
+function ppToggleSelectAll(){
+  const allCbs = document.querySelectorAll('#ppAdminList input[type=checkbox]');
+  if(!allCbs.length){ showToast('⚠️ Koi Firebase paper nahi hai select karne ke liye','#FFD166'); return; }
+  _ppSelectAll = !_ppSelectAll;
+  allCbs.forEach(cb => cb.checked = _ppSelectAll);
+  const btn = document.getElementById('ppSelectAllBtn');
+  if(btn) btn.textContent = _ppSelectAll ? '☒ Deselect All' : '☑️ Select All';
+  ppCheckboxChanged();
+}
+
+function ppDeleteSelected(){
+  const checked = document.querySelectorAll('#ppAdminList input[type=checkbox]:checked');
+  if(!checked.length){ showToast('⚠️ Koi paper select nahi kiya','#FFD166'); return; }
+  const indices = Array.from(checked).map(cb => parseInt(cb.getAttribute('data-idx')));
+  showConfirm('🗑️','Selected Papers Delete?', checked.length+' papers delete ho jayenge — yeh wapis nahi aayenge','Delete Karo','#FF6B6B','#CC3333', async ()=>{
+    // Rebuild allPapers same as render
+    let allPapers = [];
+    Object.keys(PP_DATA).forEach(cls=>{
+      Object.keys(PP_DATA[cls]).forEach(yr=>{
+        Object.keys(PP_DATA[cls][yr]).forEach(board=>{
+          Object.keys(PP_DATA[cls][yr][board]).forEach(sub=>{
+            Object.keys(PP_DATA[cls][yr][board][sub]).forEach(sess=>{
+              const p = PP_DATA[cls][yr][board][sub][sess];
+              allPapers.push({...p, _cls:parseInt(cls), _yr:parseInt(yr), _board:board, _sub:sub, _sess:sess, _source: p._fbLoaded?'firebase':'builtin'});
+            });
+          });
+        });
+      });
+    });
+    let deleted = 0, errors = 0;
+    for(const idx of indices){
+      const p = allPapers[idx];
+      if(!p || p._source !== 'firebase') continue;
+      const fbKey = p._fbKey || p.id || p._key;
+      if(!fbKey){ errors++; continue; }
+      try{
+        await window.FB_DELETE_DOC(window.FB_DOC(window.FB_FSDB,'papers', fbKey));
+        // PP_DATA se bhi hataao
+        try{ delete PP_DATA[p._cls][p._yr][p._board][p._sub][p._sess]; }catch(e){}
+        deleted++;
+      }catch(e){ errors++; }
+    }
+    showToast('🗑️ '+deleted+' papers delete ho gaye'+(errors?' | ⚠️ '+errors+' errors':''),'var(--r)');
+    _ppSelectAll = false;
+    document.getElementById('ppBulkBar').style.display='none';
+    ppAdminRenderList(); ppAdminUpdateSubjects();
+  });
+}
+
+function ppDeleteAllFirebase(){
+  // Sirf Firebase papers
+  let firebasePapers = [];
+  Object.keys(PP_DATA).forEach(cls=>{
+    Object.keys(PP_DATA[cls]).forEach(yr=>{
+      Object.keys(PP_DATA[cls][yr]).forEach(board=>{
+        Object.keys(PP_DATA[cls][yr][board]).forEach(sub=>{
+          Object.keys(PP_DATA[cls][yr][board][sub]).forEach(sess=>{
+            const p = PP_DATA[cls][yr][board][sub][sess];
+            if(p._fbLoaded) firebasePapers.push({...p, _cls:parseInt(cls), _yr:parseInt(yr), _board:board, _sub:sub, _sess:sess});
+          });
+        });
+      });
+    });
+  });
+  if(!firebasePapers.length){ showToast('⚠️ Koi Firebase paper nahi mila','#FFD166'); return; }
+  showConfirm('🔥','SAARE Firebase Papers Delete?','Yeh action '+firebasePapers.length+' papers delete karega — permanently','Haan, Sab Delete Karo','#FF6B6B','#CC3333', async ()=>{
+    let deleted=0, errors=0;
+    for(const p of firebasePapers){
+      const fbKey = p._fbKey || p.id || p._key;
+      if(!fbKey){ errors++; continue; }
+      try{
+        await window.FB_DELETE_DOC(window.FB_DOC(window.FB_FSDB,'papers', fbKey));
+        try{ delete PP_DATA[p._cls][p._yr][p._board][p._sub][p._sess]; }catch(e){}
+        deleted++;
+      }catch(e){ errors++; }
+    }
+    showToast('🗑️ '+deleted+' Firebase papers delete ho gaye'+(errors?' | ⚠️ '+errors+' errors':''),'var(--r)');
+    _ppSelectAll = false;
+    document.getElementById('ppBulkBar').style.display='none';
+    ppAdminRenderList(); ppAdminUpdateSubjects();
+  });
 }
 
 // ── Delete ANY paper (builtin or local) ──
