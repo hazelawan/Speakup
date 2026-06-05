@@ -886,8 +886,24 @@ body { padding-top: 48px; }
   // ── Auth state change listener ──
   // ✅ CENTRALIZED: Saari auth logic onFirebaseAuthChange mein hai
   // Yahan sirf ek call — duplicate listeners/checks bilkul nahi
+  // ✅ FIX: First-fire debounce — Firebase pehle null fire karta hai phir user
+  // Is wajah se refresh pe app logged-out lag raha tha aur Pro Active nahi dikhta tha
+  let _authFirstFire = true;
   onAuthStateChanged(auth, (user) => {
     window.FB_CURRENT_USER = user;
+    if(_authFirstFire && !user){
+      // Pehli baar null aaya — ruko, shayad user aane wala ho (Firebase token refresh)
+      _authFirstFire = false;
+      setTimeout(function(){
+        // Agar 800ms mein user nahi aaya toh logged-out samjho
+        if(!window.FB_AUTH.currentUser){
+          if (typeof onFirebaseAuthChange === 'function') onFirebaseAuthChange(null);
+        }
+        // Agar user aa gaya toh woh khud handle ho gaya
+      }, 800);
+      return;
+    }
+    _authFirstFire = false;
     if (typeof onFirebaseAuthChange === 'function') onFirebaseAuthChange(user);
   });
 
@@ -3242,6 +3258,14 @@ async function loadFromFirebase(){
     }
 
     // ── Legacy fallback: purana single-profile path ──
+    // ✅ FIX: Sirf tab use karo jab PROFILES bilkul empty hain
+    // Pehle PROFILES mein kuch tha toh Firebase ne correctly load kiya — legacy overwrite mat karo
+    if(PROFILES.length > 0){
+      // Multi-profile already loaded from localStorage — Firebase path nahi mila
+      // Iska matlab user ne manually profiles banaye hain — unhe preserve karo
+      console.log('☁️ Legacy fallback skipped — localStorage profiles preserved:', PROFILES.length);
+      return false;
+    }
     const fbProfile = await profileFromFirebase(uid, uid);
     if(!fbProfile) return false;
     fbProfile.id = uid;
@@ -3270,19 +3294,13 @@ function loadAll(){
     PROFILES = JSON.parse(raw);
     PROFILES.forEach(p=>normalizeProfile(p));
     ACTIVE_PID = localStorage.getItem('su_activePid')||null;
-    // Logged-in user ke liye uid-based profile id align karo
-    if(uid){
-      const users = loadUsers();
-      const userRecord = users.find(u=>u.uid===uid);
-      if(userRecord?.profileId){
-        // LocalStorage profile id se uid mapping
-        const localProfile = PROFILES.find(p=>p.id===userRecord.profileId);
-        if(localProfile && localProfile.id !== uid){
-          // Profile id ko uid se match karo (future saves ke liye)
-          localProfile.id = uid;
-          ACTIVE_PID = uid;
-        }
-      }
+    // ✅ FIX: Profile ID overwrite REMOVED — yeh multi-profile bug ka sabab tha
+    // Pehle sab profiles ka ID uid pe set ho jaata tha jisse saari profiles same dikhthi thin
+    // Ab Firebase se loadFromFirebase() properly handle karta hai ID alignment
+    if(uid && PROFILES.length === 1 && !PROFILES[0].id){
+      // Sirf tab jab ek hi profile ho aur uska koi ID na ho (old format)
+      PROFILES[0].id = uid;
+      ACTIVE_PID = uid;
     }
   } else {
     // Migrate old single-profile data (su5 key)
@@ -7618,6 +7636,8 @@ function isDemo(){
 
 // ✅ In-memory Pro cache — localStorage nahi, sirf Firebase
 window._PRO_CACHE = null; // { expiry, plan, ... } ya null
+// ✅ FIX: Track last Firebase verification time — 1 din mein ek baar fresh check
+window._PRO_LAST_VERIFY = 0;
 
 function isPro(){
   try{
@@ -7629,7 +7649,18 @@ function isPro(){
     // 1. In-memory cache check
     if(window._PRO_CACHE){
       if(!window._PRO_CACHE.expiry) return true; // lifetime
-      if(Date.now() <= window._PRO_CACHE.expiry) return true;
+      if(Date.now() <= window._PRO_CACHE.expiry){
+        // ✅ FIX: Agar 6+ ghante ho gayi hain toh background mein fresh verify karo
+        // UI block mat karo — Pro rehne do, lekin silently re-check karo
+        const SIX_HOURS = 6 * 60 * 60 * 1000;
+        if(Date.now() - window._PRO_LAST_VERIFY > SIX_HOURS && window.FIREBASE_READY){
+          window._PRO_LAST_VERIFY = Date.now(); // prevent multiple calls
+          setTimeout(function(){
+            if(typeof checkProFromFirebase === 'function') checkProFromFirebase().catch(function(){});
+          }, 2000);
+        }
+        return true;
+      }
     }
     // 2. localStorage fallback — refresh ke baad bhi kaam kare
     try{
@@ -7639,6 +7670,14 @@ function isPro(){
         if(!cached.expiry) return true; // lifetime
         if(Date.now() <= cached.expiry){
           window._PRO_CACHE = cached; // memory mein restore karo
+          // ✅ FIX: Background mein Firebase se verify karo (non-blocking)
+          const SIX_HOURS = 6 * 60 * 60 * 1000;
+          if(Date.now() - window._PRO_LAST_VERIFY > SIX_HOURS && window.FIREBASE_READY){
+            window._PRO_LAST_VERIFY = Date.now();
+            setTimeout(function(){
+              if(typeof checkProFromFirebase === 'function') checkProFromFirebase().catch(function(){});
+            }, 3000);
+          }
           return true;
         } else {
           localStorage.removeItem(lsKey); // expire ho gaya
@@ -13876,6 +13915,62 @@ function resetAllProfiles(){
     }
   );
 }
+// ✅ NEW: Settings mein sirf apni (active) profile delete karo — doosri profiles safe rahein
+function deleteMyOwnProfile(){
+  if(PROFILES.length <= 1){
+    // Sirf ek profile hai — puri app reset karo
+    showConfirm(
+      '🗑️',
+      S.name+' ka Profile Delete?',
+      'Tumhari profile aur sara progress hamesha ke liye khatam ho jaayega. Ek nai profile bana sakte ho!',
+      '🗑️ Haan, Delete Karo',
+      'var(--r)', '#991111',
+      ()=>{
+        const uid = window.FB_AUTH?.currentUser?.uid;
+        // Firebase se delete karo
+        if(uid && window.FIREBASE_READY && window.FB_DB && !IS_GUEST){
+          window.FB_REMOVE(window.FB_REF(window.FB_DB,'users/'+uid+'/profiles/'+ACTIVE_PID)).catch(()=>{});
+          window.FB_SET(window.FB_REF(window.FB_DB,'users/'+uid+'/activeProfileId'), null).catch(()=>{});
+        }
+        // LocalStorage clear
+        localStorage.removeItem('su_profiles');
+        localStorage.removeItem('su_activePid');
+        try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith('su_preclass_')) localStorage.removeItem(k); }); }catch(e){}
+        PROFILES=[]; ACTIVE_PID=null;
+        S={name:'',avatar:'😊',activeLang:'en',activeCourse:0,langs:{en:{activeCourse:0,courses:emptyLangCourses()},fr:{activeCourse:0,courses:emptyLangCourses()},zh:{activeCourse:0,courses:emptyLangCourses()},ar:{activeCourse:0,courses:emptyLangCourses()}}};
+        showToast('🗑️ Tumhari profile delete ho gayi','var(--r)');
+        // Nai profile banana ke liye profile select screen pe jaao
+        setTimeout(()=>{ goProfileSelect(); }, 600);
+      }
+    );
+  } else {
+    // Multiple profiles hain — sirf active wali delete karo
+    const p = PROFILES.find(x=>x.id===ACTIVE_PID);
+    if(!p) return;
+    showConfirm(
+      p.avatar||'😊',
+      p.name+' ka Profile Delete?',
+      'Sirf tumhari yeh profile delete hogi. Baaki profiles safe rahein gi!',
+      '🗑️ Haan, Delete Karo',
+      'var(--r)', '#991111',
+      ()=>{
+        const uid = window.FB_AUTH?.currentUser?.uid;
+        const deletedPid = ACTIVE_PID;
+        PROFILES = PROFILES.filter(x=>x.id!==deletedPid);
+        ACTIVE_PID = PROFILES[0].id;
+        Object.assign(S, PROFILES[0]);
+        saveAll();
+        if(uid && window.FIREBASE_READY && window.FB_DB && !IS_GUEST){
+          window.FB_REMOVE(window.FB_REF(window.FB_DB,'users/'+uid+'/profiles/'+deletedPid)).catch(()=>{});
+          window.FB_SET(window.FB_REF(window.FB_DB,'users/'+uid+'/activeProfileId'), ACTIVE_PID||uid).catch(()=>{});
+        }
+        showToast('🗑️ Profile delete ho gayi','var(--r)');
+        renderSettingsScreen();
+      }
+    );
+  }
+}
+
 function switchCourse(c){
   const lang=S.activeLang||'en';
   if(!S.langs) S.langs={};
