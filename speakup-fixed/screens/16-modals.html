@@ -1,0 +1,225 @@
+<!-- ═══ Section Info Modal + Lang Stats Modal + Confirm Dialog ═══ -->
+<div id="sectionInfoModal" style="display:none;position:fixed;inset:0;z-index:900;align-items:flex-end;justify-content:center;">
+  <div onclick="document.getElementById('sectionInfoModal').style.display='none'" style="position:absolute;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);"></div>
+  <div style="position:relative;background:var(--card);border-radius:28px 28px 0 0;padding:0 0 32px;width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);">
+    <!-- Handle + header -->
+    <div style="padding:16px 20px 12px;border-bottom:1px solid var(--bdr);flex-shrink:0;">
+      <div style="width:40px;height:4px;border-radius:4px;background:var(--bdr);margin:0 auto 14px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:'Fredoka One',sans-serif;font-size:20px;">📋 Section &amp; Unit Info</div>
+        <button onclick="document.getElementById('sectionInfoModal').style.display='none'" style="background:var(--card2);border:none;border-radius:10px;padding:6px 12px;color:var(--mut);font-size:13px;cursor:pointer;">✕ Band Karo</button>
+      </div>
+    </div>
+    <!-- Scrollable body -->
+    <div id="sectionInfoBody" style="overflow-y:auto;padding:16px 20px;flex:1;"></div>
+  </div>
+</div>
+
+<!-- LANGUAGE STATS MODAL (Duolingo style) -->
+<div id="langStatsModal" style="display: none; position: fixed; inset: 0px; z-index: 900; align-items: flex-end; justify-content: center;">
+  <div onclick="document.getElementById('langStatsModal').style.display='none'" style="position:absolute;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);"></div>
+  <div style="position:relative;background:var(--card);border-radius:28px 28px 0 0;padding:0 0 36px;width:100%;max-width:480px;max-height:92vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);">
+    <!-- Handle -->
+    <div style="padding:14px 20px 0;">
+      <div style="width:40px;height:4px;border-radius:4px;background:var(--bdr);margin:0 auto 14px;"></div>
+    </div>
+    <!-- Scrollable body -->
+    <div id="langStatsBody" style="overflow-y:auto;padding:0 18px 8px;flex:1;">
+    <!-- Header row: flag + name + close + PLUS button -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:58px;height:58px;border-radius:16px;background:#58CC0222;border:3px solid #58CC02;display:flex;align-items:center;justify-content:center;font-size:34px;">🇬🇧</div>
+        <div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:22px;color:#58CC02;">English</div>
+          <div style="font-size:12px;color:var(--mut);margin-top:2px;">30 Din Course • 0 din complete</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <!-- PLUS button — Language & Course change -->
+        <button onclick="document.getElementById('langStatsModal').style.display='none';updateLangSelectIndicators();showScreen('langSelect');" style="width:38px;height:38px;border-radius:12px;border:none;background:#58CC02;color:#fff;font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px #58CC0266;">+</button>
+        <button onclick="document.getElementById('langStatsModal').style.display='none'" style="background:var(--card2);border:none;border-radius:10px;padding:6px 12px;color:var(--mut);font-size:13px;cursor:pointer;">✕</button>
+      </div>
+    </div>
+
+    <!-- Score Card -->
+    <div style="background:var(--bg);border:2px solid var(--bdr);border-radius:20px;padding:18px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:13px;color:var(--mut);font-weight:700;">Tumhara English Score hai</div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:var(--txt);">0</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="font-family:'Fredoka One',sans-serif;font-size:14px;color:var(--mut);">0</div>
+        <div style="flex:1;height:14px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;border:1px solid var(--bdr);">
+          <div style="height:100%;width:0%;background:#58CC02;border-radius:10px;transition:width .8s ease;"></div>
+        </div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:14px;color:var(--mut);">1</div>
+      </div>
+      <button onclick="showToast('English score: 0/100 — 0 lessons complete, 0 XP earned! 🎯','#58CC02')" style="background:transparent;border:none;color:#58CC02;font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;padding:8px 0 0;text-transform:uppercase;letter-spacing:.5px;">MORE ABOUT SCORE →</button>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:flex;gap:10px;margin-bottom:18px;">
+      <div style="flex:1;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px 8px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:3px;">🔥</div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:var(--o);">0</div>
+        <div style="font-size:10px;color:var(--mut);text-transform:uppercase;font-weight:700;">Streak</div>
+      </div>
+      <div style="flex:1;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px 8px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:3px;">⭐</div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:#CE82FF;">0</div>
+        <div style="font-size:10px;color:var(--mut);text-transform:uppercase;font-weight:700;">XP</div>
+      </div>
+      <div style="flex:1;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px 8px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:3px;">✅</div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:var(--g);">0</div>
+        <div style="font-size:10px;color:var(--mut);text-transform:uppercase;font-weight:700;">Lessons</div>
+      </div>
+    </div>
+
+    <!-- Course Duration Options -->
+    <div style="font-family:'Fredoka One',sans-serif;font-size:17px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">📅 Course Duration Chango</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:22px;">
+      <div onclick="showToast('Yeh course pehle se active hai! 😊','#58CC02')" style="display:flex;align-items:center;gap:12px;background:#58CC0222;border:2px solid #58CC02;border-radius:14px;padding:12px 14px;cursor:pointer;transition:all .2s;">
+          <div style="width:44px;height:44px;border-radius:12px;background:#58CC0233;border:2px solid #58CC02;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">⚡</div>
+          <div style="flex:1;">
+            <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#58CC02;">30 Din</div>
+            <div style="font-size:11px;color:var(--mut);margin-top:1px;">2 hr/day — Fast Track</div>
+          </div>
+          <div style="background:#58CC02;color:#fff;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:800;">ACTIVE ✓</div>
+        </div><div onclick="document.getElementById('langStatsModal').style.display='none';pickCourseFromModal(60);" style="display:flex;align-items:center;gap:12px;background:var(--bg);border:2px solid var(--bdr);border-radius:14px;padding:12px 14px;cursor:pointer;transition:all .2s;">
+          <div style="width:44px;height:44px;border-radius:12px;background:#1CB0F633;border:2px solid #1CB0F6;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🎯</div>
+          <div style="flex:1;">
+            <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#1CB0F6;">60 Din</div>
+            <div style="font-size:11px;color:var(--mut);margin-top:1px;">1 hr/day — Balanced</div>
+          </div>
+          <div style="background:var(--card2);color:var(--mut);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;">SELECT</div>
+        </div><div onclick="document.getElementById('langStatsModal').style.display='none';pickCourseFromModal(90);" style="display:flex;align-items:center;gap:12px;background:var(--bg);border:2px solid var(--bdr);border-radius:14px;padding:12px 14px;cursor:pointer;transition:all .2s;">
+          <div style="width:44px;height:44px;border-radius:12px;background:#CE82FF33;border:2px solid #CE82FF;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🐢</div>
+          <div style="flex:1;">
+            <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#CE82FF;">90 Din</div>
+            <div style="font-size:11px;color:var(--mut);margin-top:1px;">30 min/day — Easy</div>
+          </div>
+          <div style="background:var(--card2);color:var(--mut);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;">SELECT</div>
+        </div>
+    </div>
+
+    <!-- Upcoming Courses Section -->
+    <div style="font-family:'Fredoka One',sans-serif;font-size:17px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">🚀 Upcoming Courses</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;">
+      
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px;cursor:pointer;transition:transform .15s;" onclick="showToast('Music — Jald Aa Raha Hai! 🚀','#CE82FF')" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.97)'" ontouchend="this.style.transform=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#CE82FF,#9B40E8);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.3);">
+            🎵
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Music</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div>
+          </div>
+        </div>
+      
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px;cursor:pointer;transition:transform .15s;" onclick="showToast('Art — Jald Aa Raha Hai! 🚀','#FF6B9D')" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.97)'" ontouchend="this.style.transform=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#FF6B9D,#CC3366);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.3);">
+            🎨
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Art</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div>
+          </div>
+        </div>
+      
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px;cursor:pointer;transition:transform .15s;" onclick="showToast('Math — Jald Aa Raha Hai! 🚀','#1CB0F6')" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.97)'" ontouchend="this.style.transform=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1CB0F6,#0A91D1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.3);">
+            🧮
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Math</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div>
+          </div>
+        </div>
+      
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px;cursor:pointer;transition:transform .15s;" onclick="showToast('Python — Jald Aa Raha Hai! 🚀','#3776AB')" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.97)'" ontouchend="this.style.transform=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#3776AB,#1a4a6e);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.3);">
+            🐍
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Python</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div>
+          </div>
+        </div>
+      
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px;cursor:pointer;transition:transform .15s;" onclick="showToast('Java — Jald Aa Raha Hai! 🚀','#E76F00')" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.97)'" ontouchend="this.style.transform=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#E76F00,#a84d00);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.3);">
+            ☕
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Java</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div>
+          </div>
+        </div>
+      
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px;cursor:pointer;transition:transform .15s;" onclick="showToast('JavaScript — Jald Aa Raha Hai! 🚀','#F7DF1E')" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.97)'" ontouchend="this.style.transform=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#c9b200,#8a7900);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.3);">
+            💛
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">JavaScript</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div>
+          </div>
+        </div>
+      
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px;cursor:pointer;transition:transform .15s;" onclick="showToast('Rust — Jald Aa Raha Hai! 🚀','#CE412B')" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.97)'" ontouchend="this.style.transform=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#CE412B,#8c2c1d);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.3);">
+            🦀
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Rust</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div>
+          </div>
+        </div>
+      
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px;cursor:pointer;transition:transform .15s;" onclick="showToast('Kotlin — Jald Aa Raha Hai! 🚀','#7F52FF')" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.97)'" ontouchend="this.style.transform=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7F52FF,#4a24c7);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.3);">
+            🔷
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Kotlin</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div>
+          </div>
+        </div>
+      
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:14px;padding:12px;cursor:pointer;transition:transform .15s;" onclick="showToast('Swift — Jald Aa Raha Hai! 🚀','#FA7343')" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.97)'" ontouchend="this.style.transform=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#FA7343,#c94d1f);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.3);">
+            🍎
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--txt);">Swift</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:1px;">Jald Aayega 🔜</div>
+          </div>
+        </div>
+      
+    </div>
+
+    <!-- Course select hint -->
+    <div style="background:#58CC0211;border:1px solid #58CC0233;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="font-size:22px;">💡</div>
+      <div style="flex:1;font-size:12px;color:var(--mut);line-height:1.6;">Zubaan ya course change karne ke liye upar <b style="color:#58CC02">+ button</b> dabao!</div>
+      <button onclick="document.getElementById('langStatsModal').style.display='none';updateLangSelectIndicators();showScreen('langSelect');" style="background:#58CC02;border:none;border-radius:10px;padding:8px 14px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;white-space:nowrap;">Change +</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- CUSTOM CONFIRM DIALOG -->
+<div id="customConfirm" style="display:none;position:fixed;inset:0;z-index:1000;align-items:flex-end;justify-content:center;">
+  <div onclick="confirmCancel()" style="position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);"></div>
+  <div style="position:relative;background:var(--card);border-radius:28px 28px 0 0;padding:28px 20px 40px;width:100%;max-width:480px;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);">
+    <div style="width:40px;height:4px;border-radius:4px;background:var(--bdr);margin:0 auto 24px;"></div>
+    <div id="cfmIcon" style="font-size:52px;text-align:center;margin-bottom:12px;">⚠️</div>
+    <div id="cfmTitle" style="font-family:'Fredoka One',sans-serif;font-size:22px;text-align:center;margin-bottom:8px;"></div>
+    <div id="cfmMsg" style="color:var(--mut);font-size:14px;text-align:center;line-height:1.7;margin-bottom:28px;padding:0 8px;"></div>
+    <button id="cfmOkBtn" onclick="confirmOk()" style="width:100%;padding:16px;border-radius:16px;border:none;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;margin-bottom:10px;transition:transform .1s;box-shadow:0 5px 0 rgba(0,0,0,.3);">Haan, Karo</button>
+    <button onclick="confirmCancel()" style="width:100%;padding:14px;border-radius:16px;border:2px solid var(--bdr);background:transparent;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:16px;cursor:pointer;">Nahi, Wapas Jao</button>
+  </div>
+</div>
+
+
