@@ -1,0 +1,79 @@
+<!-- ═══ Profile Select + New Profile Modal ═══ -->
+<div class="screen" id="profileSelect" style="">
+  <div class="ps-header" style="position:relative;">
+    <button onclick="showScreen('dashboard');renderDash();" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;">← Wapas</button>
+    <div class="ps-owl">🦉</div>
+    <div class="ps-title">SpeakUp</div>
+    <div class="ps-sub">Kaun seekhna chahta hai aaj? 👇</div>
+  </div>
+  <div class="ps-body">
+    <div class="ps-label">👤 Profiles</div>
+    <div class="profile-grid" id="profileGrid"><div class="profile-card observed anim-entrance" onclick="selectProfile('p_1777308965294_hzt3')" style="animation-delay: 0s;">
+      
+      <div class="pc-avatar" style="background:linear-gradient(135deg,var(--card2),var(--card));font-size:28px;">😊</div>
+      <div class="pc-name">Ha</div>
+      <div class="pc-info">🇬🇧 English</div>
+      <div class="pc-info">0/60 din</div>
+    </div><div class="profile-card observed anim-entrance selected" onclick="selectProfile('p_1777643506035_qr2v')" style="animation-delay: 0.06s; position: relative; overflow: hidden;">
+      
+      <div class="pc-avatar" style="background:linear-gradient(135deg,var(--card2),var(--card));font-size:28px;">🔐</div>
+      <div class="pc-name">Hazelawan@22</div>
+      <div class="pc-info">🇬🇧 English</div>
+      <div class="pc-info">0/30 din</div>
+    </div></div>
+    <button class="add-profile-btn" onclick="showAddProfile()" id="addProfileBtn" style="display: flex; position: relative; overflow: hidden;">
+      <span style="font-size:22px">＋</span> Naya Profile Banao
+    </button>
+    <div style="margin-top:16px;padding:12px 16px;background:rgba(88,204,2,.06);border-radius:14px;border:1px solid rgba(88,204,2,.15);">
+      <div style="font-size:11px;color:var(--g);font-weight:800;margin-bottom:4px;">💡 Tip</div>
+      <div style="font-size:12px;color:var(--mut);line-height:1.6;">Ek account pe sirf <strong style="color:var(--g);">3 profiles</strong> ban sakti hain — bhai, behan, ammi — sab ka progress alag hoga!</div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW PROFILE MODAL -->
+<div class="modal-overlay" id="addProfileModal" style="display: none;">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Naya Profile 🦉</div>
+    <div class="modal-sub">Apna naam aur avatar chuno</div>
+    <div class="avatar-grid" id="avatarGrid">
+    <div class="avatar-opt av-sel" onclick="pickAvatar('😊',this)">😊</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('🧑',this)">🧑</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('👦',this)">👦</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('👧',this)">👧</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('👨',this)">👨</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('👩',this)">👩</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('🧒',this)">🧒</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('👴',this)">👴</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('👵',this)">👵</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('🦊',this)">🦊</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('🐯',this)">🐯</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('🦁',this)">🦁</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('🐼',this)">🐼</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('🐨',this)">🐨</div>
+  
+    <div class="avatar-opt " onclick="pickAvatar('🦄',this)">🦄</div>
+  </div>
+    <input class="nf" id="newProfileName" type="text" placeholder="Naam likho... (e.g. Sara)" maxlength="20" oninput="validateProfileName()" style="margin-bottom: 4px; transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;">
+    <div id="profileNameError" style="color:var(--r);font-size:12px;font-weight:600;min-height:18px;margin-bottom:10px;text-align:center;transition:opacity 0.2s;"></div>
+    <button class="bg" id="createProfileBtn" onclick="createProfile()" style="position: relative; overflow: hidden;">✅ Profile Banao</button>
+    <button class="bo" onclick="hideAddProfile()">Cancel</button>
+  </div>
+</div>
+
+<!-- SPLASH -->
+
