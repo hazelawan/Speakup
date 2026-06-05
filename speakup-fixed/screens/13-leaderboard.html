@@ -1,0 +1,96 @@
+<!-- ═══ Leaderboard Screen ═══ -->
+<div class="screen pb80" id="leaderboard">
+  <!-- Header -->
+  <div class="lb-header">
+    <div class="lb-badge">🏆 Weekly Competition</div>
+    <div class="lb-title">League Table</div>
+    <div class="lb-sub">Har hafta top 25% promote · bottom 25% demote</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="lb-tabs">
+    <button class="lb-tab active" id="lbTab_my" onclick="lbSwitchTab('my')">🏆 Meri League</button>
+    <button class="lb-tab" id="lbTab_leagues" onclick="lbSwitchTab('leagues')">🗺️ Saari Leagues</button>
+    <button class="lb-tab" id="lbTab_friends" onclick="lbSwitchTab('friends')">👥 Friends</button>
+  </div>
+
+  <!-- My League Tab -->
+  <div id="lbPanelMy">
+    <!-- Timer -->
+    <div class="lb-timer">
+      <div class="lb-timer-icon">⏰</div>
+      <div class="lb-timer-info">
+        <div class="lb-timer-title">Weekly Reset Mein</div>
+        <div class="lb-timer-val" id="lbTimerVal">Calculating...</div>
+      </div>
+    </div>
+
+    <!-- League banner -->
+    <div class="lb-league-banner" id="lbMyBanner" style="background:linear-gradient(135deg,rgba(205,127,50,.15),rgba(150,100,30,.1));border:2px solid rgba(205,127,50,.4);">
+      <div class="lb-league-icon" id="lbMyIcon">🥉</div>
+      <div class="lb-league-info">
+        <div class="lb-league-name" id="lbMyLeagueName" style="color:#CD7F32">Bronze League</div>
+        <div class="lb-league-desc">Top 25% ⬆️ Silver • Bottom 25% ⬇️ —</div>
+      </div>
+      <div>
+        <div class="lb-league-pos" id="lbMyRank" style="color:#CD7F32">#?</div>
+        <div class="lb-league-pos-lbl">Teri Rank</div>
+      </div>
+    </div>
+
+    <!-- Leaderboard list -->
+    <div id="lbListWrap">
+      <!-- Promo zone label -->
+      <div class="lb-zone-label" style="color:#2EE59D;">
+        <span>⬆️</span> PROMOTION ZONE
+      </div>
+      <div id="lbPromoRows"></div>
+
+      <!-- Mid zone label -->
+      <div class="lb-zone-label" style="color:var(--mut);">
+        <span>➖</span> SAFE ZONE
+      </div>
+      <div id="lbMidRows"></div>
+
+      <!-- Demote zone label -->
+      <div class="lb-zone-label" style="color:#FF6B6B;">
+        <span>⬇️</span> DEMOTION ZONE
+      </div>
+      <div id="lbDemoteRows"></div>
+    </div>
+  </div>
+
+  <!-- All Leagues Tab -->
+  <div id="lbPanelLeagues" style="display:none;">
+    <div class="lb-leagues-grid" id="lbLeaguesGrid"></div>
+  </div>
+
+  <!-- Friends Tab -->
+  <div id="lbPanelFriends" style="display:none;padding:16px;">
+    <div style="text-align:center;padding:32px 16px;">
+      <div style="font-size:64px;margin-bottom:12px;">👥</div>
+      <div style="font-family:'Fredoka One',sans-serif;font-size:22px;color:var(--g);margin-bottom:8px;">Friend Leaderboard</div>
+      <div style="font-size:13px;color:var(--mut);margin-bottom:20px;line-height:1.6;">Apne dosto ke saath compete karo! Unhe SpeakUp invite karo.</div>
+      <button onclick="lbShareInvite()" style="padding:14px 28px;background:linear-gradient(135deg,#2EE59D,#1BC47D);border:none;border-radius:16px;color:#000;font-family:'Fredoka One',sans-serif;font-size:16px;cursor:pointer;box-shadow:0 4px 0 #0d8a50;">📤 Dost Ko Invite Karo</button>
+      <div id="lbFriendsList" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ✅ FIX: Bottom Navigation — Leaderboard screen pe wapas jaane ke liye -->
+  <div class="bn">
+    <button class="nb" id="nb_home" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
+    <button class="nb" id="nb_papers" onclick="tab('pastpapers')"><span class="ni">📄</span>Papers</button>
+    <button class="nb on" id="nb_leaderboard"><span class="ni">🏆</span>League</button>
+    <button class="nb" id="nb_profile" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" onclick="tab('settings')"><span class="ni">⚙️</span>Settings</button>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PHASE 3 — CERTIFICATE v2 SCREEN (UPGRADED)
+═══════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════
+     PROFESSIONAL CERTIFICATE SCREEN
+═══════════════════════════════════════════════════ -->
+
