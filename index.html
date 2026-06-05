@@ -3227,13 +3227,61 @@ async function loadFromFirebase(){
         }
 
         if(loadedProfiles.length > 0){
-          PROFILES = loadedProfiles;
+          // ✅ CRITICAL FIX: Duplicate profiles remove karo (same naam wali)
+          // Yeh tab hota hai jab uid-based aur p_timestamp-based dono Firebase mein stored hain
+          const seen = new Map(); // name.toLowerCase() => best profile
+          const duplicatePids = []; // Firebase se delete karne wale IDs
+          for(const p of loadedProfiles){
+            const key = (p.name||'').trim().toLowerCase();
+            if(!key) continue;
+            if(!seen.has(key)){
+              seen.set(key, p);
+            } else {
+              // Duplicate mila — newer/better wala rakho (p_timestamp_ wala prefer karo)
+              const existing = seen.get(key);
+              // uid-based ID purana format hai — usse replace karo newer se
+              if(existing.id === uid && p.id !== uid){
+                duplicatePids.push(existing.id);
+                seen.set(key, p);
+              } else {
+                duplicatePids.push(p.id);
+              }
+            }
+          }
+          // Unnamed profiles bhi check karo
+          for(const p of loadedProfiles){
+            const key = (p.name||'').trim().toLowerCase();
+            if(!key && !seen.has('__unnamed__'+p.id)){
+              seen.set('__unnamed__'+p.id, p);
+            }
+          }
+
+          PROFILES = Array.from(seen.values());
+
+          // ✅ MAX 3 PROFILES ENFORCE: 3 se zyada hain toh extra delete karo
+          if(PROFILES.length > 3){
+            const extra = PROFILES.splice(3); // 3 ke baad wali sab hata do
+            extra.forEach(function(ep){
+              duplicatePids.push(ep.id);
+            });
+            console.log('🧹 Max 3 profiles enforce — extra remove:', extra.map(e=>e.name));
+          }
+
+          // Firebase se duplicate profiles quietly delete karo (background)
+          if(duplicatePids.length > 0){
+            console.log('🧹 Duplicate profiles Firebase se clean kar raha hai:', duplicatePids);
+            duplicatePids.forEach(dupId => {
+              try{
+                window.FB_REMOVE(window.FB_REF(window.FB_DB,'users/'+uid+'/profiles/'+dupId)).catch(()=>{});
+              }catch(e){}
+            });
+          }
 
           // Active profile decide karo
           const activeIdSnap = await window.FB_GET(window.FB_REF(window.FB_DB,'users/'+uid+'/activeProfileId'));
           const savedActiveId = activeIdSnap.exists() ? activeIdSnap.val() : null;
           const activeP = (savedActiveId && PROFILES.find(p=>p.id===savedActiveId))
-                          || PROFILES.find(p=>p.id===uid)
+                          || PROFILES.find(p=>p.id!==uid) // prefer newer format
                           || PROFILES[0];
           ACTIVE_PID = activeP.id;
           Object.assign(S, activeP);
@@ -3294,11 +3342,38 @@ function loadAll(){
     PROFILES = JSON.parse(raw);
     PROFILES.forEach(p=>normalizeProfile(p));
     ACTIVE_PID = localStorage.getItem('su_activePid')||null;
-    // ✅ FIX: Profile ID overwrite REMOVED — yeh multi-profile bug ka sabab tha
-    // Pehle sab profiles ka ID uid pe set ho jaata tha jisse saari profiles same dikhthi thin
-    // Ab Firebase se loadFromFirebase() properly handle karta hai ID alignment
+
+    // ✅ CRITICAL FIX: localStorage mein bhi duplicate same-naam profiles remove karo
+    const seenNames = new Map();
+    const cleanProfiles = [];
+    for(const p of PROFILES){
+      const key = (p.name||'').trim().toLowerCase();
+      if(!key){ cleanProfiles.push(p); continue; }
+      if(!seenNames.has(key)){
+        seenNames.set(key, p);
+        cleanProfiles.push(p);
+      } else {
+        // Duplicate: pehle wala rakho, is ko chodo
+        console.log('🧹 localStorage duplicate profile removed:', p.name, p.id);
+        // Agar removed wali active thi toh pehle wali ko active banao
+        if(ACTIVE_PID === p.id) ACTIVE_PID = seenNames.get(key).id;
+      }
+    }
+    // ✅ MAX 3 ENFORCE in localStorage
+    if(cleanProfiles.length > 3) cleanProfiles.splice(3);
+    if(cleanProfiles.length !== PROFILES.length){
+      PROFILES = cleanProfiles;
+      localStorage.setItem('su_profiles', JSON.stringify(PROFILES));
+      localStorage.setItem('su_activePid', ACTIVE_PID||'');
+    }
+
+    // Agar active profile ka ID nahi mila toh pehli wali select karo
+    if(ACTIVE_PID && !PROFILES.find(p=>p.id===ACTIVE_PID)){
+      ACTIVE_PID = PROFILES[0]?.id || null;
+    }
+
+    // Sirf tab jab ek hi profile ho aur uska koi ID na ho (old format)
     if(uid && PROFILES.length === 1 && !PROFILES[0].id){
-      // Sirf tab jab ek hi profile ho aur uska koi ID na ho (old format)
       PROFILES[0].id = uid;
       ACTIVE_PID = uid;
     }
@@ -7634,15 +7709,44 @@ function isDemo(){
   } catch(e){ return false; }
 }
 
-// ✅ In-memory Pro cache — localStorage nahi, sirf Firebase
+// ✅ In-memory Pro cache — localStorage + Firebase dono
 window._PRO_CACHE = null; // { expiry, plan, ... } ya null
-// ✅ FIX: Track last Firebase verification time — 1 din mein ek baar fresh check
+// ✅ FIX: Track last Firebase verification time
 window._PRO_LAST_VERIFY = 0;
+
+// ✅ CRITICAL FIX: App open hote hi localStorage se Pro cache restore karo
+// Taake isPro() = true ho PEHLE bhi jab onAuthStateChanged fire na hua ho
+// Yeh 5-6 ghante baad app open karne pe Pro show na hone ka masla hal karta hai
+(function restoreProCacheOnStartup(){
+  try{
+    // saari localStorage keys mein speakup_pro_ dhundho
+    for(var i = 0; i < localStorage.length; i++){
+      var k = localStorage.key(i);
+      if(k && k.indexOf('speakup_pro_') === 0){
+        var cached = JSON.parse(localStorage.getItem(k) || 'null');
+        if(cached){
+          if(!cached.expiry || Date.now() <= cached.expiry){
+            window._PRO_CACHE = cached; // ✅ Turant restore
+            console.log('✅ Pro cache startup pe restore ho gaya');
+          } else {
+            localStorage.removeItem(k); // expire ho gaya
+            console.log('⏰ Pro cache expire ho gayi thi — remove kar diya');
+          }
+        }
+        break; // pehla valid key mil gaya
+      }
+    }
+  } catch(e){}
+})();
 
 function isPro(){
   try{
     if(typeof IS_GUEST !== 'undefined' && IS_GUEST) return false;
-    if(typeof getLoggedInUser === 'function' && !getLoggedInUser()) return false;
+    // ✅ FIX: Agar _PRO_CACHE pehle se hai (startup restore) toh getLoggedInUser check skip karo
+    // Warna app open pe Pro show nahi hota jab tak onAuthStateChanged fire na ho
+    if(!window._PRO_CACHE){
+      if(typeof getLoggedInUser === 'function' && !getLoggedInUser()) return false;
+    }
     const uid = window.FB_AUTH?.currentUser?.uid;
     if(!uid) return false;
     if(isDemo()) return true;
@@ -13918,39 +14022,42 @@ function resetAllProfiles(){
 // ✅ NEW: Settings mein sirf apni (active) profile delete karo — doosri profiles safe rahein
 function deleteMyOwnProfile(){
   if(PROFILES.length <= 1){
-    // Sirf ek profile hai — puri app reset karo
     showConfirm(
       '🗑️',
       S.name+' ka Profile Delete?',
-      'Tumhari profile aur sara progress hamesha ke liye khatam ho jaayega. Ek nai profile bana sakte ho!',
+      'Tumhari profile aur sara progress hamesha ke liye khatam ho jaayega. Naya account fresh shuru hoga!',
       '🗑️ Haan, Delete Karo',
       'var(--r)', '#991111',
       ()=>{
         const uid = window.FB_AUTH?.currentUser?.uid;
-        // Firebase se delete karo
+        const deletedPid = ACTIVE_PID;
         if(uid && window.FIREBASE_READY && window.FB_DB && !IS_GUEST){
-          window.FB_REMOVE(window.FB_REF(window.FB_DB,'users/'+uid+'/profiles/'+ACTIVE_PID)).catch(()=>{});
-          window.FB_SET(window.FB_REF(window.FB_DB,'users/'+uid+'/activeProfileId'), null).catch(()=>{});
+          window.FB_REMOVE(window.FB_REF(window.FB_DB,'users/'+uid+'/profiles/'+deletedPid)).catch(()=>{});
+          window.FB_REMOVE(window.FB_REF(window.FB_DB,'users/'+uid+'/activeProfileId')).catch(()=>{});
         }
-        // LocalStorage clear
         localStorage.removeItem('su_profiles');
         localStorage.removeItem('su_activePid');
+        localStorage.removeItem('su5');
+        // ✅ Onboarding reset — naya user dobara onboard ho
+        localStorage.removeItem('speakup_ob_done_v1');
+        localStorage.removeItem('speakup_ob_data_v1');
         try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith('su_preclass_')) localStorage.removeItem(k); }); }catch(e){}
         PROFILES=[]; ACTIVE_PID=null;
         S={name:'',avatar:'😊',activeLang:'en',activeCourse:0,langs:{en:{activeCourse:0,courses:emptyLangCourses()},fr:{activeCourse:0,courses:emptyLangCourses()},zh:{activeCourse:0,courses:emptyLangCourses()},ar:{activeCourse:0,courses:emptyLangCourses()}}};
-        showToast('🗑️ Tumhari profile delete ho gayi','var(--r)');
-        // Nai profile banana ke liye profile select screen pe jaao
-        setTimeout(()=>{ goProfileSelect(); }, 600);
+        showToast('🗑️ Profile delete ho gayi — fresh shuru karo!','var(--r)');
+        setTimeout(()=>{
+          window._showOnboardingNext = true;
+          if(typeof forceShowOnboarding==='function') forceShowOnboarding();
+        }, 600);
       }
     );
   } else {
-    // Multiple profiles hain — sirf active wali delete karo
     const p = PROFILES.find(x=>x.id===ACTIVE_PID);
     if(!p) return;
     showConfirm(
       p.avatar||'😊',
       p.name+' ka Profile Delete?',
-      'Sirf tumhari yeh profile delete hogi. Baaki profiles safe rahein gi!',
+      'Sirf yeh profile delete hogi. Baaki profiles safe rahein gi!',
       '🗑️ Haan, Delete Karo',
       'var(--r)', '#991111',
       ()=>{
@@ -13962,10 +14069,13 @@ function deleteMyOwnProfile(){
         saveAll();
         if(uid && window.FIREBASE_READY && window.FB_DB && !IS_GUEST){
           window.FB_REMOVE(window.FB_REF(window.FB_DB,'users/'+uid+'/profiles/'+deletedPid)).catch(()=>{});
-          window.FB_SET(window.FB_REF(window.FB_DB,'users/'+uid+'/activeProfileId'), ACTIVE_PID||uid).catch(()=>{});
+          window.FB_SET(window.FB_REF(window.FB_DB,'users/'+uid+'/activeProfileId'), ACTIVE_PID).catch(()=>{});
         }
         showToast('🗑️ Profile delete ho gayi','var(--r)');
-        renderSettingsScreen();
+        setTimeout(()=>{
+          if(typeof renderProf==='function') renderProf();
+          if(typeof showScreen==='function') showScreen('profile');
+        }, 400);
       }
     );
   }
@@ -14925,23 +15035,80 @@ function onFirebaseAuthChange(user){
   // ── LOGGED IN ──
   if(user){
 
+    // ✅ CRITICAL FIX: Login pe Firebase duplicate profiles clean karo (background mein)
+    // Yeh ek baar run hoga aur duplicate entries remove kar dega
+    setTimeout(function(){
+      if(window.FIREBASE_READY && window.FB_DB && window.FB_GET && window.FB_REF){
+        const _uid = user.uid;
+        window.FB_GET(window.FB_REF(window.FB_DB,'users/'+_uid+'/profiles')).then(function(snap){
+          if(!snap.exists()) return;
+          const allP = snap.val();
+          const ids = Object.keys(allP);
+          const seenN = new Map(); // name => best pid
+          const toDelete = [];
+          ids.forEach(function(pid){
+            const info = allP[pid]?.info || {};
+            const name = (info.name||'').trim().toLowerCase();
+            if(!name) return;
+            if(!seenN.has(name)){
+              seenN.set(name, pid);
+            } else {
+              // Duplicate — uid-based wala delete karo, p_timestamp wala rakho
+              const existing = seenN.get(name);
+              if(existing === _uid && pid !== _uid){
+                toDelete.push(existing);
+                seenN.set(name, pid);
+              } else {
+                toDelete.push(pid);
+              }
+            }
+          });
+          if(toDelete.length > 0){
+            console.log('🧹 Firebase duplicate profiles delete ho rahi hain:', toDelete);
+            toDelete.forEach(function(dpid){
+              window.FB_REMOVE(window.FB_REF(window.FB_DB,'users/'+_uid+'/profiles/'+dpid)).catch(function(){});
+            });
+          }
+          // ✅ MAX 3 ENFORCE: 3 se zyada profiles Firebase mein hain toh extra delete karo
+          const remaining = Array.from(seenN.values()).filter(function(pid){ return toDelete.indexOf(pid)===-1; });
+          if(remaining.length > 3){
+            const extraPids = remaining.slice(3);
+            console.log('🧹 Max 3 enforce — extra Firebase profiles delete:', extraPids);
+            extraPids.forEach(function(epid){
+              window.FB_REMOVE(window.FB_REF(window.FB_DB,'users/'+_uid+'/profiles/'+epid)).catch(function(){});
+            });
+          }
+          if(toDelete.length > 0 || remaining.length > 3){
+            // LocalStorage bhi refresh karo
+            setTimeout(function(){
+              loadFromFirebase().then(function(){
+                if(typeof renderProfileSelect==='function') renderProfileSelect();
+                if(typeof renderDash==='function') renderDash();
+              });
+            }, 1500);
+          }
+        }).catch(function(){});
+      }
+    }, 2000);
+
     // 1️⃣ Pro + Demo check — sirf yahan, kisi aur jagah nahi
-    // ✅ FIX: Demo check pehle await karo, phir Pro check — dono ke baad UI refresh
-    if(typeof checkDemoFromFirebase === 'function'){
-      checkDemoFromFirebase().then(function(){
-        try{ if(typeof renderDash==='function') renderDash(); }catch(e){}
-        try{ if(typeof renderProf==='function') renderProf(); }catch(e){}
-      }).catch(function(){});
+    // ✅ FIX: setLoggedInUser turant set karo taake isPro() getLoggedInUser() check pass kare
+    if(user.email && typeof setLoggedInUser === 'function'){
+      setLoggedInUser(user.email);
     }
-    if(typeof checkProFromFirebase === 'function'){
-      checkProFromFirebase().then(function(){
-        // Pro check ke baad expiry watcher schedule karo
-        document.dispatchEvent(new Event('_proWatcherReady'));
-        // UI refresh karo Pro status ke saath
-        try{ if(typeof renderDash==='function') renderDash(); }catch(e){}
-        try{ if(typeof renderProf==='function') renderProf(); }catch(e){}
-      }).catch(function(){});
-    }
+
+    // ✅ CRITICAL FIX: Pehle Pro check karo, phir renderDash — warna Pro bina UI dikhta hai
+    // Dono (Demo + Pro) parallel chalao, DONO complete hone ke baad ek baar render karo
+    Promise.all([
+      (typeof checkDemoFromFirebase === 'function' ? checkDemoFromFirebase().catch(function(){}) : Promise.resolve()),
+      (typeof checkProFromFirebase === 'function' ? checkProFromFirebase().catch(function(){}) : Promise.resolve())
+    ]).then(function(){
+      // Pro watcher schedule karo
+      try{ document.dispatchEvent(new Event('_proWatcherReady')); }catch(e){}
+      // Ab render karo — Pro status set ho chuki hai
+      try{ if(typeof renderDash==='function') renderDash(); }catch(e){}
+      try{ if(typeof renderProf==='function') renderProf(); }catch(e){}
+    });
 
     // 2️⃣ Notification system init — sirf yahan, alag onAuthStateChanged nahi
     if(window.FB_DB && window.FB_REF && window.FB_ON_VALUE){
