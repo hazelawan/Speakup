@@ -1,0 +1,1136 @@
+<!-- ═══ Certificate v1 + v2 ═══ -->
+<div class="screen" id="certificate">
+  <div id="confettiBox2" style="position:fixed;top:0;left:0;width:100%;height:200px;pointer-events:none;z-index:600;overflow:hidden;"></div>
+  <div style="padding:32px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;">
+    <div class="cw a">
+      <div class="cspk">🌟</div>
+      <div class="cis">Certificate of Completion</div>
+      <div class="cpre">Yeh certify karta hai ke</div>
+      <div class="cnm" id="cN">Ahmed</div>
+      <div class="cdn">ne kamyabi se mukammal kiya</div>
+      <div class="cco" id="cCo">90 Day English Journey</div>
+      <div class="cln"></div>
+      <div style="font-size:36px">🦉</div>
+      <div style="font-family:'Fredoka One',sans-serif;font-size:22px;color:var(--g)">SpeakUp</div>
+      <div class="cdt" id="cDt">April 2026</div>
+      <div style="margin-top:12px;display:flex;justify-content:center;gap:6px;font-size:20px;">🎉🏆🎓✨🌟</div>
+    </div>
+    <div style="margin-top:20px;width:100%;max-width:420px;">
+      <button class="bg" onclick="exitLesson()">← Wapas Jao</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PHASE 3 — STREAK FIRE POPUP
+═══════════════════════════════════════════════════ -->
+<style>
+/* ── Streak Fire Popup ── */
+#streakFirePopup {
+  display:none; position:fixed; inset:0; z-index:9990;
+  background:rgba(0,0,0,.75); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center;
+  animation:fadeIn .25s ease;
+}
+#streakFirePopup.show { display:flex; }
+.sfp-card {
+  background:linear-gradient(160deg,#1a0800,#2d1000,#1a0800);
+  border:2px solid rgba(255,120,0,.5);
+  border-radius:28px; padding:36px 28px;
+  text-align:center; width:88%; max-width:340px;
+  position:relative; overflow:hidden;
+  box-shadow:0 0 60px rgba(255,100,0,.4),0 24px 60px rgba(0,0,0,.8);
+  animation:sfpIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes sfpIn { from{transform:scale(.6) translateY(40px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+.sfp-card::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,150,0,.2),transparent 65%);
+  pointer-events:none;
+}
+.sfp-fire-wrap {
+  position:relative; display:inline-block;
+  font-size:96px; line-height:1;
+  margin-bottom:8px;
+  filter:drop-shadow(0 0 24px rgba(255,100,0,.9)) drop-shadow(0 0 48px rgba(255,60,0,.6));
+  animation:sfpFireBounce 1.2s ease infinite;
+}
+@keyframes sfpFireBounce {
+  0%,100%{transform:scale(1) rotate(-3deg);filter:drop-shadow(0 0 24px rgba(255,100,0,.9)) drop-shadow(0 0 48px rgba(255,60,0,.6));}
+  50%{transform:scale(1.12) rotate(3deg);filter:drop-shadow(0 0 36px rgba(255,140,0,1)) drop-shadow(0 0 72px rgba(255,80,0,.8));}
+}
+.sfp-num {
+  font-family:'Fredoka One',sans-serif;
+  font-size:72px; line-height:1;
+  background:linear-gradient(135deg,#FFD700,#FF6B00,#FF3B00);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+  filter:drop-shadow(0 2px 8px rgba(255,100,0,.5));
+  margin-bottom:4px;
+}
+.sfp-label {
+  font-family:'Fredoka One',sans-serif;
+  font-size:22px; color:#FF9500; margin-bottom:4px;
+}
+.sfp-sub { font-size:14px; color:rgba(255,200,150,.7); margin-bottom:20px; }
+.sfp-milestone {
+  background:rgba(255,215,0,.12); border:1.5px solid rgba(255,215,0,.3);
+  border-radius:14px; padding:10px 16px; margin-bottom:18px;
+  font-size:13px; color:#FFD700; font-weight:700;
+  display:none;
+}
+.sfp-milestone.show { display:block; }
+.sfp-freeze-box {
+  background:rgba(91,141,239,.1); border:1.5px solid rgba(91,141,239,.3);
+  border-radius:14px; padding:12px 16px; margin-bottom:18px;
+  display:none;
+}
+.sfp-freeze-box.show { display:flex; align-items:center; gap:10px; }
+.sfp-freeze-inner { flex:1; text-align:left; }
+.sfp-freeze-title { font-size:12px; color:var(--b); font-weight:800; margin-bottom:2px; }
+.sfp-freeze-sub { font-size:11px; color:rgba(255,255,255,.5); }
+.sfp-freeze-btn {
+  background:linear-gradient(135deg,#5B8DEF,#3a6fd8);
+  border:none; border-radius:10px; padding:8px 14px;
+  color:#fff; font-family:'Fredoka One',sans-serif; font-size:13px;
+  cursor:pointer; white-space:nowrap;
+  box-shadow:0 3px 0 #2a4fa0;
+}
+.sfp-close-btn {
+  width:100%; padding:16px; border-radius:16px; border:none;
+  background:linear-gradient(135deg,#FF6B00,#FF3B00);
+  color:#fff; font-family:'Fredoka One',sans-serif; font-size:18px;
+  cursor:pointer; box-shadow:0 4px 0 #aa2200;
+  transition:transform .15s, box-shadow .15s;
+}
+.sfp-close-btn:active { transform:translateY(2px); box-shadow:0 2px 0 #aa2200; }
+
+/* Streak particles */
+.sfp-spark {
+  position:absolute; pointer-events:none;
+  font-size:20px; animation:sfpSpark 1.5s ease forwards;
+}
+@keyframes sfpSpark {
+  0%{transform:translate(0,0) scale(1);opacity:1;}
+  100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0;}
+}
+
+/* ── Streak Freeze Toast ── */
+#streakFreezeToast {
+  display:none; position:fixed; top:60px; left:50%; transform:translateX(-50%);
+  z-index:9999; background:linear-gradient(135deg,#5B8DEF,#3a6fd8);
+  color:#fff; font-family:'Fredoka One',sans-serif; font-size:14px;
+  padding:10px 22px; border-radius:50px; white-space:nowrap;
+  box-shadow:0 4px 20px rgba(91,141,239,.6);
+  animation:sfToastIn .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes sfToastIn{from{opacity:0;transform:translateX(-50%) translateY(-16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── Streak Milestone Badge ── */
+.streak-badge-anim {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  z-index:9995; pointer-events:none;
+  animation:sbIn .6s cubic-bezier(.34,1.56,.64,1) both, sbOut .5s ease 2.5s forwards;
+}
+@keyframes sbIn{from{transform:translate(-50%,-50%) scale(0) rotate(-20deg);opacity:0}to{transform:translate(-50%,-50%) scale(1) rotate(0deg);opacity:1}}
+@keyframes sbOut{to{opacity:0;transform:translate(-50%,-55%) scale(.8)}}
+
+/* ═══════════════════════════════════════════════════
+   PHASE 3 — LEADERBOARD SCREEN
+═══════════════════════════════════════════════════ */
+#leaderboard {
+  background:var(--bg);
+  padding-bottom:80px;
+}
+.lb-header {
+  background:linear-gradient(160deg,#0d0620,#1a0d35,#0d1520);
+  padding:52px 20px 28px;
+  position:relative; overflow:hidden;
+}
+.lb-header::before {
+  content:''; position:absolute;
+  top:-60px; right:-40px;
+  width:220px; height:220px; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,215,0,.15),transparent 70%);
+}
+.lb-header::after {
+  content:''; position:absolute;
+  bottom:-40px; left:-40px;
+  width:180px; height:180px; border-radius:50%;
+  background:radial-gradient(circle,rgba(91,141,239,.12),transparent 70%);
+}
+.lb-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,215,0,.12); border:1.5px solid rgba(255,215,0,.35);
+  border-radius:30px; padding:5px 14px; margin-bottom:10px;
+  font-size:11px; font-weight:800; color:#FFD700; text-transform:uppercase; letter-spacing:.5px;
+}
+.lb-title {
+  font-family:'Fredoka One',sans-serif; font-size:28px; margin-bottom:4px;
+  position:relative; z-index:1;
+}
+.lb-sub { color:var(--mut); font-size:13px; position:relative; z-index:1; }
+
+/* League tabs */
+.lb-tabs {
+  display:flex; gap:0; overflow-x:auto;
+  background:var(--card); border-bottom:2px solid var(--bdr);
+  padding:0 12px;
+}
+.lb-tab {
+  padding:12px 16px; border:none; background:transparent;
+  font-family:'Fredoka One',sans-serif; font-size:14px;
+  color:var(--mut); cursor:pointer; white-space:nowrap;
+  border-bottom:3px solid transparent; transition:all .2s;
+  flex-shrink:0;
+}
+.lb-tab.active { color:#FFD700; border-bottom-color:#FFD700; }
+
+/* Weekly timer */
+.lb-timer {
+  margin:16px 16px 0;
+  background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(255,150,0,.05));
+  border:1.5px solid rgba(255,215,0,.2);
+  border-radius:14px; padding:12px 16px;
+  display:flex; align-items:center; gap:12px;
+}
+.lb-timer-icon { font-size:24px; flex-shrink:0; }
+.lb-timer-info { flex:1; }
+.lb-timer-title { font-size:12px; color:#FFD700; font-weight:800; margin-bottom:2px; }
+.lb-timer-val { font-family:'Fredoka One',sans-serif; font-size:18px; color:var(--txt); }
+
+/* League info banner */
+.lb-league-banner {
+  margin:14px 16px 0;
+  border-radius:16px; padding:16px;
+  display:flex; align-items:center; gap:14px;
+  position:relative; overflow:hidden;
+}
+.lb-league-icon { font-size:48px; flex-shrink:0; }
+.lb-league-info { flex:1; }
+.lb-league-name { font-family:'Fredoka One',sans-serif; font-size:20px; margin-bottom:2px; }
+.lb-league-desc { font-size:12px; color:rgba(255,255,255,.6); }
+.lb-league-pos {
+  font-family:'Fredoka One',sans-serif; font-size:28px;
+  text-align:center; min-width:50px;
+}
+.lb-league-pos-lbl { font-size:9px; color:rgba(255,255,255,.5); text-align:center; }
+
+/* Promotion/demotion zones */
+.lb-zone-label {
+  margin:14px 16px 6px;
+  font-size:10px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.7px; display:flex; align-items:center; gap:6px;
+}
+
+/* Leaderboard rows */
+.lb-row {
+  margin:0 16px 8px;
+  background:var(--card); border:1.5px solid var(--bdr);
+  border-radius:16px; padding:12px 14px;
+  display:flex; align-items:center; gap:12px;
+  transition:transform .15s;
+  position:relative; overflow:hidden;
+}
+.lb-row.is-me {
+  background:linear-gradient(135deg,rgba(46,229,157,.08),rgba(91,141,239,.06));
+  border-color:rgba(46,229,157,.4);
+}
+.lb-row.promo-zone { border-color:rgba(46,229,157,.3); }
+.lb-row.demote-zone { border-color:rgba(255,107,107,.25); }
+.lb-rank {
+  font-family:'Fredoka One',sans-serif; font-size:18px;
+  min-width:32px; text-align:center; flex-shrink:0;
+}
+.lb-avatar { font-size:28px; flex-shrink:0; position:relative; }
+.lb-pro-crown {
+  position:absolute; top:-6px; right:-6px;
+  font-size:12px; background:#FFD700; border-radius:50%;
+  width:18px; height:18px; display:flex; align-items:center;
+  justify-content:center; font-size:10px;
+  box-shadow:0 2px 6px rgba(255,215,0,.5);
+}
+.lb-info { flex:1; min-width:0; }
+.lb-name { font-weight:800; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lb-meta { font-size:11px; color:var(--mut); margin-top:2px; }
+.lb-xp { text-align:right; flex-shrink:0; }
+.lb-xp-val { font-family:'Fredoka One',sans-serif; font-size:16px; color:#FFD700; }
+.lb-xp-lbl { font-size:9px; color:var(--mut); text-transform:uppercase; }
+.lb-row-shine {
+  position:absolute; top:0; left:-100%;
+  width:60%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);
+  animation:lbShine 3s ease infinite;
+}
+@keyframes lbShine{0%{left:-100%}50%{left:150%}100%{left:150%}}
+
+/* My position card */
+.lb-mypos {
+  margin:14px 16px;
+  background:linear-gradient(135deg,rgba(46,229,157,.1),rgba(91,141,239,.08));
+  border:2px solid rgba(46,229,157,.35);
+  border-radius:16px; padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+}
+
+/* League selection */
+.lb-leagues-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px; padding:16px;
+}
+.lb-league-card {
+  background:var(--card); border:2px solid var(--bdr);
+  border-radius:16px; padding:14px;
+  text-align:center; cursor:pointer;
+  transition:all .2s;
+}
+.lb-league-card:active { transform:scale(.96); }
+.lb-league-card.active { border-color:var(--card-color); background:rgba(255,255,255,.04); }
+.lb-league-card .lc-icon { font-size:36px; margin-bottom:6px; }
+.lb-league-card .lc-name { font-family:'Fredoka One',sans-serif; font-size:15px; }
+.lb-league-card .lc-req { font-size:10px; color:var(--mut); margin-top:3px; }
+.lb-league-card .lc-lock { font-size:10px; color:var(--r); margin-top:3px; }
+
+/* ─── PHASE 3: CERTIFICATE UPGRADED ─── */
+/* ═══════════════════════════════════════
+   PROFESSIONAL CERTIFICATE STYLES
+═══════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,600;1,700&display=swap');
+
+#certificate-v2 { background:#12122a; overflow-y:auto; }
+.cert-pro-wrap {
+  padding:16px 10px 36px;
+  display:flex; flex-direction:column;
+  align-items:center; min-height:100vh;
+}
+/* Username confirm modal */
+.cert-name-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(8px);
+  z-index: 8000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.cert-name-box {
+  background: #f9f5eb;
+  border-radius: 20px;
+  padding: 28px 24px;
+  width: 100%; max-width: 340px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 0 3px #c7a45a, 0 0 0 5px #f9f5eb, 0 0 0 7px #b08a44;
+}
+.cert-name-title {
+  font-family: 'Cinzel', serif;
+  font-size: 16px; font-weight: 700;
+  color: #1f1a14; letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.cert-name-sub {
+  font-size: 12px; color: #8a6a32;
+  margin-bottom: 18px; font-style: italic;
+}
+.cert-name-input {
+  width: 100%;
+  border: 1.5px solid #c7a45a;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 18px;
+  font-family: 'Cormorant Garamond', serif;
+  color: #1f1a14;
+  background: #fdf8ee;
+  text-align: center;
+  outline: none;
+  margin-bottom: 16px;
+}
+.cert-name-input:focus { border-color: #b08a44; box-shadow: 0 0 0 3px rgba(176,138,68,.2); }
+.cert-name-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #c7a45a, #9a7535);
+  color: #fff;
+  border: none; border-radius: 12px;
+  padding: 13px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px; letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #7a5a1e;
+  transition: transform .15s;
+}
+.cert-name-btn:active { transform: scale(.97); }
+
+/* ── THE CERTIFICATE — Navy + Gold Landscape ── */
+#certificate-v2 { background:#12122a; overflow-y:auto; }
+.cert-pro-wrap {
+  padding:16px 10px 36px;
+  display:flex; flex-direction:column;
+  align-items:center; min-height:100vh;
+}
+
+/* ── cert-paper is now landscape ── */
+.cert-paper {
+  width:min(96vw,680px);
+  aspect-ratio:1.41/1;
+  background:#fff;
+  position:relative; overflow:hidden;
+  box-shadow:0 16px 50px rgba(0,0,0,.55);
+  border-radius:3px;
+  flex-shrink:0;
+}
+
+/* Navy right panel */
+.cert-navy-panel {
+  position:absolute; right:0; top:0; bottom:0; width:32%;
+  background:#1B2A6B;
+  clip-path:ellipse(110% 120% at 110% 50%);
+}
+
+/* Gold swoosh */
+.cert-gold-swoosh {
+  position:absolute; right:16%; top:-8%;
+  width:26%; height:55%;
+  background:linear-gradient(150deg,#F7CE46 0%,#E8A020 55%,#C8780A 100%);
+  clip-path:ellipse(72% 100% at 55% 0%);
+}
+
+/* Corner accent lines */
+.cert-cl-ht { position:absolute; left:4%; top:7%;  width:38%; height:1px; background:linear-gradient(90deg,#C8A84B,transparent); }
+.cert-cl-vt { position:absolute; left:4%; top:7%;  width:1px; height:38%; background:linear-gradient(180deg,#C8A84B,transparent); }
+.cert-cl-hb { position:absolute; left:4%; bottom:7%; width:26%; height:1px; background:linear-gradient(90deg,#C8A84B,transparent); }
+.cert-cl-vb { position:absolute; left:4%; bottom:7%; width:1px; height:26%; background:linear-gradient(0deg,#C8A84B,transparent); }
+
+/* Dots on navy */
+.cert-navy-dots {
+  position:absolute; right:1.5%; top:38%;
+  display:flex; flex-direction:column; gap:5px;
+  opacity:.18; pointer-events:none;
+}
+.cert-nd-row { display:flex; gap:5px; }
+.cert-nd-dot { width:2.5px; height:2.5px; border-radius:50%; background:#fff; }
+
+/* Left content area */
+.cert-left-content {
+  position:absolute; left:0; top:0;
+  width:68%; height:100%;
+  display:flex; flex-direction:column;
+  justify-content:center;
+  padding:5% 4% 5% 6%;
+}
+
+.cert-main-title {
+  font-family:'Montserrat',sans-serif; font-weight:800;
+  font-size:clamp(11px,3.8vw,26px);
+  letter-spacing:clamp(3px,1vw,7px);
+  color:#1B2A6B; text-transform:uppercase;
+  line-height:1; margin-bottom:1.5%;
+}
+.cert-of-achievement {
+  font-size:clamp(5px,1.1vw,8px);
+  letter-spacing:clamp(1px,.6vw,4px);
+  color:#999; text-transform:uppercase;
+  font-weight:500; margin-bottom:5%;
+}
+.cert-presented-to {
+  font-family:'Cormorant Garamond',serif; font-weight:300;
+  font-size:clamp(5px,1vw,8px); color:#aaa;
+  letter-spacing:2px; text-transform:uppercase; margin-bottom:1%;
+}
+.cert-student-name {
+  font-family:'Great Vibes',cursive;
+  font-size:clamp(20px,6.5vw,46px);
+  color:#1B2A6B; line-height:1.05; margin-bottom:4%;
+}
+.cert-body-text {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(6px,1.1vw,9px);
+  color:#888; line-height:1.65;
+  max-width:90%; margin-bottom:5%;
+}
+.cert-body-text b { color:#1B2A6B; font-weight:700; }
+
+/* Bottom date + signature */
+.cert-footer-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  width:90%;
+}
+.cert-field { display:flex; flex-direction:column; gap:0; }
+.cert-field-lbl {
+  font-size:clamp(4px,.85vw,7px); letter-spacing:2px;
+  color:#bbb; text-transform:uppercase; font-weight:700;
+  margin-bottom:3px;
+}
+/* Shared gold line — same height for both */
+.cert-field-line {
+  width:100%; height:1.5px;
+  background:#C8A84B;
+  margin-bottom:3px;
+  min-width:clamp(60px,14%,110px);
+}
+.cert-field-val {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(5px,1vw,8px); color:#666;
+  min-width:clamp(60px,14%,110px);
+}
+.cert-sig-text {
+  font-family:'Great Vibes',cursive;
+  font-size:clamp(13px,3.2vw,22px);
+  color:#1B2A6B; line-height:1;
+}
+
+/* Navy right branding panel */
+.cert-right-brand {
+  position:absolute; right:0; top:0;
+  width:32%; height:100%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  clip-path:ellipse(110% 120% at 110% 50%);
+  pointer-events:none;
+}
+/* Cert number — top corner of navy */
+.cert-number {
+  position:absolute; top:5%; right:5%;
+  font-family:'Montserrat',sans-serif;
+  font-size:clamp(4px,.75vw,6px);
+  font-weight:700; color:rgba(255,255,255,.32);
+  letter-spacing:1.5px; text-transform:uppercase;
+  text-align:right; pointer-events:none; z-index:5;
+}
+.cert-brand-owl { font-size:clamp(22px,5.5vw,36px); margin-bottom:5%; }
+.cert-brand-name {
+  font-family:'Montserrat',sans-serif; font-weight:800;
+  font-size:clamp(7px,1.8vw,13px);
+  color:rgba(255,255,255,.95); letter-spacing:4px; text-transform:uppercase;
+}
+.cert-brand-divider {
+  width:35%; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(247,206,70,.7),transparent);
+  margin:5% auto 0;
+}
+
+/* Gold seal bottom-right of navy */
+.cert-new-seal {
+  position:absolute; right:1.5%; bottom:7%;
+  width:clamp(44px,10.5%,74px); height:clamp(44px,10.5%,74px);
+}
+.cert-new-seal-outer {
+  width:100%; height:100%; border-radius:50%;
+  border:1.5px dashed rgba(255,255,255,.3);
+  display:flex; align-items:center; justify-content:center; position:relative;
+}
+.cert-new-seal-svg { position:absolute; inset:0; border-radius:50%; }
+.cert-new-seal-svg svg { width:100%; height:100%; }
+.cert-new-seal-core {
+  width:52%; height:52%; border-radius:50%;
+  background:linear-gradient(135deg,#F7CE46,#C8780A);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
+  font-size:clamp(11px,2.8%,20px); z-index:2;
+}
+
+/* Action buttons */
+.cert-action-btns {
+  display:flex; gap:10px; margin-top:16px;
+  width:min(96vw,680px);
+}
+.cert-act-btn {
+  flex:1; padding:13px; border-radius:14px; border:none;
+  font-family:'Fredoka One',sans-serif; font-size:15px;
+  cursor:pointer; transition:all .15s;
+}
+.cert-act-btn:active { transform:scale(.96); }
+.cert-act-btn.primary {
+  background:linear-gradient(135deg,#F7CE46,#C8780A);
+  color:#1B2A6B; box-shadow:0 4px 0 #8a5500;
+}
+.cert-act-btn.secondary {
+  background:rgba(255,255,255,.1); border:1.5px solid rgba(255,255,255,.2); color:#fff;
+}
+/* Pro-only lock on cert */
+.cert-pro-lock {
+  background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(255,100,0,.06));
+  border:1.5px solid rgba(255,215,0,.2);
+  border-radius:12px; padding:12px 16px;
+  display:flex; align-items:center; gap:10px;
+  margin-top:12px; cursor:pointer;
+}
+/* RTL support for Arabic */
+.cert-rtl { direction:rtl; }
+
+/* ── Arabic mirror — navy LEFT, content RIGHT ── */
+.cert-rtl-mirror .cert-navy-panel {
+  right:auto; left:0;
+  clip-path:ellipse(110% 120% at -10% 50%);
+}
+.cert-rtl-mirror .cert-gold-swoosh {
+  right:auto; left:16%; top:-8%;
+  clip-path:ellipse(72% 100% at 45% 0%);
+}
+.cert-rtl-mirror .cert-cl-ht { left:auto; right:4%; background:linear-gradient(270deg,#C8A84B,transparent); }
+.cert-rtl-mirror .cert-cl-vt { left:auto; right:4%; }
+.cert-rtl-mirror .cert-cl-hb { left:auto; right:4%; background:linear-gradient(270deg,#C8A84B,transparent); }
+.cert-rtl-mirror .cert-cl-vb { left:auto; right:4%; }
+.cert-rtl-mirror .cert-navy-dots { right:auto; left:1.5%; }
+.cert-rtl-mirror .cert-number { right:auto; left:5%; text-align:left; }
+.cert-rtl-mirror .cert-left-content {
+  left:auto; right:0;
+  direction:rtl; text-align:right;
+  padding:5% 6% 5% 3%;
+}
+.cert-rtl-mirror .cert-right-brand {
+  right:auto; left:0;
+  clip-path:ellipse(110% 120% at -10% 50%);
+}
+.cert-rtl-mirror .cert-new-seal { right:auto; left:1.5%; }
+.cert-rtl-mirror .cert-footer-row { direction:ltr; }
+</style>
+
+<!-- STREAK FIRE POPUP -->
+
+<div class="screen" id="certificate-v2">
+  <div id="confettiBoxV2" style="position:fixed;top:0;left:0;width:100%;height:200px;pointer-events:none;z-index:700;overflow:hidden;"></div>
+
+  <!-- USERNAME CONFIRM MODAL -->
+  <div class="cert-name-modal" id="certNameModal" style="display:none;">
+    <div class="cert-name-box">
+      <div style="font-size:36px;margin-bottom:10px;">🎓</div>
+      <div class="cert-name-title">Certificate of Completion</div>
+      <div class="cert-name-sub">Apna naam confirm karo — isi naam se certificate banega</div>
+      <input class="cert-name-input" id="certNameInput" type="text" placeholder="Apna naam likhو..." maxlength="40"/>
+      <button class="cert-name-btn" onclick="certConfirmName()">✦ Certificate Generate Karo ✦</button>
+    </div>
+  </div>
+
+  <!-- CERTIFICATE PAPER -->
+  <div class="cert-pro-wrap" id="certProWrap" style="display:none;">
+
+    <div class="cert-paper" id="certPaperEl">
+
+      <div class="cert-navy-panel"></div>
+      <div class="cert-gold-swoosh"></div>
+      <div class="cert-cl-ht"></div><div class="cert-cl-vt"></div>
+      <div class="cert-cl-hb"></div><div class="cert-cl-vb"></div>
+
+      <div class="cert-navy-dots">
+        <div class="cert-nd-row"><div class="cert-nd-dot"></div><div class="cert-nd-dot"></div><div class="cert-nd-dot"></div></div>
+        <div class="cert-nd-row"><div class="cert-nd-dot"></div><div class="cert-nd-dot"></div><div class="cert-nd-dot"></div></div>
+        <div class="cert-nd-row"><div class="cert-nd-dot"></div><div class="cert-nd-dot"></div><div class="cert-nd-dot"></div></div>
+        <div class="cert-nd-row"><div class="cert-nd-dot"></div><div class="cert-nd-dot"></div><div class="cert-nd-dot"></div></div>
+      </div>
+
+      <!-- Cert number top-right corner of navy -->
+      <div class="cert-number" id="certNum">#SPK-2025-00001</div>
+
+      <!-- Left content -->
+      <div class="cert-left-content">
+        <div class="cert-main-title" id="certMainTitle">Certificate</div>
+        <div class="cert-of-achievement" id="certOfAchievement">of Achievement</div>
+        <div style="width:min(120px,38%);height:1px;background:linear-gradient(90deg,#C8A84B,rgba(200,168,75,.15));margin-bottom:4%;"></div>
+        <div class="cert-presented-to" id="certPresentedTo">This certificate is proudly presented to</div>
+        <div class="cert-student-name" id="certStudentName">—</div>
+        <div class="cert-body-text" id="certBodyText">
+          For successfully completing the <b id="certCourseEn">—</b> course
+          on SpeakUp — demonstrating dedication and excellence
+          across <b id="certCourseSub">—</b> of structured learning.
+        </div>
+
+        <!-- hidden compat fields -->
+        <span id="certSubtitleNative" style="display:none;"></span>
+        <span id="certDescNative" style="display:none;"></span>
+        <span id="certCourseNative" style="display:none;"></span>
+        <span id="certDescEn" style="display:none;"></span>
+
+        <div class="cert-footer-row">
+          <div class="cert-field">
+            <div class="cert-field-lbl">Date</div>
+            <div class="cert-field-line"></div>
+            <div class="cert-field-val" id="certDate">—</div>
+          </div>
+          <div class="cert-field" style="text-align:right;">
+            <div class="cert-field-lbl">Signature</div>
+            <div class="cert-field-line"></div>
+            <div class="cert-field-val">
+              <div class="cert-sig-text">Adeel Awan</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right navy branding -->
+      <div class="cert-right-brand">
+        <div class="cert-brand-owl">🦉</div>
+        <div class="cert-brand-name">SpeakUp</div>
+        <div class="cert-brand-divider"></div>
+      </div>
+
+      <!-- Gold seal -->
+      <div class="cert-new-seal">
+        <div class="cert-new-seal-outer">
+          <div class="cert-new-seal-svg">
+            <svg viewBox="0 0 100 100">
+              <defs><path id="csp" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
+              <text font-size="9.5" fill="rgba(255,255,255,0.45)" font-family="Montserrat,sans-serif" font-weight="600" letter-spacing="2.5">
+                <textPath href="#csp">CERTIFICATE · OF · ACHIEVEMENT ·</textPath>
+              </text>
+            </svg>
+          </div>
+          <div class="cert-new-seal-core">🏆</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="cert-action-btns">
+      <button class="cert-act-btn primary" id="certShareImgBtn" onclick="certV2Share('image')">📸 Image Share</button>
+      <button class="cert-act-btn primary" id="certSharePdfBtn" onclick="certV2Share('pdf')" style="background:linear-gradient(135deg,#FF6B6B,#FF4444);">📄 PDF Share</button>
+      <button class="cert-act-btn secondary" onclick="showScreen('dashboard');renderDash()">🏠 Dashboard</button>
+    </div>
+
+    <!-- Pro PDF -->
+    <div id="cv2ProDownload" class="cert-pro-lock" style="max-width:480px;width:100%;margin-top:0;" onclick="showScreen('proScreen')">
+      <div style="font-size:22px;">👑</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;color:#FFD700;font-weight:800;">Pro: PDF Download karo!</div>
+        <div style="font-size:11px;color:var(--mut);">High quality printable certificate</div>
+      </div>
+      <div style="color:#FFD700;font-size:18px;">→</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PHASE 2 — PRO UPGRADE SCREEN (Full Screen)
+═══════════════════════════════════════════════════ -->
+<style>
+/* ── Pro Screen Styles ── */
+#proScreen {
+  background: var(--bg);
+  overflow-y: auto;
+  padding-bottom: 40px;
+}
+
+/* Hero Section */
+.pro-hero {
+  background: linear-gradient(160deg, #1a0a2e 0%, #0d1a2e 50%, #0f1a0d 100%);
+  padding: 52px 20px 36px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.pro-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: 50%;
+  transform: translateX(-50%);
+  width: 340px; height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,215,0,.18) 0%, transparent 70%);
+  animation: floatUpBig 4s ease infinite;
+  pointer-events: none;
+}
+.pro-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 15% 30%, rgba(199,125,255,.12), transparent 40%),
+    radial-gradient(circle at 85% 70%, rgba(91,141,239,.1), transparent 40%);
+  pointer-events: none;
+}
+.pro-crown {
+  font-size: 64px;
+  margin-bottom: 10px;
+  animation: ob 2.2s ease infinite;
+  position: relative; z-index: 1;
+}
+.pro-hero-title {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 32px;
+  background: linear-gradient(135deg, #FFD700, #FF9500, #FFD700);
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+  position: relative; z-index: 1;
+  margin-bottom: 6px;
+}
+.pro-hero-sub {
+  color: var(--mut);
+  font-size: 14px;
+  line-height: 1.6;
+  position: relative; z-index: 1;
+}
+.pro-hero-sub b { color: var(--txt); }
+
+/* Free vs Pro Banner */
+.pro-compare-banner {
+  margin: 20px 16px 0;
+  background: linear-gradient(135deg, rgba(255,107,107,.1), rgba(255,215,0,.08));
+  border: 1.5px solid rgba(255,215,0,.25);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative; z-index: 1;
+}
+.pro-compare-free {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  background: rgba(255,107,107,.08);
+  border: 1px solid rgba(255,107,107,.2);
+  border-radius: 12px;
+}
+.pro-compare-free .pcf-label {
+  font-size: 10px; font-weight: 800;
+  color: var(--r); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 4px;
+}
+.pro-compare-pro {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  background: rgba(255,215,0,.08);
+  border: 1.5px solid rgba(255,215,0,.4);
+  border-radius: 12px;
+}
+.pro-compare-pro .pcf-label {
+  font-size: 10px; font-weight: 800;
+  color: #FFD700; text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 4px;
+}
+.pro-compare-vs {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 15px;
+  color: var(--mut);
+  flex-shrink: 0;
+}
+.pcf-item {
+  font-size: 12px;
+  color: var(--txt);
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* Features List */
+.pro-features-section {
+  padding: 24px 16px 0;
+}
+.pro-section-label {
+  font-size: 11px;
+  color: var(--mut);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 12px;
+}
+.pro-feat-card {
+  background: var(--card);
+  border: 1px solid var(--bdr);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform .2s, box-shadow .2s;
+  animation: fuFast .4s ease both;
+}
+.pro-feat-card:active { transform: scale(.97); }
+.pro-feat-icon {
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.pro-feat-icon.gold  { background: rgba(255,215,0,.15); border: 1.5px solid rgba(255,215,0,.3); }
+.pro-feat-icon.blue  { background: rgba(91,141,239,.15); border: 1.5px solid rgba(91,141,239,.3); }
+.pro-feat-icon.green { background: rgba(46,229,157,.15); border: 1.5px solid rgba(46,229,157,.3); }
+.pro-feat-icon.purple{ background: rgba(199,125,255,.15); border: 1.5px solid rgba(199,125,255,.3); }
+.pro-feat-icon.red   { background: rgba(255,107,107,.15); border: 1.5px solid rgba(255,107,107,.3); }
+.pro-feat-icon.orange{ background: rgba(255,154,60,.15); border: 1.5px solid rgba(255,154,60,.3); }
+.pro-feat-text { flex: 1; }
+.pro-feat-title {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 16px;
+  color: var(--txt);
+  margin-bottom: 2px;
+}
+.pro-feat-desc {
+  font-size: 12px;
+  color: var(--mut);
+  line-height: 1.5;
+}
+.pro-feat-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(255,215,0,.15);
+  color: #FFD700;
+  border: 1px solid rgba(255,215,0,.3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Pricing Cards */
+.pro-pricing-section {
+  padding: 24px 16px 0;
+}
+.pro-plans-wrap {
+  display: flex;
+  gap: 10px;
+}
+.pro-plan-card {
+  flex: 1;
+  background: var(--card);
+  border: 1.5px solid var(--bdr);
+  border-radius: 18px;
+  padding: 16px 10px 14px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all .25s cubic-bezier(.34,1.56,.64,1);
+  overflow: visible;
+}
+.pro-plan-card:active { transform: scale(.95); }
+.pro-plan-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,.4); }
+.pro-plan-card.popular {
+  background: linear-gradient(160deg, rgba(255,215,0,.12), rgba(255,149,0,.08));
+  border: 2px solid #FFD700;
+  box-shadow: 0 4px 24px rgba(255,215,0,.2);
+}
+.plan-popular-badge {
+  position: absolute;
+  top: -13px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #FFD700, #FF9500);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #000;
+  white-space: nowrap;
+  box-shadow: 0 3px 12px rgba(255,215,0,.5);
+}
+.plan-emoji { font-size: 28px; margin-bottom: 6px; }
+.plan-duration {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 13px;
+  color: var(--mut);
+  margin-bottom: 4px;
+}
+.plan-price {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 22px;
+  color: var(--txt);
+  margin-bottom: 2px;
+}
+.pro-plan-card.popular .plan-price { color: #FFD700; }
+.plan-per-day {
+  font-size: 10px;
+  color: var(--mut);
+  margin-bottom: 10px;
+}
+.plan-select-btn {
+  width: 100%;
+  padding: 9px 6px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  background: rgba(255,255,255,.08);
+  color: var(--txt);
+  transition: all .2s;
+}
+.pro-plan-card.popular .plan-select-btn {
+  background: linear-gradient(135deg, #FFD700, #FF9500);
+  color: #000;
+  box-shadow: 0 3px 12px rgba(255,215,0,.4);
+}
+.plan-select-btn:active { transform: scale(.95); }
+
+/* Payment Methods Section */
+.pro-pay-section {
+  padding: 24px 16px 0;
+}
+#proSelectedPlan {
+  background: linear-gradient(135deg, rgba(255,215,0,.15), rgba(255,149,0,.08));
+  border: 1.5px solid rgba(255,215,0,.4);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.pro-pay-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.pro-pay-tab {
+  flex: 1;
+  padding: 10px 6px;
+  border-radius: 12px;
+  border: 1.5px solid var(--bdr);
+  background: transparent;
+  color: var(--mut);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: 'Nunito', sans-serif;
+}
+.pro-pay-tab.active {
+  background: rgba(255,92,0,.1);
+  border-color: #FF5C00;
+  color: #FF5C00;
+}
+.pro-pay-tab.active.ep {
+  background: rgba(80,184,72,.1);
+  border-color: #50B848;
+  color: #50B848;
+}
+.pro-pay-tab.active.np {
+  background: rgba(124,58,237,.1);
+  border-color: #7C3AED;
+  color: #7C3AED;
+}
+.pro-pay-content { display: none; }
+.pro-pay-content.active { display: block; }
+.pro-account-card {
+  background: var(--card);
+  border: 1px solid var(--bdr);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.pro-account-label {
+  font-size: 11px;
+  color: var(--mut);
+  margin-bottom: 6px;
+}
+.pro-account-name {
+  font-size: 13px;
+  color: var(--txt);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.pro-account-num-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pro-account-num {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 22px;
+  color: var(--txt);
+  letter-spacing: .5px;
+}
+.pro-copy-btn {
+  padding: 7px 14px;
+  background: rgba(91,141,239,.15);
+  border: 1px solid rgba(91,141,239,.3);
+  border-radius: 9px;
+  color: var(--b);
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all .15s;
+}
+.pro-copy-btn:active { transform: scale(.93); }
+.pro-steps-card {
+  background: rgba(255,215,0,.06);
+  border: 1px solid rgba(255,215,0,.2);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.pro-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--mut);
+  line-height: 1.5;
+}
+.pro-step-item:last-child { margin-bottom: 0; }
+.pro-step-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(255,215,0,.2);
+  border: 1px solid rgba(255,215,0,.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #FFD700;
+  flex-shrink: 0;
+}
+.pro-whatsapp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 10px;
+  transition: all .2s;
+  box-shadow: 0 4px 20px rgba(37,211,102,.3);
+}
+.pro-whatsapp-btn:active { transform: scale(.97); }
+
+/* Trust Badges */
+.pro-trust-section {
+  padding: 20px 16px 0;
+  display: flex;
+  gap: 8px;
+}
+.pro-trust-badge {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--bdr);
+  border-radius: 12px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.pro-trust-icon { font-size: 20px; margin-bottom: 4px; }
+.pro-trust-text { font-size: 10px; color: var(--mut); line-height: 1.4; font-weight: 700; }
+
+/* Pro Active Banner */
+.pro-active-banner {
+  margin: 0;
+  padding: 20px 16px 0;
+  text-align: center;
+  display: none;
+}
+.pro-active-banner.show { display: block; }
+
+@keyframes goldShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+</style>
+
+<!-- PRO SCREEN -->
