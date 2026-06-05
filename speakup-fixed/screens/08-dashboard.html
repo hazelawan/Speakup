@@ -1,0 +1,654 @@
+<!-- ═══ Dashboard Screen ═══ -->
+<div class="screen" id="dashboard" style="">
+
+  <!-- Duolingo-style top bar -->
+  <div id="duoTopBar" style="position:sticky;top:0;z-index:100;background:rgba(15,14,23,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(91,141,239,.15);padding:8px 10px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 16px rgba(0,0,0,.3);">
+
+    <!-- Flag + Progress -->
+    <div onclick="goProfileSelect()" style="display:flex;align-items:center;gap:6px;cursor:pointer;flex:1;min-width:0;">
+      <div style="position:relative;flex-shrink:0;">
+        <div id="headerAvatar" style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2EE59D,#5B8DEF);display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid var(--g);box-shadow:0 2px 10px rgba(46,229,157,.35);">🔐</div>
+        <div style="position:absolute;bottom:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:var(--g);border:2px solid var(--bg);"></div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+          <span style="font-family:'Fredoka One',sans-serif;font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.3px;" id="topCourseLabel">🇬🇧 30 Din</span>
+          <span style="font-family:'Fredoka One',sans-serif;font-size:9px;color:var(--g);" id="topPct">0%</span>
+        </div>
+        <div style="height:5px;background:var(--card2);border-radius:8px;overflow:hidden;width:100%;">
+          <div id="topProgressBar" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#2EE59D,#5B8DEF,#C77DFF);background-size:200% 100%;transition:width .8s cubic-bezier(.34,1.56,.64,1);animation:bgShift 3s ease infinite;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Language Flag (tappable) -->
+    <div onclick="showLangStatsModal();" style="cursor:pointer;font-size:18px;flex-shrink:0;padding:2px 3px;border-radius:6px;background:var(--card2);border:1px solid var(--bdr);" id="topLangFlag" title="Language Stats">🇬🇧</div>
+
+    <!-- Divider -->
+    <div style="width:1px;height:24px;background:var(--bdr);flex-shrink:0;"></div>
+
+    <!-- Streak -->
+    <div style="display:flex;align-items:center;gap:2px;cursor:pointer;" onclick="showStreakScreen()">
+      <div style="font-size:16px;" id="topStreakIcon">🔥</div>
+      <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--o);" id="topStreak">0</div>
+    </div>
+
+    <!-- Hearts -->
+    <div style="display:flex;align-items:center;gap:2px;cursor:pointer;" id="topHeartsWrap" onclick="onTopHeartClick()" title="Heart mode">
+      <div style="font-size:15px;">❤️</div>
+      <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:#FF4B4B;" id="topHearts">7</div>
+    </div>
+
+    <!-- XP -->
+    <div style="display:flex;align-items:center;gap:2px;cursor:pointer;" onclick="showXpScreen()" title="XP details">
+      <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#CE82FF,#9b49d9);display:flex;align-items:center;justify-content:center;">
+        <div style="font-size:8px;">⭐</div>
+      </div>
+      <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:#CE82FF;" id="topXP">0</div>
+    </div>
+
+    <!-- Pro Badge / Upgrade Button -->
+    <div id="topProIndicator" onclick="showProScreen()" style="cursor:pointer;flex-shrink:0;">
+      <!-- Filled by renderDash() JS below -->
+    </div>
+
+    <!-- Daily Goal Ring -->
+    <div id="goalRingWrap" onclick="showGoalModal()" title="Aaj ka goal">
+      <svg id="goalRingSvg" viewBox="0 0 38 38">
+        <defs>
+          <linearGradient id="goalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#2EE59D"/>
+            <stop offset="100%" stop-color="#5B8DEF"/>
+          </linearGradient>
+        </defs>
+        <circle id="goalRingTrack" cx="19" cy="19" r="15"/>
+        <circle id="goalRingFill"  cx="19" cy="19" r="15"
+          stroke-dasharray="94.2"
+          stroke-dashoffset="94.2"/>
+      </svg>
+      <div id="goalRingCenter">⏱️</div>
+    </div>
+  </div>
+
+  <!-- Section banner (Duolingo style) -->
+  <div id="sectionBanner" style="margin: 12px 16px 0px; background: linear-gradient(135deg, rgb(88, 204, 2), rgb(70, 163, 0)); border-radius: 22px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: rgba(88, 204, 2, 0.267) 0px 4px 16px;">
+    <div>
+      <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;" id="sectionLabel">SECTION 1, UNIT 1 — Hello &amp; Greetings</div>
+      <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#fff;" id="sectionTitle">Day 5: Food &amp; Drinks</div>
+    </div>
+    <div style="width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;" onclick="showDayInfo()">📋</div>
+  </div>
+
+  <!-- ⚡ XP DOUBLE BOOST BANNER — active hone pe dikhta hai -->
+  <div id="xpBoostBanner">
+    <div class="xpb-inner">
+      <div class="xpb-icon">⚡</div>
+      <div class="xpb-text">
+        <div class="xpb-title">2x XP Boost Active!</div>
+        <div class="xpb-timer" id="xpBoostTimerText">Calculating...</div>
+      </div>
+      <div class="xpb-badge">2x XP</div>
+    </div>
+  </div>
+
+  <!-- ⚡ XP BOOST ACTIVATE BUTTON — jab active nahi hota -->
+  <div id="xpBoostActivateBtn">
+    <div class="xpbtn-wrap" id="xpBoostBtnInner" onclick="activateXpBoost()">
+      <div class="xpbtn-ico">⚡</div>
+      <div class="xpbtn-txt">
+        <div class="xpbtn-title">XP Double Power-Up!</div>
+        <div class="xpbtn-sub" id="xpBoostBtnSub">30 minute ke liye 2x XP — din mein 1 baar</div>
+      </div>
+      <div class="xpbtn-tag" id="xpBoostBtnTag">ACTIVATE</div>
+    </div>
+  </div>
+
+  <div class="db" style="padding-top:12px;" id="dashSkeletonTarget">
+
+    <!-- ══ SKELETON LOADING CARDS (shown before Firebase data) ══ -->
+    <div id="dashboardSkeletonWrap">
+
+      <!-- Skeleton: Section header card -->
+      <div class="sk-sec-card" style="margin-bottom:14px;">
+        <div class="sk-sec-row">
+          <div class="sk sk-ico-lg"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:7px;">
+            <div class="sk sk-title"></div>
+            <div class="sk sk-sub"></div>
+          </div>
+          <div class="sk sk-pill"></div>
+        </div>
+        <div class="sk sk-prog"></div>
+        <div class="sk-foot">
+          <div class="sk sk-foot-l"></div>
+          <div class="sk sk-foot-r"></div>
+        </div>
+      </div>
+
+      <!-- Skeleton: Unit card -->
+      <div class="sk-unit-card" style="margin-bottom:14px;">
+        <div class="sk sk-ico-sm"></div>
+        <div class="sk-unit-body">
+          <div class="sk sk-unit-tag"></div>
+          <div class="sk sk-unit-name"></div>
+          <div class="sk sk-unit-desc"></div>
+        </div>
+        <div class="sk sk-arrow"></div>
+      </div>
+
+      <!-- Skeleton: Path nodes (zigzag style) -->
+      <div class="sk-nodes">
+        <div class="sk sk-node" style="align-self:flex-start;margin-left:24px;"></div>
+        <div class="sk sk-connector"></div>
+        <div class="sk sk-node" style="align-self:center;"></div>
+        <div class="sk sk-connector"></div>
+        <div class="sk sk-node" style="align-self:flex-end;margin-right:24px;"></div>
+        <div class="sk sk-connector"></div>
+        <div class="sk sk-node" style="align-self:center;width:66px;height:66px;opacity:.8;"></div>
+        <div class="sk sk-connector"></div>
+        <div class="sk sk-node" style="align-self:flex-start;margin-left:24px;opacity:.6;"></div>
+      </div>
+
+      <!-- Skeleton: Second section card -->
+      <div class="sk-sec-card" style="margin-top:14px;margin-bottom:14px;opacity:.75;">
+        <div class="sk-sec-row">
+          <div class="sk sk-ico-lg"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:7px;">
+            <div class="sk sk-title" style="width:45%;"></div>
+            <div class="sk sk-sub" style="width:30%;"></div>
+          </div>
+          <div class="sk sk-pill"></div>
+        </div>
+        <div class="sk sk-prog"></div>
+        <div class="sk-foot">
+          <div class="sk sk-foot-l"></div>
+          <div class="sk sk-foot-r"></div>
+        </div>
+      </div>
+
+      <!-- Skeleton: More nodes -->
+      <div class="sk-nodes" style="opacity:.6;">
+        <div class="sk sk-node" style="align-self:flex-end;margin-right:24px;"></div>
+        <div class="sk sk-connector"></div>
+        <div class="sk sk-node" style="align-self:center;opacity:.7;"></div>
+      </div>
+
+    </div><!-- end #dashboardSkeletonWrap -->
+
+    <div class="slbl" style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:12px;"><span style="background:linear-gradient(135deg,#2EE59D,#5B8DEF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🗺️ Tumhara Safar</span></div>
+    <div class="path-wrap" id="dG" style="position: relative;"><div style="width:100%;margin:0 0 10px;padding:0 2px;">
+        <div style="background:linear-gradient(135deg,#58CC0228,#58CC0214);border:2px solid #58CC0266;border-radius:22px;padding:16px 18px;box-shadow:0 4px 20px #58CC0222;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div style="width:50px;height:50px;border-radius:16px;background:#58CC0233;border:2px solid #58CC0255;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 14px #58CC0244;">🌱</div>
+            <div style="flex:1;">
+              <div style="font-size:9px;color:#58CC02;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">SECTION 1</div>
+              <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#58CC02;text-shadow:0 0 12px #58CC0266;">Basic English — Buniyaad</div>
+            </div>
+            <div style="background:#58CC0222;border:1px solid #58CC0255;border-radius:20px;padding:4px 10px;font-size:12px;color:#58CC02;font-weight:800;">0%</div>
+          </div>
+          <div style="height:8px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;border:1px solid #58CC0222;">
+            <div style="height:100%;width:0%;background:linear-gradient(90deg,#58CC02,#58CC02CC);border-radius:8px;transition:width .8s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 8px #58CC0266;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:#58CC0288;font-weight:700;">
+            <span>0 din complete</span><span>10 din baaki</span>
+          </div>
+        </div>
+      </div><div style="width:100%;margin:8px 0 6px;padding:0 2px;">
+        <div style="background:linear-gradient(135deg,#58CC0218,#58CC020A);border-radius:16px;padding:11px 14px;display:flex;align-items:center;gap:10px;border:1px solid #58CC0244;box-shadow:0 2px 12px #58CC0218;">
+          <div style="width:42px;height:42px;border-radius:13px;background:#58CC0228;border:2px solid #58CC0244;display:flex;align-items:center;justify-content:center;font-size:20px;">👋</div>
+          <div style="flex:1;">
+            <div style="font-size:9px;color:#58CC02;font-weight:800;text-transform:uppercase;letter-spacing:.6px;">UNIT 1</div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:#58CC02;">Hello &amp; Greetings</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:2px;">0/5 complete • 5 din mein basic greetings master karo</div>
+          </div>
+          <div style="font-size:14px;">⏳</div>
+        </div>
+      </div><div class="path-row" style="justify-content:flex-start;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="selectDay(1)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.04s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">👋</div>
+        <div class="pnode-num">1</div>
+        <div class="pnode-tip">Basic Introd</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-start;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">⭐</div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="selectDay(2)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.08s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">👨‍👩‍👧</div>
+        <div class="pnode-num">2</div>
+        <div class="pnode-tip">Daily Greeti</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">✨</div>
+      </div><div class="path-row" style="justify-content:flex-end;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="selectDay(3)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.12s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🕐</div>
+        <div class="pnode-num">3</div>
+        <div class="pnode-tip">Numbers &amp; Ti</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-end;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="selectDay(4)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.16s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🍽️</div>
+        <div class="pnode-num">4</div>
+        <div class="pnode-tip">Family &amp; Rel</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">🌟</div>
+      </div><div class="owl-pos" style="margin:10px 0;">
+        <div class="owl-pos-inner">
+          <div class="owl-bubble" style="font-size:13px;padding:8px 18px;border-radius:22px;">📍 Tum yahaan ho!</div>
+          <div style="font-size:36px;filter:drop-shadow(0 6px 14px rgba(255,154,60,.6));animation:owlFloat 2s ease infinite;margin-top:2px;">🦉</div>
+        </div>
+      </div><div class="path-row" style="justify-content:flex-start;">
+      <div class="pnode pnode-entrance today anim-done" onclick="goLesson()" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(255, 154, 60), rgb(255, 209, 102)); border: 3px solid rgba(255, 255, 255, 0.9); box-shadow: rgb(212, 112, 10) 0px 5px 0px, rgba(255, 154, 60, 0.5) 0px 0px 22px, rgba(255, 154, 60, 0.2) 0px 0px 0px 8px; animation-delay: 0.2s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🛒</div>
+        <div class="pnode-num">5</div>
+        <div class="pnode-tip">Food &amp; Drink</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-start;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">⚡</div>
+      </div><div style="width:100%;margin:8px 0 6px;padding:0 2px;">
+        <div style="background:linear-gradient(135deg,#7CDB3C18,#7CDB3C0A);border-radius:16px;padding:11px 14px;display:flex;align-items:center;gap:10px;border:1px solid #7CDB3C44;box-shadow:0 2px 12px #7CDB3C18;">
+          <div style="width:42px;height:42px;border-radius:13px;background:#7CDB3C28;border:2px solid #7CDB3C44;display:flex;align-items:center;justify-content:center;font-size:20px;">👨‍👩‍👧</div>
+          <div style="flex:1;">
+            <div style="font-size:9px;color:#7CDB3C;font-weight:800;text-transform:uppercase;letter-spacing:.6px;">UNIT 2</div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:#7CDB3C;">Family &amp; People</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:2px;">0/5 complete • 5 din mein family ke baare mein baat karna seekho</div>
+          </div>
+          <div style="font-size:14px;">⏳</div>
+        </div>
+      </div><div class="path-row" style="justify-content:center;margin:6px 0;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div onclick="" style="width:64px;height:56px;cursor:default;position:relative;animation:none;transition:transform .2s;">
+            <div style="font-size:40px;filter:grayscale(1);opacity:.4;">📦</div>
+          </div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:10px;color:var(--mut);text-align:center;">
+            Locked 🔒
+          </div>
+        </div>
+      </div>
+      <div class="path-row" style="justify-content:center;">
+        <div style="width:4px;height:16px;border-radius:4px;background:var(--bdr);margin:0 auto;"></div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(6)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.24s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">6</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        
+      </div><div class="path-row" style="justify-content:flex-end;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(7)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.28s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">7</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-end;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">💎</div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(8)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.32s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">8</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">🎯</div>
+      </div><div class="path-row" style="justify-content:flex-start;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(9)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.36s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">9</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-start;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(10)" style="width: 66px; height: 66px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.4s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:26px;line-height:1;">🔒</div>
+        <div class="pnode-num">10</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">✨</div>
+      </div><div style="width:100%;margin:24px 0 10px;padding:0 2px;">
+        <div style="background:linear-gradient(135deg,#1CB0F628,#1CB0F614);border:2px solid #1CB0F666;border-radius:22px;padding:16px 18px;box-shadow:0 4px 20px #1CB0F622;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div style="width:50px;height:50px;border-radius:16px;background:#1CB0F633;border:2px solid #1CB0F655;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 14px #1CB0F644;">🏡</div>
+            <div style="flex:1;">
+              <div style="font-size:9px;color:#1CB0F6;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">SECTION 2</div>
+              <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#1CB0F6;text-shadow:0 0 12px #1CB0F666;">Daily Life — Roz Ki Zindagi</div>
+            </div>
+            <div style="background:#1CB0F622;border:1px solid #1CB0F655;border-radius:20px;padding:4px 10px;font-size:12px;color:#1CB0F6;font-weight:800;">0%</div>
+          </div>
+          <div style="height:8px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;border:1px solid #1CB0F622;">
+            <div style="height:100%;width:0%;background:linear-gradient(90deg,#1CB0F6,#1CB0F6CC);border-radius:8px;transition:width .8s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 8px #1CB0F666;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:#1CB0F688;font-weight:700;">
+            <span>0 din complete</span><span>10 din baaki</span>
+          </div>
+        </div>
+      </div><div style="width:100%;margin:8px 0 6px;padding:0 2px;">
+        <div style="background:linear-gradient(135deg,#1CB0F618,#1CB0F60A);border-radius:16px;padding:11px 14px;display:flex;align-items:center;gap:10px;border:1px solid #1CB0F644;box-shadow:0 2px 12px #1CB0F618;">
+          <div style="width:42px;height:42px;border-radius:13px;background:#1CB0F628;border:2px solid #1CB0F644;display:flex;align-items:center;justify-content:center;font-size:20px;">🕐</div>
+          <div style="flex:1;">
+            <div style="font-size:9px;color:#1CB0F6;font-weight:800;text-transform:uppercase;letter-spacing:.6px;">UNIT 3</div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:#1CB0F6;">Time &amp; Daily Routine</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:2px;">0/5 complete • 5 din mein waqt aur routine bayan karna seekho</div>
+          </div>
+          <div style="font-size:14px;">⏳</div>
+        </div>
+      </div><div class="path-row" style="justify-content:center;margin:6px 0;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div onclick="" style="width:64px;height:56px;cursor:default;position:relative;animation:none;transition:transform .2s;">
+            <div style="font-size:40px;filter:grayscale(1);opacity:.4;">👑</div>
+          </div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:10px;color:var(--mut);text-align:center;">
+            Locked 🔒
+          </div>
+        </div>
+      </div>
+      <div class="path-row" style="justify-content:center;">
+        <div style="width:4px;height:16px;border-radius:4px;background:var(--bdr);margin:0 auto;"></div>
+      </div><div class="path-row" style="justify-content:flex-end;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(11)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.44s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">11</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-end;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">💫</div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(12)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.48s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">12</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        
+      </div><div class="path-row" style="justify-content:flex-start;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(13)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.52s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">13</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-start;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">⚡</div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(14)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.56s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">14</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">🔥</div>
+      </div><div class="path-row" style="justify-content:flex-end;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(15)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">15</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-end;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        
+      </div><div style="width:100%;margin:8px 0 6px;padding:0 2px;">
+        <div style="background:linear-gradient(135deg,#5BCBF518,#5BCBF50A);border-radius:16px;padding:11px 14px;display:flex;align-items:center;gap:10px;border:1px solid #5BCBF544;box-shadow:0 2px 12px #5BCBF518;">
+          <div style="width:42px;height:42px;border-radius:13px;background:#5BCBF528;border:2px solid #5BCBF544;display:flex;align-items:center;justify-content:center;font-size:20px;">🛒</div>
+          <div style="flex:1;">
+            <div style="font-size:9px;color:#5BCBF5;font-weight:800;text-transform:uppercase;letter-spacing:.6px;">UNIT 4</div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:#5BCBF5;">Food &amp; Shopping</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:2px;">0/5 complete • 5 din mein khaana mangwana aur shopping karna seekho</div>
+          </div>
+          <div style="font-size:14px;">⏳</div>
+        </div>
+      </div><div class="path-row" style="justify-content:center;margin:6px 0;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div onclick="" style="width:64px;height:56px;cursor:default;position:relative;animation:none;transition:transform .2s;">
+            <div style="font-size:40px;filter:grayscale(1);opacity:.4;">📦</div>
+          </div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:10px;color:var(--mut);text-align:center;">
+            Locked 🔒
+          </div>
+        </div>
+      </div>
+      <div class="path-row" style="justify-content:center;">
+        <div style="width:4px;height:16px;border-radius:4px;background:var(--bdr);margin:0 auto;"></div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(16)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">16</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">🎯</div>
+      </div><div class="path-row" style="justify-content:flex-start;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(17)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">17</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-start;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">⭐</div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(18)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">18</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        
+      </div><div class="path-row" style="justify-content:flex-end;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(19)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">19</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-end;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">💫</div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(20)" style="width: 66px; height: 66px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:26px;line-height:1;">🔒</div>
+        <div class="pnode-num">20</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">🌟</div>
+      </div><div style="width:100%;margin:24px 0 10px;padding:0 2px;">
+        <div style="background:linear-gradient(135deg,#CE82FF28,#CE82FF14);border:2px solid #CE82FF66;border-radius:22px;padding:16px 18px;box-shadow:0 4px 20px #CE82FF22;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div style="width:50px;height:50px;border-radius:16px;background:#CE82FF33;border:2px solid #CE82FF55;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 14px #CE82FF44;">🌍</div>
+            <div style="flex:1;">
+              <div style="font-size:9px;color:#CE82FF;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">SECTION 3</div>
+              <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#CE82FF;text-shadow:0 0 12px #CE82FF66;">Out &amp; About — Bahar Ki Duniya</div>
+            </div>
+            <div style="background:#CE82FF22;border:1px solid #CE82FF55;border-radius:20px;padding:4px 10px;font-size:12px;color:#CE82FF;font-weight:800;">0%</div>
+          </div>
+          <div style="height:8px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;border:1px solid #CE82FF22;">
+            <div style="height:100%;width:0%;background:linear-gradient(90deg,#CE82FF,#CE82FFCC);border-radius:8px;transition:width .8s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 8px #CE82FF66;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:#CE82FF88;font-weight:700;">
+            <span>0 din complete</span><span>10 din baaki</span>
+          </div>
+        </div>
+      </div><div style="width:100%;margin:8px 0 6px;padding:0 2px;">
+        <div style="background:linear-gradient(135deg,#CE82FF18,#CE82FF0A);border-radius:16px;padding:11px 14px;display:flex;align-items:center;gap:10px;border:1px solid #CE82FF44;box-shadow:0 2px 12px #CE82FF18;">
+          <div style="width:42px;height:42px;border-radius:13px;background:#CE82FF28;border:2px solid #CE82FF44;display:flex;align-items:center;justify-content:center;font-size:20px;">✈️</div>
+          <div style="flex:1;">
+            <div style="font-size:9px;color:#CE82FF;font-weight:800;text-transform:uppercase;letter-spacing:.6px;">UNIT 5</div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:#CE82FF;">Travel &amp; Places</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:2px;">0/5 complete • 5 din mein safar ki English seekho</div>
+          </div>
+          <div style="font-size:14px;">⏳</div>
+        </div>
+      </div><div class="path-row" style="justify-content:center;margin:6px 0;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div onclick="" style="width:64px;height:56px;cursor:default;position:relative;animation:none;transition:transform .2s;">
+            <div style="font-size:40px;filter:grayscale(1);opacity:.4;">👑</div>
+          </div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:10px;color:var(--mut);text-align:center;">
+            Locked 🔒
+          </div>
+        </div>
+      </div>
+      <div class="path-row" style="justify-content:center;">
+        <div style="width:4px;height:16px;border-radius:4px;background:var(--bdr);margin:0 auto;"></div>
+      </div><div class="path-row" style="justify-content:flex-start;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(21)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">21</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-start;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(22)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">22</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">🔥</div>
+      </div><div class="path-row" style="justify-content:flex-end;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(23)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">23</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-end;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">💎</div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(24)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">24</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        
+      </div><div class="path-row" style="justify-content:flex-start;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(25)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">25</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-start;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">⭐</div>
+      </div><div style="width:100%;margin:8px 0 6px;padding:0 2px;">
+        <div style="background:linear-gradient(135deg,#D9A0FF18,#D9A0FF0A);border-radius:16px;padding:11px 14px;display:flex;align-items:center;gap:10px;border:1px solid #D9A0FF44;box-shadow:0 2px 12px #D9A0FF18;">
+          <div style="width:42px;height:42px;border-radius:13px;background:#D9A0FF28;border:2px solid #D9A0FF44;display:flex;align-items:center;justify-content:center;font-size:20px;">💼</div>
+          <div style="flex:1;">
+            <div style="font-size:9px;color:#D9A0FF;font-weight:800;text-transform:uppercase;letter-spacing:.6px;">UNIT 6</div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:#D9A0FF;">Work &amp; Education</div>
+            <div style="font-size:10px;color:var(--mut);margin-top:2px;">0/5 complete • 5 din mein kaam aur taleem ki English seekho</div>
+          </div>
+          <div style="font-size:14px;">⏳</div>
+        </div>
+      </div><div class="path-row" style="justify-content:center;margin:6px 0;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div onclick="" style="width:64px;height:56px;cursor:default;position:relative;animation:none;transition:transform .2s;">
+            <div style="font-size:40px;filter:grayscale(1);opacity:.4;">📦</div>
+          </div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:10px;color:var(--mut);text-align:center;">
+            Locked 🔒
+          </div>
+        </div>
+      </div>
+      <div class="path-row" style="justify-content:center;">
+        <div style="width:4px;height:16px;border-radius:4px;background:var(--bdr);margin:0 auto;"></div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(26)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">26</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">✨</div>
+      </div><div class="path-row" style="justify-content:flex-end;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(27)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">27</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-end;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(28)" style="width: 58px; height: 58px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">28</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;position:relative;">
+        <div style="margin:0 auto;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 2.9s ease infinite;filter:grayscale(1);">🌟</div>
+      </div><div class="path-row" style="justify-content:flex-start;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(29)" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:20px;line-height:1;">🔒</div>
+        <div class="pnode-num">29</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:flex-start;position:relative;">
+        <div style="margin:0 24px;width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);border:1.5px dashed #3A3660;background:transparent;"></div>
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.25;animation:sideFloat 3.3s ease infinite;filter:grayscale(1);">⚡</div>
+      </div><div class="path-row" style="justify-content:center;">
+      <div class="pnode pnode-entrance locked anim-done" onclick="showLockedToast(30)" style="width: 66px; height: 66px; margin: 0px auto; background: linear-gradient(135deg, rgb(30, 28, 56), rgb(42, 39, 72)); box-shadow: rgb(20, 18, 42) 0px 4px 0px; animation-delay: 0.6s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
+        <div style="font-size:26px;line-height:1;">🔒</div>
+        <div class="pnode-num">30</div>
+        <div class="pnode-tip">Coming soon</div>
+      </div>
+    </div><div class="path-row" style="justify-content:center;margin-top:10px;">
+    <div style="width:5px;height:28px;border-radius:4px;background:linear-gradient(180deg,#2E2B4A,#1E1C35);margin:0 auto;"></div>
+  </div>
+  <div class="path-row" style="justify-content:center;margin:8px 0 24px;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <div class="cert-node locked" onclick="showCertLocked()">
+        <div style="font-size:22px">🔒</div>
+        <div class="cert-label">LOCKED</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'Fredoka One',sans-serif;font-size:13px;color:var(--mut)">
+          🏆 Certificate
+        </div>
+        <div style="font-size:10px;color:var(--mut);margin-top:2px;">
+          0/30 din baaki
+        </div>
+      </div>
+    </div>
+  </div><div style="position: absolute; font-size: 11.8654px; color: rgba(46, 229, 157, 0.35); left: 61.8629%; top: 76.5801%; animation: 2.87794s ease 2.92401s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">✦</div><div style="position: absolute; font-size: 15.832px; color: rgba(91, 141, 239, 0.35); left: 10.2099%; top: 69.0897%; animation: 4.98513s ease 0.87788s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">◆</div><div style="position: absolute; font-size: 11.3473px; color: rgba(199, 125, 255, 0.3); left: 21.344%; top: 34.3678%; animation: 3.42217s ease 2.90382s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">✧</div><div style="position: absolute; font-size: 16.8527px; color: rgba(255, 209, 102, 0.3); left: 12.3794%; top: 25.5848%; animation: 2.7704s ease 2.55673s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">◇</div><div style="position: absolute; font-size: 11.3041px; color: rgba(46, 229, 157, 0.35); left: 66.3753%; top: 92.2868%; animation: 3.00934s ease 0.269049s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">⬡</div><div style="position: absolute; font-size: 9.76111px; color: rgba(91, 141, 239, 0.35); left: 67.2832%; top: 57.0726%; animation: 3.70407s ease 2.62819s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">▲</div><div style="position: absolute; font-size: 13.0006px; color: rgba(199, 125, 255, 0.3); left: 75.6251%; top: 71.6527%; animation: 3.60397s ease 2.95356s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">✦</div><div style="position: absolute; font-size: 10.3885px; color: rgba(255, 209, 102, 0.3); left: 14.7485%; top: 69.5239%; animation: 3.9779s ease 1.41284s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">◆</div><div style="position: absolute; font-size: 9.48132px; color: rgba(46, 229, 157, 0.35); left: 71.8735%; top: 8.19764%; animation: 4.10265s ease 0.469025s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">✧</div><div style="position: absolute; font-size: 15.2346px; color: rgba(91, 141, 239, 0.35); left: 75.1248%; top: 56.0182%; animation: 4.03047s ease 0.838212s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">◇</div><div style="position: absolute; font-size: 15.3937px; color: rgba(199, 125, 255, 0.3); left: 31.7083%; top: 47.1078%; animation: 3.26219s ease 1.62151s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">⬡</div><div style="position: absolute; font-size: 9.58058px; color: rgba(255, 209, 102, 0.3); left: 9.54542%; top: 48.5598%; animation: 4.28937s ease 1.19511s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">▲</div><div style="position: absolute; font-size: 12.7338px; color: rgba(46, 229, 157, 0.35); left: 81.4411%; top: 95.6457%; animation: 3.97134s ease 0.282698s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">✦</div><div style="position: absolute; font-size: 16.5754px; color: rgba(91, 141, 239, 0.35); left: 14.8069%; top: 72.9407%; animation: 3.92082s ease 0.509598s infinite normal none running twinkle; pointer-events: none; user-select: none; z-index: 0;">◆</div></div>
+    <button class="sbtn" id="mainBtn" onclick="goLesson()" style="background: var(--g); color: rgb(255, 255, 255);">▶ Day 5 Shuru Karo</button>
+  </div>
+
+  <div class="bn">
+    <button class="nb" id="nb_home" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
+    <button class="nb" id="nb_papers" onclick="tab('pastpapers')"><span class="ni">📄</span>Papers</button>
+    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
+    <button class="nb" id="nb_profile" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" id="nb_settings" onclick="tab('settings')" style="position: relative; overflow: hidden;"><span class="ni">⚙️</span>Settings</button>
+  </div>
+</div>
+
+<!-- LESSON -->
+
