@@ -1,0 +1,27 @@
+<!-- ═══ Notification Inbox Screen ═══ -->
+<!-- Notification Inbox Screen -->
+<div class="screen" id="notifInbox" style="display:none;background:var(--bg);overflow-y:auto;">
+  <div style="background:linear-gradient(135deg,#0D0B1F,#14102A);padding:52px 20px 20px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,157,.12),transparent 70%);"></div>
+    <button onclick="closeNotifInbox()" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:7px 14px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;">← Wapas</button>
+    <div style="font-size:11px;color:var(--admin);font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">🔔 NOTIFICATIONS</div>
+    <div style="font-family:'Fredoka One',sans-serif;font-size:24px;margin-bottom:4px;">Apki Notifications</div>
+    <div style="font-size:13px;color:var(--mut);">Sab messages ek jagah</div>
+    <button onclick="markAllNotifsRead()" style="margin-top:12px;background:rgba(255,107,157,.12);border:1px solid rgba(255,107,157,.3);border-radius:10px;padding:7px 16px;color:var(--admin);font-size:12px;font-weight:800;cursor:pointer;">✓ Sab Read Karo</button>
+  </div>
+  <div id="notifList" style="padding:14px 14px 100px;">
+    <div style="color:var(--mut);text-align:center;padding:32px;font-size:14px;">⏳ Load ho raha hai...</div>
+  </div>
+</div>
+
+
+<!-- Notification Bell — moved to #simpleTopBar above -->
+
+<style>
+@keyframes notifSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.notif-card{border-radius:14px;padding:14px 16px;margin-bottom:10px;position:relative;animation:notifSlide .25s ease both;cursor:default;}
+.notif-card.unread{border-left:3px solid;}
+.notif-del-btn{position:absolute;top:10px;right:10px;background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.25);border-radius:8px;width:26px;height:26px;color:var(--r);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+</style>
+
+
