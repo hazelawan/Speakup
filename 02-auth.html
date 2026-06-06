@@ -11,12 +11,12 @@
     <!-- Title -->
     <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:var(--p);margin-bottom:8px;">You're a Guest!</div>
     <div style="font-size:14px;color:var(--mut);margin-bottom:32px;line-height:1.6;max-width:280px;">
-      Apna progress save karne ke liye<br>login ya signup karo 🚀<br>
-      <span style="font-size:12px;color:var(--mut);opacity:0.7;">Guest mode mein progress save nahi hota</span>
+      Apna progress save karne ke liye<br>login or signup 🚀<br>
+      <span style="font-size:12px;color:var(--mut);opacity:0.7;">Progress not saved in guest mode</span>
     </div>
     <!-- Login Button -->
     <button onclick="guestGoLogin()" style="width:100%;max-width:320px;padding:16px;background:linear-gradient(135deg,var(--p),var(--p2));border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 var(--p2);margin-bottom:12px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
-      🔑 Login Karo
+      🔑 Login
     </button>
     <!-- Signup Button -->
     <button onclick="guestGoSignup()" style="width:100%;max-width:320px;padding:16px;background:linear-gradient(135deg,#2EE59D,#58CC02);border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 #46A300;margin-bottom:24px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
@@ -24,7 +24,7 @@
     </button>
     <!-- Back button -->
     <button onclick="showScreen('langSelect')" style="background:transparent;border:1px solid var(--bdr);border-radius:12px;padding:10px 24px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">
-      ← Wapas Jao
+      ← Go Back
     </button>
   </div>
 </div>
@@ -35,20 +35,20 @@
     <div style="font-size:64px;margin-bottom:16px;">👤</div>
     <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:var(--txt);margin-bottom:8px;">You are in Guest Mode</div>
     <div style="font-size:14px;color:var(--mut);margin-bottom:10px;line-height:1.7;max-width:280px;">
-      Guest mode mein profile nahi hoti<br>aur progress save nahi hota 💾<br>
-      <span style="font-size:12px;opacity:0.7;">Gmail se login karo aur apna progress save karo!</span>
+      Guest mode mein profile nahi hoti<br>and progress is not saved 💾<br>
+      <span style="font-size:12px;opacity:0.7;">Login with Gmail to save your progress!</span>
     </div>
     <div style="background:rgba(255,150,0,0.1);border:1px solid rgba(255,150,0,0.35);border-radius:14px;padding:12px 18px;margin-bottom:28px;max-width:300px;">
-      <div style="font-size:12px;color:rgba(255,180,50,0.9);font-family:'Nunito',sans-serif;font-weight:700;line-height:1.6;">⚠️ Account banana bilkul free hai!<br>Ek account pe 3 alag profiles bana sakte ho</div>
+      <div style="font-size:12px;color:rgba(255,180,50,0.9);font-family:'Nunito',sans-serif;font-weight:700;line-height:1.6;">⚠️ Account banana bilkul free hai!<br>Create 3 profiles on one account</div>
     </div>
     <button onclick="guestGoSignup()" style="width:100%;max-width:300px;padding:16px;background:linear-gradient(135deg,#2EE59D,#58CC02);border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 #46A300;margin-bottom:12px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
       ✨ Signup Karo — Free!
     </button>
     <button onclick="guestGoLogin()" style="width:100%;max-width:300px;padding:16px;background:linear-gradient(135deg,#7C3AED,#5B21B6);border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 #4C1D95;margin-bottom:20px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
-      🔑 Login Karo
+      🔑 Login
     </button>
     <button onclick="showScreen('dashboard');renderDash();" style="background:transparent;border:1px solid var(--bdr);border-radius:12px;padding:10px 24px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">
-      ← Wapas Jao
+      ← Go Back
     </button>
   </div>
 </div>
@@ -63,14 +63,14 @@
 
   <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:#FF6B6B;margin-bottom:8px;text-shadow:0 0 20px rgba(255,107,107,.4);">App Update Ho Rahi Hai</div>
 
-  <div id="maintenanceMsgDisplay" style="font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:32px;max-width:300px;">Thodi der mein wapas aayein! 🔧</div>
+  <div id="maintenanceMsgDisplay" style="font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:32px;max-width:300px;">Back in a moment! 🔧</div>
 
   <!-- Progress bar animation -->
   <div style="width:200px;height:6px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;margin-bottom:24px;">
     <div style="height:100%;border-radius:6px;background:linear-gradient(90deg,#FF6B6B,#FF9A3C);animation:maintProgress 2.5s ease-in-out infinite;"></div>
   </div>
 
-  <div style="font-size:12px;color:rgba(255,255,255,.3);font-family:'Nunito',sans-serif;">SpeakUp — Jald wapas aayenge 🚀</div>
+  <div style="font-size:12px;color:rgba(255,255,255,.3);font-family:'Nunito',sans-serif;">SpeakUp — Coming back soon 🚀</div>
 
   <!-- Dots loader -->
   <div style="display:flex;gap:6px;margin-top:20px;">
@@ -100,7 +100,7 @@
     <button class="auth-skip-top" onclick="skipAuth()" style="top: 14px; right: 14px; position: fixed; overflow: hidden;">Skip →</button>
     <div class="auth-logo">🦉</div>
     <div class="auth-title">SpeakUp</div>
-    <div class="auth-sub">Apna account banao ya login karo</div>
+    <div class="auth-sub">Create your account or login</div>
   </div>
   <div class="auth-body">
     <!-- Tabs: Login / Signup -->
@@ -147,7 +147,7 @@
           Mujhe yaad rakho ✓
         </label>
       </div>
-      <button class="auth-btn" id="loginEmailBtn" onclick="doLoginEmail()">🔑 Login Karo</button>
+      <button class="auth-btn" id="loginEmailBtn" onclick="doLoginEmail()">🔑 Login</button>
       <div id="loginLockoutTimer" style="display:none;text-align:center;font-size:13px;color:var(--r);font-weight:700;margin-top:8px;padding:8px;background:rgba(255,75,75,.1);border-radius:10px;"></div>
       <!-- Google Sign-In -->
       <div class="auth-divider" style="margin:16px 0 14px;">ya</div>
@@ -174,7 +174,7 @@
           <button type="button" onclick="togglePass('signupPass','signupPassEye')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:20px;color:var(--mut);padding:0;line-height:1;" id="signupPassEye">👁️</button>
         </div>
       </div>
-      <button class="auth-btn" onclick="doSignupEmail()">✅ Account Banao</button>
+      <button class="auth-btn" onclick="doSignupEmail()">✅ Create Account</button>
       <!-- Google Sign-In -->
       <div class="auth-divider" style="margin:16px 0 14px;">ya</div>
       <button class="auth-google-btn" onclick="doGoogleSignIn()">
@@ -184,7 +184,7 @@
     </div>
 
     <div class="auth-divider">ya</div>
-    <button class="skip-btn" onclick="skipAuth()">👻 Guest ki tarah continue karo</button>
+    <button class="skip-btn" onclick="skipAuth()">👻 Continue as Guest</button>
     <div style="margin-top:12px;text-align:center;font-size:11px;color:var(--mut);line-height:1.6;">
       Account banane se tumhara progress save rehta hai.<br>App band karo, dobara kholo — sab kuch wahan milega 🔥
     </div>
@@ -195,7 +195,7 @@
 <div class="screen" id="emailVerifyScreen" style="display:none;background:var(--bg);overflow-y:auto;">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 24px;text-align:center;">
     <div style="font-size:72px;margin-bottom:20px;animation:ob 2.2s ease infinite;">📧</div>
-    <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:var(--g);margin-bottom:10px;text-shadow:var(--neon-g);">Email Verify Karo!</div>
+    <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:var(--g);margin-bottom:10px;text-shadow:var(--neon-g);">Verify Your Email!</div>
     <div style="color:var(--mut);font-size:14px;line-height:1.7;margin-bottom:28px;max-width:320px;">
       Verification email bhej diya! Gmail check karo aur link pe click karo. Iske baad hi app khulega 🔐
     </div>
@@ -207,7 +207,7 @@
       📨 Dobara Email Bhejo
     </button>
     <button onclick="doFirebaseSignOut()" style="background:transparent;border:none;color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;padding:8px;">
-      ← Wapas jao / Logout
+      ← Back jao / Logout
     </button>
     <div id="verifyMsg" style="margin-top:12px;font-size:13px;font-weight:700;"></div>
   </div>
