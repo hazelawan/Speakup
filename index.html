@@ -19501,7 +19501,6 @@ async function afterAuth(){
   // Hide auth error
   document.getElementById('authErr').style.display='none';
   if(IS_GUEST){
-    // Guest mode — koi profile nahi, sirf langSelect pe bhejo
     const gdn = localStorage.getItem('su_guestDisplayName');
     if(gdn) S.name = gdn;
     updateLangSelectIndicators();
@@ -19509,69 +19508,62 @@ async function afterAuth(){
     return;
   }
 
+  // ── Wait for Firebase (max 3s) taake uid mil sake ──
+  let _waitCount = 0;
+  while(!(window.FB_AUTH && window.FB_AUTH.currentUser) && _waitCount < 15){
+    await new Promise(r => setTimeout(r, 200));
+    _waitCount++;
+  }
+
   const uid = window.FB_AUTH?.currentUser?.uid;
 
-  // ── Firebase se progress load karo (logged-in users ke liye) ──
+  // ── Firebase se progress load karo ──
   if(uid && window.FIREBASE_READY && window.FB_DB){
     const fbLoaded = await loadFromFirebase();
     if(fbLoaded && PROFILES.length > 0){
-      // ✅ FIX 1: ACTIVE_PID se profile dhundho (uid se nahi)
-      // Pehle ACTIVE_PID try karo, phir pehli profile
-      const activeP = (ACTIVE_PID && PROFILES.find(x=>x.id===ACTIVE_PID))
-                    || PROFILES[0];
+      const activeP = (ACTIVE_PID && PROFILES.find(x=>x.id===ACTIVE_PID)) || PROFILES[0];
       if(activeP){
         setActiveProfile(activeP.id);
         const lang = activeP.activeLang||'en';
         const ld = activeP.langs&&activeP.langs[lang] ? activeP.langs[lang] : {activeCourse:0};
         if(typeof window.lazyFetchLangDay==='function') window.lazyFetchLangDay(lang);
-
-        // ✅ FIX 2: Course check sahi karo
-        // activeCourse > 0 aur started hona chahiye, tab hi dashboard
-        // Warna langSelect -- lekin PROFILE SELECT MAT KARO
+        // ✅ FIX: activeLang set hai toh dashboard — strict courseStarted check hataya
         const courseId = ld.activeCourse || 0;
-        const courseStarted = courseId > 0 && ld.courses && ld.courses[courseId] && ld.courses[courseId].started;
-        if(courseStarted){
+        const hasStarted = courseId > 0 || (activeP.activeLang && activeP.activeLang !== '');
+        if(hasStarted){
           showScreen('dashboard'); renderDash();
         } else {
           updateLangSelectIndicators();
           showScreen('langSelect');
         }
-        // Migration check
         setTimeout(()=>{ migrateLocalStorageToFirebase(); }, 2000);
         return;
       }
     }
   }
 
-  // ── LocalStorage fallback (offline ya Firebase empty) ──
+  // ── LocalStorage fallback ──
   if(PROFILES.length===0){
-    // ✅ NEW USER — Onboarding dikhao
     window._showOnboardingNext = true;
     setTimeout(()=>{ forceShowOnboarding(); }, 500);
     return;
   }
 
-  // ✅ FIX 3: ACTIVE_PID se profile dhundho, multiple profiles pe profileSelect MAT dikhao
-  // Sirf tab profileSelect dikhao jab ACTIVE_PID bilkul null ho
-  const activeP = (ACTIVE_PID && PROFILES.find(x=>x.id===ACTIVE_PID))
-                || PROFILES[0]; // default: pehli profile
-
+  const activeP = (ACTIVE_PID && PROFILES.find(x=>x.id===ACTIVE_PID)) || PROFILES[0];
   setActiveProfile(activeP.id);
   const lang = activeP.activeLang||'en';
   const ld = activeP.langs&&activeP.langs[lang] ? activeP.langs[lang] : {activeCourse:0};
   if(typeof window.lazyFetchLangDay==='function') window.lazyFetchLangDay(lang);
 
-  // ✅ FIX 2: Course check sahi karo
+  // ✅ FIX: activeLang set hai toh dashboard
   const courseId = ld.activeCourse || 0;
-  const courseStarted = courseId > 0 && ld.courses && ld.courses[courseId] && ld.courses[courseId].started;
-  if(courseStarted){
+  const hasStarted = courseId > 0 || (activeP.activeLang && activeP.activeLang !== '');
+  if(hasStarted){
     showScreen('dashboard'); renderDash();
   } else {
     updateLangSelectIndicators();
     showScreen('langSelect');
   }
-
-  // Migration run karo background mein
   if(uid) setTimeout(()=>{ migrateLocalStorageToFirebase(); }, 2000);
 }
 
@@ -26668,12 +26660,18 @@ function renderStreakScreen(){
     }
   }
 
-  document.addEventListener('screensLoaded', function(){
-    setTimeout(_updateToggleUI, 300);
-  });
+  // Update toggle UI on load — multiple attempts for reliability
+  function _tryUpdateToggle(attempts){
+    attempts = attempts || 0;
+    var enBtn = document.getElementById('appLangEnBtn');
+    if(enBtn){ _updateToggleUI(); return; }
+    if(attempts < 20) setTimeout(function(){ _tryUpdateToggle(attempts+1); }, 200);
+  }
   document.addEventListener('DOMContentLoaded', function(){
-    setTimeout(_updateToggleUI, 800);
+    setTimeout(function(){ _tryUpdateToggle(); }, 500);
   });
+  // Also try after any screen render
+  document.addEventListener('screensLoaded', function(){ _tryUpdateToggle(); });
 })();
 </script>
 
