@@ -7169,6 +7169,10 @@ async function profileFromFirebase(uid, pid){
         Object.entries(fbData.langs).forEach(([lang, langData])=>{
           if(!profile.langs[lang]) profile.langs[lang] = {activeCourse:0, courses:emptyLangCourses()};
           if(langData.activeCourse !== undefined) profile.langs[lang].activeCourse = langData.activeCourse;
+          // ✅ FIX: If top-level activeCourse is 0 but lang has it set, sync it
+          if(!profile.activeCourse && langData.activeCourse && lang === profile.activeLang){
+            profile.activeCourse = langData.activeCourse;
+          }
           if(langData.courses){
             Object.entries(langData.courses).forEach(([courseNum, courseData])=>{
               profile.langs[lang].courses[courseNum] = {
@@ -11853,7 +11857,14 @@ function isPro(){
       if(typeof getLoggedInUser === 'function' && !getLoggedInUser()) return false;
     }
     const uid = window.FB_AUTH?.currentUser?.uid;
-    if(!uid) return false;
+    // ✅ FIX: uid nahi hai but _PRO_CACHE restore hua hai toh Pro return karo
+    // (page reload ke waqt Firebase late fire karta hai)
+    if(!uid){
+      if(window._PRO_CACHE && (!window._PRO_CACHE.expiry || Date.now() <= window._PRO_CACHE.expiry)){
+        return true; // localStorage se restored Pro cache
+      }
+      return false;
+    }
     if(isDemo()) return true;
     // 1. In-memory cache check
     if(window._PRO_CACHE){
@@ -18217,8 +18228,8 @@ function renderSettingsScreen(){
   } catch(e) {}
 
   const icons={7:'♟️',30:'⚡',60:'🎯',90:'🐢'};
-  const times={7:'45 min/din — Full Chess',30:'2 hours/day',60:'1 ghanta/din',90:'30 minutes/din'};
-  const descs={30:'Fast track — jaldi seekhna chahte ho',60:'Balanced — comfortable pace',90:'Easy & Steady — thoda thoda roz'};
+  const times={7:'45 min/day — Full Chess',30:'2 hours/day',60:'1 hour/day',90:'30 min/day'};
+  const descs={30:'Fast track — learn quickly',60:'Balanced — comfortable pace',90:'Easy & Steady — a little each day'};
   const colors={7:'#2ECC71',30:'var(--g)',60:'var(--b)',90:'var(--p)'};
   const lang=S.activeLang||'en';
   const li=LANG_INFO[lang]||LANG_INFO['en'];
@@ -18261,7 +18272,7 @@ function renderSettingsScreen(){
   }
 
   // ── Active course card (settings) ──
-  const ac=langData.activeCourse||S.activeCourse||0; // ✅ FIX: S.activeCourse fallback
+  const ac=langData.activeCourse||S.activeCourse||(S.langs&&S.langs[lang]&&S.langs[lang].activeCourse)||0; // ✅ FIX: multi-fallback
   const acd=ac?(langData.courses[ac]||{done:[],started:false,streak:0,day:1}):{done:[],started:false,streak:0,day:1};
   const apct=ac&&acd.started?Math.round((acd.done.length/ac)*100):0;
   const acEl=document.getElementById('stgActiveCourse');
@@ -18270,8 +18281,8 @@ function renderSettingsScreen(){
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
         <div style="font-size:36px">${ac?icons[ac]:'❓'}</div>
         <div style="flex:1;">
-          <div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:${ac?colors[ac]:'var(--mut)'}">${li.flag} ${li.name} — ${ac?ac+' Day':'Select Karo'}</div>
-          <div style="font-size:12px;color:var(--mut)">${ac?(times[ac]+' — '+descs[ac]):'Koi course active nahi'}</div>
+          <div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:${ac?colors[ac]:'var(--mut)'}">${li.flag} ${li.name} — ${ac?ac+' Day':'Select Course'}</div>
+          <div style="font-size:12px;color:var(--mut)">${ac?(times[ac]+' — '+descs[ac]):'No course active'}</div>
         </div>
         ${ac?`<div style="background:${colors[ac]};color:#000;font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;">ACTIVE ✅</div>`:''}
       </div>
@@ -18311,6 +18322,27 @@ function renderSettingsScreen(){
     }).join('');
   }
 
+
+  // ── App Language Toggle ──
+  const langToggleEl = document.getElementById('stgAppLangToggle');
+  if(langToggleEl){
+    const curLang = localStorage.getItem('speakup_app_lang')||'en';
+    const isUR = curLang === 'ur';
+    langToggleEl.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:26px;">🌐</div>
+          <div>
+            <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:var(--txt);">${isUR ? 'Roman Urdu' : 'English'}</div>
+            <div style="font-size:11px;color:var(--mut);margin-top:2px;">${isUR ? 'App ki language' : 'App display language'}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="setAppLang('ur')" style="padding:8px 14px;border-radius:12px;border:none;font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;background:${isUR?'var(--g)':'var(--card2)'};color:${isUR?'#000':'var(--txt)'};">🇵🇰 UR</button>
+          <button onclick="setAppLang('en')" style="padding:8px 14px;border-radius:12px;border:none;font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;background:${isUR?'var(--card2)':'var(--g)'};color:${isUR?'var(--txt)':'#000'};">🇬🇧 EN</button>
+        </div>
+      </div>`;
+  }
 
   // ── Account section ──
   const loggedUser=getLoggedInUser();
@@ -19540,6 +19572,8 @@ async function afterAuth(){
         const hasStarted = courseId > 0 || (activeP.activeLang && activeP.activeLang !== '');
         if(hasStarted){
           showScreen('dashboard'); renderDash();
+          // ✅ Re-render settings after Firebase data fully loaded
+          setTimeout(()=>{ try{ if(typeof renderSettingsScreen==='function') renderSettingsScreen(); }catch(e){} }, 500);
         } else {
           updateLangSelectIndicators();
           showScreen('langSelect');
@@ -19564,10 +19598,12 @@ async function afterAuth(){
   if(typeof window.lazyFetchLangDay==='function') window.lazyFetchLangDay(lang);
 
   // ✅ FIX: activeLang set hai toh dashboard
-  const courseId = ld.activeCourse || 0;
+  const courseId = ld.activeCourse || activeP.activeCourse || 0;
   const hasStarted = courseId > 0 || (activeP.activeLang && activeP.activeLang !== '');
   if(hasStarted){
     showScreen('dashboard'); renderDash();
+    // ✅ Re-render settings deferred
+    setTimeout(()=>{ try{ if(typeof renderSettingsScreen==='function') renderSettingsScreen(); }catch(e){} }, 800);
   } else {
     updateLangSelectIndicators();
     showScreen('langSelect');
