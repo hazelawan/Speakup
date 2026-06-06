@@ -7509,6 +7509,14 @@ function setActiveProfile(pid){
 }
 
 function save(){
+  // ✅ FIX: Ensure langs[activeLang].activeCourse syncs with S.activeCourse
+  try{
+    const _lang = S.activeLang||'en';
+    if(S.langs && S.activeCourse > 0){
+      if(!S.langs[_lang]) S.langs[_lang] = {activeCourse:0, courses:emptyLangCourses()};
+      if(!S.langs[_lang].activeCourse) S.langs[_lang].activeCourse = S.activeCourse;
+    }
+  }catch(e){}
   // Save current S back into the active profile
   const idx = PROFILES.findIndex(x=>x.id===ACTIVE_PID);
   if(idx>=0){
@@ -18253,7 +18261,7 @@ function renderSettingsScreen(){
   }
 
   // ── Active course card (settings) ──
-  const ac=langData.activeCourse||0;
+  const ac=langData.activeCourse||S.activeCourse||0; // ✅ FIX: S.activeCourse fallback
   const acd=ac?(langData.courses[ac]||{done:[],started:false,streak:0,day:1}):{done:[],started:false,streak:0,day:1};
   const apct=ac&&acd.started?Math.round((acd.done.length/ac)*100):0;
   const acEl=document.getElementById('stgActiveCourse');
