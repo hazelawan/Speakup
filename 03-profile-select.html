@@ -1,10 +1,10 @@
 <!-- ═══ Profile Select + New Profile Modal ═══ -->
 <div class="screen" id="profileSelect" style="">
   <div class="ps-header" style="position:relative;">
-    <button onclick="showScreen('dashboard');renderDash();" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;">← Wapas</button>
+    <button onclick="showScreen('dashboard');renderDash();" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;">← Back</button>
     <div class="ps-owl">🦉</div>
     <div class="ps-title">SpeakUp</div>
-    <div class="ps-sub">Kaun seekhna chahta hai aaj? 👇</div>
+    <div class="ps-sub">Who wants to learn today? 👇</div>
   </div>
   <div class="ps-body">
     <div class="ps-label">👤 Profiles</div>
@@ -26,7 +26,7 @@
     </button>
     <div style="margin-top:16px;padding:12px 16px;background:rgba(88,204,2,.06);border-radius:14px;border:1px solid rgba(88,204,2,.15);">
       <div style="font-size:11px;color:var(--g);font-weight:800;margin-bottom:4px;">💡 Tip</div>
-      <div style="font-size:12px;color:var(--mut);line-height:1.6;">Ek account pe sirf <strong style="color:var(--g);">3 profiles</strong> ban sakti hain — bhai, behan, ammi — sab ka progress alag hoga!</div>
+      <div style="font-size:12px;color:var(--mut);line-height:1.6;">Only on one account <strong style="color:var(--g);">3 profiles</strong> can be created — each with separate progress!</div>
     </div>
   </div>
 </div>
@@ -70,7 +70,7 @@
   </div>
     <input class="nf" id="newProfileName" type="text" placeholder="Naam likho... (e.g. Sara)" maxlength="20" oninput="validateProfileName()" style="margin-bottom: 4px; transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;">
     <div id="profileNameError" style="color:var(--r);font-size:12px;font-weight:600;min-height:18px;margin-bottom:10px;text-align:center;transition:opacity 0.2s;"></div>
-    <button class="bg" id="createProfileBtn" onclick="createProfile()" style="position: relative; overflow: hidden;">✅ Profile Banao</button>
+    <button class="bg" id="createProfileBtn" onclick="createProfile()" style="position: relative; overflow: hidden;">✅ Create Profile</button>
     <button class="bo" onclick="hideAddProfile()">Cancel</button>
   </div>
 </div>
