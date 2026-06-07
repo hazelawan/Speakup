@@ -21778,7 +21778,7 @@ async function pwaPreCache(){
 
   // Method: Use a separate <script> tag content as SW via data URI
   const swScript = `
-    const C='speakup-sw-v1';
+    const C='speakup-sw-v8';
     self.addEventListener('install',e=>{self.skipWaiting();});
     self.addEventListener('activate',e=>{
       e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));
