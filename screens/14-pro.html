@@ -1,20 +1,21 @@
+<!-- ▼ INCLUDE: screens/14-pro.html ▼ -->
 <!-- ═══ Pro Screen ═══ -->
 <div class="screen pb80" id="proScreen">
   <!-- Back Button -->
   <button onclick="history.back();if(typeof showScreen==='function'){showScreen('dashboard');renderDash();}" 
-    style="position:fixed;top:14px;left:14px;z-index:999;background:rgba(15,14,23,.85);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:7px 14px;color:rgba(255,255,255,.75);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;backdrop-filter:blur(8px);">← Wapas</button>
+    style="position:fixed;top:14px;left:14px;z-index:999;background:rgba(15,14,23,.85);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:7px 14px;color:rgba(255,255,255,.75);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;backdrop-filter:blur(8px);">← Back</button>
 
   <!-- Hero -->
   <div class="pro-hero">
     <div class="pro-crown">👑</div>
     <div class="pro-hero-title">SpeakUp Pro</div>
-    <div class="pro-hero-sub">Apni language journey ko <b>turbo mode</b> mein daal do!<br>Unlimited access, zero limits.</div>
+    <div class="pro-hero-sub">Apni language journey ko <b>turbo mode</b> enter below!<br>Unlimited access, zero limits.</div>
 
     <!-- Free vs Pro Quick Compare -->
     <div class="pro-compare-banner">
       <div class="pro-compare-free">
         <div class="pcf-label">🆓 Free</div>
-        <div class="pcf-item">📅 Sirf 3 Days</div>
+        <div class="pcf-item">📅 Only 3 Days</div>
         <div class="pcf-item">❤️ 5 Hearts</div>
         <div class="pcf-item">🔒 Locked Content</div>
         <div class="pcf-item">❌ No Streak Freeze</div>
@@ -37,17 +38,17 @@
     <div style="font-size:14px;color:var(--g);margin-bottom:14px;">Saari features unlock hain 🎉</div>
     <div id="proExpiryInfo" style="font-size:13px;color:var(--g);background:rgba(46,229,157,.1);border:1.5px solid rgba(46,229,157,.3);border-radius:14px;padding:11px 18px;display:inline-block;margin-bottom:16px;font-weight:700;">Checking...</div>
     <div style="text-align:left;background:rgba(255,255,255,.04);border-radius:16px;padding:16px;margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Aapke Pro Features</div>
+      <div style="font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Your Pro Features</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#128197;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Sab Days Unlock</div><div style="font-size:11px;color:var(--mut);">Day 4 se Day 90 tak</div></div></div>
-        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#128154;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Unlimited Hearts</div><div style="font-size:11px;color:var(--mut);">Galti karo, koi tension nahi</div></div></div>
-        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">📄</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Past Papers Access</div><div style="font-size:11px;color:var(--mut);">9th se 12th saare papers</div></div></div>
-        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#10052;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Streak Freeze</div><div style="font-size:11px;color:var(--mut);">Din miss hone pe streak bachao</div></div></div>
-        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#127891;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Course Certificate</div><div style="font-size:11px;color:var(--mut);">Course complete karo aur official certificate pao</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#128197;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Sab Days Unlock</div><div style="font-size:11px;color:var(--mut);">Day 4 to Day 90</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#128154;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Unlimited Hearts</div><div style="font-size:11px;color:var(--mut);">Make mistakes, no worries</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">📄</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Past Papers Access</div><div style="font-size:11px;color:var(--mut);">9th to 12th all papers</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#10052;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Streak Freeze</div><div style="font-size:11px;color:var(--mut);">Save streak on missed days</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">&#127891;</span><div><div style="font-size:14px;font-weight:700;color:var(--txt);">Course Certificate</div><div style="font-size:11px;color:var(--mut);">Complete course and get official certificate</div></div></div>
       </div>
     </div>
     <div id="proUpgradePlans" style="margin-bottom:14px;display:none;">
-      <div style="font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Upgrade Karo</div>
+      <div style="font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Upgrade</div>
       <div id="proUpgradeCards"></div>
     </div>
     <button onclick="showScreen('dashboard');renderDash();" style="width:100%;padding:13px;background:linear-gradient(135deg,#FFD700,#FF9500);border:none;border-radius:14px;color:#000;font-family:'Fredoka One',sans-serif;font-size:16px;cursor:pointer;font-weight:800;margin-bottom:10px;">&#128640; Seekhna Shuru Karo!</button>
@@ -63,7 +64,7 @@
       <div class="pro-feat-icon green">♾️</div>
       <div class="pro-feat-text">
         <div class="pro-feat-title">Unlimited Hearts</div>
-        <div class="pro-feat-desc">Galti ki chinta nahi — jitna chaaho seekho, hearts kabhi khatam nahi honge!</div>
+        <div class="pro-feat-desc">No worry about mistakes — hearts never run out!</div>
       </div>
       <div class="pro-feat-badge">FREE: 5 ❤️</div>
     </div>
@@ -72,7 +73,7 @@
       <div class="pro-feat-icon gold">🗓️</div>
       <div class="pro-feat-text">
         <div class="pro-feat-title">Sab Days Unlock</div>
-        <div class="pro-feat-desc">Day 4 se lekar Day 90 tak — pura content ek baar mein access karo!</div>
+        <div class="pro-feat-desc">Day 4 to Day 90 — access all content at once!</div>
       </div>
       <div class="pro-feat-badge">FREE: Day 1-3</div>
     </div>
@@ -81,7 +82,7 @@
       <div class="pro-feat-icon orange">❄️</div>
       <div class="pro-feat-text">
         <div class="pro-feat-title">Streak Freeze</div>
-        <div class="pro-feat-desc">Ek din miss ho gaya? Koi baat nahi! Streak Freeze use karo aur apna record bachao.</div>
+        <div class="pro-feat-desc">Missed a day? No worries! Use Streak Freeze to save your record.</div>
       </div>
       <div class="pro-feat-badge">Pro Only 👑</div>
     </div>
@@ -90,7 +91,7 @@
       <div class="pro-feat-icon purple">🏆</div>
       <div class="pro-feat-text">
         <div class="pro-feat-title">Leaderboard Pro Badge</div>
-        <div class="pro-feat-desc">Leaderboard pe apna naam 👑 Pro badge ke saath dikhao — sab jaanein ke tum serious ho!</div>
+        <div class="pro-feat-desc">Show your name on leaderboard with 👑 Pro badge!</div>
       </div>
       <div class="pro-feat-badge">Pro Only 👑</div>
     </div>
@@ -99,7 +100,7 @@
       <div class="pro-feat-icon blue">🎓</div>
       <div class="pro-feat-text">
         <div class="pro-feat-title">Course Certificate</div>
-        <div class="pro-feat-desc">Course complete karo aur official SpeakUp certificate pao — download aur share karo!</div>
+        <div class="pro-feat-desc">Complete the course and get an official SpeakUp certificate!</div>
       </div>
       <div class="pro-feat-badge">Pro Only 👑</div>
     </div>
@@ -108,7 +109,7 @@
       <div class="pro-feat-icon red">⚡</div>
       <div class="pro-feat-text">
         <div class="pro-feat-title">Priority Support</div>
-        <div class="pro-feat-desc">Koi masla ho toh WhatsApp pe seedha message karo — 24 ghante mein jawab guarantee!</div>
+        <div class="pro-feat-desc">Any issue? Message on WhatsApp — 24 hour response guarantee!</div>
       </div>
       <div class="pro-feat-badge">Pro Only 👑</div>
     </div>
@@ -122,7 +123,7 @@
       <!-- 2 Week Plan -->
       <div class="pro-plan-card" id="planCard_2week" onclick="proSelectPlan('2week')">
         <div class="plan-emoji">🔥</div>
-        <div class="plan-duration">2 Hafta</div>
+        <div class="plan-duration">2 Weeks</div>
         <div class="plan-price">Rs. 300</div>
         <div class="plan-per-day">~Rs. 21/din</div>
         <button class="plan-select-btn">Chunno</button>
@@ -132,7 +133,7 @@
       <div class="pro-plan-card popular" id="planCard_month" onclick="proSelectPlan('month')">
         <div class="plan-popular-badge">⭐ MOST POPULAR</div>
         <div class="plan-emoji">👑</div>
-        <div class="plan-duration">1 Mahina</div>
+        <div class="plan-duration">1 Month</div>
         <div class="plan-price">Rs. 500</div>
         <div class="plan-per-day">~Rs. 17/din</div>
         <button class="plan-select-btn">Chunno</button>
@@ -141,7 +142,7 @@
       <!-- 1 Year Plan -->
       <div class="pro-plan-card" id="planCard_year" onclick="proSelectPlan('year')">
         <div class="plan-emoji">💎</div>
-        <div class="plan-duration">1 Saal</div>
+        <div class="plan-duration">1 Year</div>
         <div class="plan-price">Rs. 4000</div>
         <div class="plan-per-day">~Rs. 11/din</div>
         <button class="plan-select-btn">Chunno</button>
@@ -152,13 +153,13 @@
 
   <!-- Payment Section -->
   <div class="pro-pay-section">
-    <div class="pro-section-label">💳 Payment Karo</div>
+    <div class="pro-section-label">💳 Make Payment</div>
 
     <!-- Selected Plan Badge -->
     <div id="proSelectedPlan">
       <div>
         <div style="font-size:11px;color:var(--mut);margin-bottom:2px;">Selected Plan</div>
-        <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:var(--txt);" id="proSelPlanLabel">1 Mahina Plan</div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:var(--txt);" id="proSelPlanLabel">1 Month Plan</div>
       </div>
       <div style="font-family:'Fredoka One',sans-serif;font-size:22px;color:#FFD700;" id="proSelPlanPrice">Rs. 500</div>
     </div>
@@ -178,15 +179,15 @@
       <div style="font-size:12px;font-weight:800;color:#FFD700;margin-bottom:10px;">📋 3 Aasaan Steps</div>
       <div class="pro-step-item">
         <div class="pro-step-num">1</div>
-        <div>Upar se payment method chunno aur <b style="color:var(--txt)">number copy karo</b></div>
+        <div>Choose payment method above and <b style="color:var(--txt)">copy number</b></div>
       </div>
       <div class="pro-step-item">
         <div class="pro-step-num">2</div>
-        <div>Apne selected plan ki <b style="color:var(--txt)">payment send karo</b> — screenshot lo</div>
+        <div>Apne selected plan ki <b style="color:var(--txt)">send payment</b> — screenshot lo</div>
       </div>
       <div class="pro-step-item">
         <div class="pro-step-num">3</div>
-        <div>Neeche WhatsApp button se <b style="color:var(--txt)">screenshot bhejo</b> — 24 ghante mein Pro mil jayega!</div>
+        <div>Neeche WhatsApp button se <b style="color:var(--txt)">screenshot bhejo</b> — Pro within 24 hours!</div>
       </div>
     </div>
 
@@ -231,9 +232,9 @@
 // ═══════════════════════════════════════════════
 
 const PRO_PLANS = {
-  '2week': { label: '2 Hafta Plan',  price: 'Rs. 300',  days: 14,  perDay: '~Rs. 21/din' },
-  'month':  { label: '1 Mahina Plan', price: 'Rs. 500',  days: 30,  perDay: '~Rs. 17/din' },
-  'year':   { label: '1 Saal Plan',   price: 'Rs. 4000', days: 365, perDay: '~Rs. 11/din' },
+  '2week': { label: '2 Weeks Plan',  price: 'Rs. 300',  days: 14,  perDay: '~Rs. 21/din' },
+  'month':  { label: '1 Month Plan', price: 'Rs. 500',  days: 30,  perDay: '~Rs. 17/din' },
+  'year':   { label: '1 Year Plan',   price: 'Rs. 4000', days: 365, perDay: '~Rs. 11/din' },
 };
 
 // Map admin paymentPlans IDs → PRO_PLANS keys
@@ -340,7 +341,7 @@ function renderProPaymentUI(){
   const accs = _proPaymentAccounts;
   if(!accs || !accs.length){
     tabs.innerHTML   = '';
-    panels.innerHTML = '<div style="color:var(--mut);text-align:center;padding:16px;font-size:13px;">Admin ne payment accounts set nahi kiye abhi</div>';
+    panels.innerHTML = '<div style="color:var(--mut);text-align:center;padding:16px;font-size:13px;">Admin has not set up payment accounts yet</div>';
     return;
   }
 
@@ -449,17 +450,17 @@ function showProScreen(fromDayNum) {
         var cp = d && d.plan ? d.plan : '';
         var uPlans = [];
         if(cp === '2week' || cp === '15din'){
-          uPlans.push({key:'month', lbl:'1 Mahina', price: PRO_PLANS['month']?.price || 'Rs. 500', pop:true});
-          uPlans.push({key:'year',  lbl:'1 Saal',   price: PRO_PLANS['year']?.price  || 'Rs. 4000', pop:false});
+          uPlans.push({key:'month', lbl:'1 Month', price: PRO_PLANS['month']?.price || 'Rs. 500', pop:true});
+          uPlans.push({key:'year',  lbl:'1 Year',   price: PRO_PLANS['year']?.price  || 'Rs. 4000', pop:false});
         } else if(cp === 'month'){
-          uPlans.push({key:'year',  lbl:'1 Saal',   price: PRO_PLANS['year']?.price  || 'Rs. 4000', pop:false});
+          uPlans.push({key:'year',  lbl:'1 Year',   price: PRO_PLANS['year']?.price  || 'Rs. 4000', pop:false});
         }
         if(uPlans.length){
           uPlans.forEach(function(p){
             var c = document.createElement('div');
             c.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:rgba(255,215,0,.08);border:1.5px solid rgba(255,215,0,.3);border-radius:14px;padding:12px 16px;cursor:pointer;margin-bottom:6px;';
             var badge = p.pop ? '<span style="background:#FFD700;color:#000;font-size:9px;padding:2px 6px;border-radius:8px;font-weight:800;margin-left:4px;">POPULAR</span>' : '';
-            c.innerHTML = '<div><div style="font-size:15px;color:#FFD700;font-weight:700;">' + p.lbl + badge + '</div><div style="font-size:11px;color:var(--mut);">Abhi upgrade karo</div></div>'
+            c.innerHTML = '<div><div style="font-size:15px;color:#FFD700;font-weight:700;">' + p.lbl + badge + '</div><div style="font-size:11px;color:var(--mut);">Upgrade Now</div></div>'
                         + '<div style="font-size:18px;color:#FFD700;font-weight:700;">' + p.price + '</div>';
             c.onclick = function(){ showPayPopup(p.key); };
             upgCards.appendChild(c);
@@ -592,3 +593,5 @@ function openProUpgradeScreen(dayNum) {
 
 <!-- SETTINGS -->
 
+
+<!-- ▲ END: 14-pro.html ▲ -->
