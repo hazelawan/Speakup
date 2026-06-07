@@ -2842,7 +2842,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
     </button>
     <!-- Signup Button -->
     <button onclick="guestGoSignup()" style="width:100%;max-width:320px;padding:16px;background:linear-gradient(135deg,#2EE59D,#58CC02);border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 #46A300;margin-bottom:24px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
-      ✨ Signup Karo
+      ✨ Sign Up
     </button>
     <!-- Back button -->
     <button onclick="showScreen('langSelect')" style="background:transparent;border:1px solid var(--bdr);border-radius:12px;padding:10px 24px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">
@@ -2864,7 +2864,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       <div style="font-size:12px;color:rgba(255,180,50,0.9);font-family:'Nunito',sans-serif;font-weight:700;line-height:1.6;">⚠️ Account banana bilkul free hai!<br>Create 3 profiles on one account</div>
     </div>
     <button onclick="guestGoSignup()" style="width:100%;max-width:300px;padding:16px;background:linear-gradient(135deg,#2EE59D,#58CC02);border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 #46A300;margin-bottom:12px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
-      ✨ Signup Karo — Free!
+      ✨ Sign Up — Free!
     </button>
     <button onclick="guestGoLogin()" style="width:100%;max-width:300px;padding:16px;background:linear-gradient(135deg,#7C3AED,#5B21B6);border:none;border-radius:16px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 4px 0 #4C1D95;margin-bottom:20px;transition:transform .15s;" onmousedown="this.style.transform='translateY(2px)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='translateY(2px)'" ontouchend="this.style.transform=''">
       🔑 Login
@@ -2940,12 +2940,12 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
     <div id="loginForm">
       <div class="auth-field">
         <label class="auth-label">Email</label>
-        <input class="auth-input" id="loginEmail" type="email" placeholder="Apni email likho..." autocomplete="email">
+        <input class="auth-input" id="loginEmail" type="email" placeholder="Enter your email..." autocomplete="email">
       </div>
       <div class="auth-field">
         <label class="auth-label">Password</label>
         <div style="position:relative;">
-          <input class="auth-input" id="loginPass" type="password" placeholder="Password likho..." autocomplete="current-password" style="padding-right:48px;">
+          <input class="auth-input" id="loginPass" type="password" placeholder="Enter password..." autocomplete="current-password" style="padding-right:48px;">
           <button type="button" onclick="togglePass('loginPass','loginPassEye')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:20px;color:var(--mut);padding:0;line-height:1;" id="loginPassEye">👁️</button>
         </div>
       </div>
@@ -2956,7 +2956,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       <!-- Forgot Password Panel (inline) -->
       <div id="forgotPasswordPanel" style="display:none;background:rgba(46,229,157,0.07);border:1.5px solid rgba(46,229,157,0.25);border-radius:16px;padding:16px;margin-bottom:16px;">
         <div style="font-size:13px;color:var(--txt);font-weight:700;margin-bottom:10px;">🔐 Password Reset</div>
-        <input class="auth-input" id="forgotEmail" type="email" placeholder="Apni email daalo..." style="margin-bottom:10px;">
+        <input class="auth-input" id="forgotEmail" type="email" placeholder="Enter your email..." style="margin-bottom:10px;">
         <div style="display:flex;gap:8px;">
           <button onclick="doForgotPassword()" style="flex:1;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--g),#3aaf00);color:#fff;font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">📧 Reset Link Bhejo</button>
           <button onclick="hideForgotPassword()" style="padding:12px 16px;border-radius:12px;border:1.5px solid var(--bdr);background:transparent;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">✕</button>
@@ -2987,12 +2987,12 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       </div>
       <div class="auth-field">
         <label class="auth-label">Email</label>
-        <input class="auth-input" id="signupEmail" type="email" placeholder="Apni Gmail likho..." autocomplete="email">
+        <input class="auth-input" id="signupEmail" type="email" placeholder="Enter your Gmail..." autocomplete="email">
       </div>
       <div class="auth-field">
         <label class="auth-label">Password (6+ characters)</label>
         <div style="position:relative;">
-          <input class="auth-input" id="signupPass" type="password" placeholder="Apna password..." autocomplete="new-password" style="padding-right:48px;">
+          <input class="auth-input" id="signupPass" type="password" placeholder="Create password..." autocomplete="new-password" style="padding-right:48px;">
           <button type="button" onclick="togglePass('signupPass','signupPassEye')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:20px;color:var(--mut);padding:0;line-height:1;" id="signupPassEye">👁️</button>
         </div>
       </div>
@@ -3111,7 +3111,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
   
     <div class="avatar-opt " onclick="pickAvatar('🦄',this)">🦄</div>
   </div>
-    <input class="nf" id="newProfileName" type="text" placeholder="Naam likho... (e.g. Sara)" maxlength="20" oninput="validateProfileName()" style="margin-bottom: 4px; transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;">
+    <input class="nf" id="newProfileName" type="text" placeholder="Enter name... (e.g. Sara)" maxlength="20" oninput="validateProfileName()" style="margin-bottom: 4px; transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;">
     <div id="profileNameError" style="color:var(--r);font-size:12px;font-weight:600;min-height:18px;margin-bottom:10px;text-align:center;transition:opacity 0.2s;"></div>
     <button class="bg" id="createProfileBtn" onclick="createProfile()" style="position: relative; overflow: hidden;">✅ Create Profile</button>
     <button class="bo" onclick="hideAddProfile()">Cancel</button>
@@ -3371,7 +3371,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       <div style="background:#fff;border-radius:28px 28px 0 0;padding:28px 20px 0;box-shadow:0 -4px 32px rgba(0,0,0,.08);">
         <div style="font-family:'Fredoka One',sans-serif;font-size:22px;color:#222;text-align:center;margin-bottom:6px;">Apna naam batao! 😊</div>
         <div style="font-size:13px;color:#999;text-align:center;margin-bottom:20px;">Learn any language — your journey begins</div>
-        <input id="nameIn" type="text" placeholder="Naam likho... (e.g. Ahmed)" maxlength="28" style="width:100%;padding:16px 18px;border-radius:16px;border:2.5px solid #e5e5e5;font-size:17px;font-family:Nunito,sans-serif;color:#222;background:#f9f9f9;outline:none;box-sizing:border-box;transition:border-color .2s;margin-bottom:14px;" onfocus="this.style.borderColor='#58CC02';this.style.background='#fff'" onblur="this.style.borderColor='#e5e5e5';this.style.background='#f9f9f9'" onkeydown="if(event.key==='Enter')goName()">
+        <input id="nameIn" type="text" placeholder="Enter name... (e.g. Ahmed)" maxlength="28" style="width:100%;padding:16px 18px;border-radius:16px;border:2.5px solid #e5e5e5;font-size:17px;font-family:Nunito,sans-serif;color:#222;background:#f9f9f9;outline:none;box-sizing:border-box;transition:border-color .2s;margin-bottom:14px;" onfocus="this.style.borderColor='#58CC02';this.style.background='#fff'" onblur="this.style.borderColor='#e5e5e5';this.style.background='#f9f9f9'" onkeydown="if(event.key==='Enter')goName()">
         <button onclick="goName()" style="width:100%;padding:18px;border-radius:16px;border:none;background:#58CC02;color:#fff;font-family:'Fredoka One',sans-serif;font-size:20px;cursor:pointer;box-shadow:0 6px 0 #46A800;letter-spacing:.5px;transition:transform .1s,box-shadow .1s;active:transform:translateY(3px);" onmousedown="this.style.transform='translateY(3px)';this.style.boxShadow='0 3px 0 #46A800'" onmouseup="this.style.transform='';this.style.boxShadow='0 6px 0 #46A800'" ontouchstart="this.style.transform='translateY(3px)';this.style.boxShadow='0 3px 0 #46A800'" ontouchend="this.style.transform='';this.style.boxShadow='0 6px 0 #46A800'">
           SHURU KARO →
         </button>
@@ -3635,7 +3635,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
   <div class="ct a" style="position:relative;">
     <button onclick="showScreen('langSelect');" style="position:absolute;top:0;left:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;">← Back</button>
     <div class="pt" id="courseSelectTitle">🇬🇧 English — Course Chuno</div>
-    <div class="ps2" id="courseSelectSub">Hazelawan@22, apni speed ke hisaab se English course select karo</div>
+    <div class="ps2" id="courseSelectSub">Hazelawan@22, select your English course — choose your pace</div>
   </div>
   <div class="cl" id="courseCardsList">
     <div class="cc c7 observed" id="courseCard7" onclick="pickCourse(7)" style="display: none; opacity: 1; transform: translateY(0px) scale(1);">
@@ -4374,7 +4374,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 
   <!-- STEP 1: Class Select -->
   <div id="ppClassSelect" style="padding:16px 16px 80px;">
-    <div style="font-family:'Fredoka One',sans-serif;font-size:15px;color:var(--mut);margin-bottom:14px;text-align:center;">Class Select Karo:</div>
+    <div style="font-family:'Fredoka One',sans-serif;font-size:15px;color:var(--mut);margin-bottom:14px;text-align:center;">Select Class:</div>
     <div style="display:flex;flex-direction:column;gap:10px;">
       <div class="pp-class-card" onclick="ppSelectClass(9)" style="background:linear-gradient(135deg,rgba(91,141,239,.15),rgba(91,141,239,.08));border:2px solid rgba(91,141,239,.4);border-radius:20px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s;" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''">
         <div style="width:52px;height:52px;background:rgba(91,141,239,.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;">📗</div>
@@ -4417,7 +4417,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       <button onclick="ppBack('class')" style="background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:12px;padding:8px 14px;color:var(--txt);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">← Back</button>
       <div id="ppSubjectTitle" style="font-family:'Fredoka One',sans-serif;font-size:17px;flex:1;"></div>
     </div>
-    <div style="font-size:12px;color:var(--mut);margin-bottom:12px;">Subject Select Karo:</div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:12px;">Select Subject:</div>
     <div id="ppSubjectGrid" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
@@ -4427,7 +4427,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       <button onclick="ppBack('subject')" style="background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:12px;padding:8px 14px;color:var(--txt);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">← Back</button>
       <div id="ppBoardTitle" style="font-family:'Fredoka One',sans-serif;font-size:17px;flex:1;"></div>
     </div>
-    <div style="font-size:12px;color:var(--mut);margin-bottom:12px;">Board Select Karo:</div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:12px;">Select Board:</div>
     <div id="ppBoardGrid" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
@@ -4520,7 +4520,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
     </div>
     <!-- Name edit input (hidden by default) -->
     <div id="nameEditBox" style="display:none;margin-top:8px;">
-      <input id="nameEditIn" style="padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:#fff;font-size:15px;font-family:Nunito,sans-serif;outline:none;width:200px;text-align:center;" placeholder="Naya naam likho...">
+      <input id="nameEditIn" style="padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:#fff;font-size:15px;font-family:Nunito,sans-serif;outline:none;width:200px;text-align:center;" placeholder="Enter your name...">
       <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
         <button onclick="saveName()" style="background:var(--g);border:none;border-radius:10px;padding:8px 16px;color:#fff;font-weight:700;cursor:pointer;">✅ Save</button>
         <button onclick="cancelEdit()" style="background:rgba(255,255,255,.1);border:none;border-radius:10px;padding:8px 16px;color:#fff;cursor:pointer;">Cancel</button>
@@ -4574,7 +4574,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
     <!-- ══ PROGRESS SHARE BUTTON ══ -->
     <button class="share-progress-btn" onclick="openShareCard()">
       <span class="spb-icon">📤</span>
-      Apni Progress Share Karo
+      Share Your Progress
     </button>
     <div style="font-size:11px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px;">❌ Wrong Answer — Review</div>
     <div id="mistakesReviewSection" style="margin-bottom:18px;">
@@ -5198,7 +5198,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       <div style="font-size:36px;margin-bottom:10px;">🎓</div>
       <div class="cert-name-title">Certificate of Completion</div>
       <div class="cert-name-sub">Confirm your name — certificate will use this name</div>
-      <input class="cert-name-input" id="certNameInput" type="text" placeholder="Apna naam likhو..." maxlength="40"/>
+      <input class="cert-name-input" id="certNameInput" type="text" placeholder="Enter your name..." maxlength="40"/>
       <button class="cert-name-btn" onclick="certConfirmName()">✦ Generate Certificate ✦</button>
     </div>
   </div>
@@ -5919,7 +5919,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       <div style="font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Upgrade</div>
       <div id="proUpgradeCards"></div>
     </div>
-    <button onclick="showScreen('dashboard');renderDash();" style="width:100%;padding:13px;background:linear-gradient(135deg,#FFD700,#FF9500);border:none;border-radius:14px;color:#000;font-family:'Fredoka One',sans-serif;font-size:16px;cursor:pointer;font-weight:800;margin-bottom:10px;">&#128640; Seekhna Shuru Karo!</button>
+    <button onclick="showScreen('dashboard');renderDash();" style="width:100%;padding:13px;background:linear-gradient(135deg,#FFD700,#FF9500);border:none;border-radius:14px;color:#000;font-family:'Fredoka One',sans-serif;font-size:16px;cursor:pointer;font-weight:800;margin-bottom:10px;">🚀 Start Learning Now!</button>
     <button onclick="var waNum=window._primaryWA||'923410101415';window.open('https://wa.me/'+waNum+'?text=SpeakUp%20Support','_blank')" style="width:100%;padding:12px;background:#25D366;border:none;border-radius:14px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:15px;cursor:pointer;font-weight:800;margin-bottom:10px;">💬 Admin se Contact (WhatsApp)</button>
     <button onclick="showCancelSubPopup()" style="width:100%;padding:11px;background:transparent;border:1.5px solid rgba(255,107,107,.4);border-radius:14px;color:rgba(255,107,107,.8);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">&#10060; Subscription Cancel Karo</button>
   </div>
@@ -5985,7 +5985,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 
   <!-- Pricing Cards -->
   <div class="pro-pricing-section">
-    <div class="pro-section-label">💰 Plan Chunno</div>
+    <div class="pro-section-label">💰 Choose Plan</div>
     <div class="pro-plans-wrap">
 
       <!-- 2 Week Plan -->
@@ -5994,7 +5994,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
         <div class="plan-duration">2 Weeks</div>
         <div class="plan-price">Rs. 300</div>
         <div class="plan-per-day">~Rs. 21/din</div>
-        <button class="plan-select-btn">Chunno</button>
+        <button class="plan-select-btn">Select</button>
       </div>
 
       <!-- 1 Month Plan (Popular) -->
@@ -6004,7 +6004,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
         <div class="plan-duration">1 Month</div>
         <div class="plan-price">Rs. 500</div>
         <div class="plan-per-day">~Rs. 17/din</div>
-        <button class="plan-select-btn">Chunno</button>
+        <button class="plan-select-btn">Select</button>
       </div>
 
       <!-- 1 Year Plan -->
@@ -6013,7 +6013,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
         <div class="plan-duration">1 Year</div>
         <div class="plan-price">Rs. 4000</div>
         <div class="plan-per-day">~Rs. 11/din</div>
-        <button class="plan-select-btn">Chunno</button>
+        <button class="plan-select-btn">Select</button>
       </div>
 
     </div>
@@ -6393,11 +6393,11 @@ function proSelectPlan(plan) {
         if (card.classList.contains('popular') && k !== plan) {
           btn.style.background = 'linear-gradient(135deg,#FFD700,#FF9500)';
           btn.style.color = '#000';
-          btn.textContent = 'Chunno';
+          btn.textContent = 'Select';
         } else {
           btn.style.background = 'rgba(255,255,255,.08)';
           btn.style.color = 'var(--txt, #fff)';
-          btn.textContent = 'Chunno';
+          btn.textContent = 'Select';
         }
       }
     }
@@ -6495,7 +6495,7 @@ function openProUpgradeScreen(dayNum) {
         <button onclick="document.getElementById('displayNameEditWrap').style.display=document.getElementById('displayNameEditWrap').style.display==='none'?'block':'none';" style="background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:8px;padding:4px 12px;color:var(--mut);font-size:12px;cursor:pointer;font-family:'Fredoka One',sans-serif;">Edit</button>
       </div>
       <div id="displayNameEditWrap" style="display:none;margin-top:10px;">
-        <input id="displayNameInput" class="inp" placeholder="Naya naam likho..." style="margin:0 0 8px 0;" maxlength="30">
+        <input id="displayNameInput" class="inp" placeholder="Enter your name..." style="margin:0 0 8px 0;" maxlength="30">
         <div style="display:flex;gap:8px;">
           <button onclick="updateDisplayName()" style="flex:1;padding:10px;background:var(--g);border:none;border-radius:10px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">Save ✅</button>
           <button onclick="document.getElementById('displayNameEditWrap').style.display='none';" style="flex:1;padding:10px;background:rgba(255,255,255,.08);border:1px solid var(--bdr);border-radius:10px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">Cancel</button>
@@ -6507,7 +6507,6 @@ function openProUpgradeScreen(dayNum) {
     <div style="font-size:11px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🎨 Appearance</div>
 
     <!-- ═══ APP LANGUAGE TOGGLE ═══ -->
-    <div style="font-size:11px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🌐 App Language</div>
     <div id="stgAppLangToggle" class="theme-toggle-row" style="margin-bottom:16px;">
       <div class="theme-toggle-info">
         <div class="theme-toggle-icon">🌐</div>
@@ -6621,7 +6620,7 @@ function openProUpgradeScreen(dayNum) {
 
     <!-- Course change panel (hidden permanently — use flag icon instead) -->
     <div id="changeCoursePanel" style="display:none;margin-bottom:24px;">
-      <div style="font-size:11px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📚 Kaunsa Course Select Karo?</div>
+      <div style="font-size:11px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📚 Select Your Course</div>
       <div id="stgCourseCards" style="display:flex;flex-direction:column;gap:10px;"><div onclick="switchCourseFromSettings(60)" style="background:var(--card);border-radius:14px;padding:16px;border:2px solid var(--bdr);cursor:pointer;transition:all .2s;" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform='scale(1)'">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
           <div style="font-size:32px">🎯</div>
@@ -6642,7 +6641,7 @@ function openProUpgradeScreen(dayNum) {
           <div style="font-size:32px">🐢</div>
           <div style="flex:1;">
             <div style="font-family:'Fredoka One',sans-serif;font-size:18px;color:var(--p)">90 Day Course</div>
-            <div style="font-size:12px;color:var(--mut)">30 minutes/din — Easy &amp; Steady — thoda thoda roz</div>
+            <div style="font-size:12px;color:var(--mut)">30 minutes/day — Easy &amp; Steady — thoda thoda roz</div>
           </div>
           <div style="color:var(--p);font-size:20px;">→</div>
         </div>
@@ -7685,7 +7684,7 @@ function goToCourseSelect(){
   const ct = document.getElementById('courseSelectTitle');
   if(ct) ct.textContent = li.flag+' '+li.name+' — Course Chuno';
   const cs2 = document.getElementById('courseSelectSub');
-  if(cs2) cs2.textContent = S.name+', apni speed ke hisaab se '+li.name+' course select karo';
+  if(cs2) cs2.textContent = S.name+', select your '+li.name+' course — choose your pace';
   // For chess: show only 7-day card; hide 30/60/90
   const isChess = lang==='chess';
   // For prog langs: show only 60-level prog card
@@ -7705,7 +7704,7 @@ function goToCourseSelect(){
     const pl = PROG_LANGS.find(p => p.code === lang);
     if(pl){
       if(ct) ct.textContent = pl.icon+' '+pl.name+' — Course Chuno';
-      if(cs2) cs2.textContent = S.name+', '+pl.name+' seekhna shuru karo — 60 Levels complete course!';
+      if(cs2) cs2.textContent = S.name+', start learning '+pl.name+' — Complete 60 Levels!';
       // Update prog card color to match language
       const cp = document.getElementById('courseCardProg60');
       if(cp){
@@ -11062,7 +11061,7 @@ function renderDashPython(lang, cs, c){
       mainBtn.style.color = '#000';
       mainBtn.onclick = showCert;
     } else {
-      mainBtn.textContent = '▶ Level ' + currentLevel + ' Shuru Karo';
+      mainBtn.textContent = '▶ Start Level ' + currentLevel;
       mainBtn.style.background = pl.color;
       mainBtn.style.color = '#fff';
       mainBtn.onclick = goPythonLesson;
@@ -11157,7 +11156,7 @@ function getPythonConcepts(levelNum, lvl){
   };
   const concepts = conceptMap[levelNum] || [
     {w: lvl.topic,    m: lvl.desc},
-    {w: 'Level ' + levelNum, m: 'Naya concept seekho — practice karo!'},
+    {w: 'Level ' + levelNum, m: 'New concept — learn & practice!'},
     {w: 'Python',     m: 'Har level pe ek nai skill — building blocks!'},
   ];
   return concepts;
@@ -11460,7 +11459,7 @@ function showDayInfo(){
 
     <button onclick="document.getElementById('sectionInfoModal').style.display='none';goLesson();"
       style="width:100%;padding:16px;border-radius:16px;border:none;background:var(--g);color:#fff;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 5px 0 var(--g2);margin-top:16px;">
-      ▶ Lesson Shuru Karo
+      ▶ Start Lesson
     </button>
   `;
 
@@ -11571,7 +11570,7 @@ function buildSteps(course){
 
   // ── VOCAB SECTION ──
   if(vocab.length>0){
-    s.push({t:'sh',ic:'📖',cl:'#58CC02',ti:'Vocabulary',su:`${vocab.length} naye alfaaz seekho`});
+    s.push({t:'sh',ic:'📖',cl:'#58CC02',ti:'Vocabulary',su:`${vocab.length} new words to learn`});
     vocab.forEach((v,i)=>s.push({t:'vc',d:v,n:i+1}));
     if(miniQs.length>0) s.push({t:'mq',ql:miniQs,lb:'Vocab Check'});
   }
@@ -12298,7 +12297,7 @@ async function showLockedToast(dayNum){
       return;
     }
   }
-  showToast('🔒 Day '+dayNum+' locked hai! Pehle Day '+prevDay+' complete karo.','#FF9A3C');
+  showToast('🔒 Day '+dayNum+' is locked! Complete Day '+prevDay+' first.','#FF9A3C');
   // Small shake animation on the locked node
   const nodes = document.querySelectorAll('.pnode');
   nodes.forEach(n=>{
@@ -13034,14 +13033,14 @@ function showHeartsFail(){
     <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:var(--r);margin-bottom:8px">Hearts Empty!</div>
     <div style="color:var(--mut);font-size:14px;line-height:1.7;margin-bottom:24px">
       Ghabrao mat! Galtiyon se seekha jaata hai.<br>
-      <span style="color:var(--txt);font-weight:700">Day ${failDay}</span> dobara shuru karo — is baar better karoge! 💪
+      <span style="color:var(--txt);font-weight:700">Day ${failDay}</span> try again — you'll do better! 💪
     </div>
     ${proBtn}
     <div style="background:var(--card);border-radius:16px;padding:16px;margin-bottom:24px;border:1px solid var(--bdr);">
       <div style="font-size:13px;color:var(--mut);margin-bottom:6px">Wrong Questions</div>
       <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:var(--r)">${wrongQs.length}</div>
     </div>
-    <button class="bg" onclick="restartDay()">🔄 Day ${failDay} Phir Se Shuru Karo</button>
+    <button class="bg" onclick="restartDay()">🔄 Retry Day ${failDay}</button>
     <button class="bo" style="margin-top:10px" onclick="exitLesson()">🏠 Baad Mein Try Karunga</button>
   </div>`;
 }
@@ -14059,7 +14058,7 @@ function renderDash(){
     if(sl) sl.textContent='SECTION '+secNum+', UNIT '+unitNum+' — '+( unitInfo?unitInfo.title:'');
     if(st2) st2.textContent='Day '+cs.day+': '+dayData.themeEn;
     if(mainBtn){
-      mainBtn.textContent='▶ Day '+cs.day+' Shuru Karo';
+      mainBtn.textContent='▶ Start Day '+cs.day;
       mainBtn.style.background='var(--g)';
       mainBtn.style.color='#fff';
       mainBtn.onclick=goLesson;
@@ -14076,7 +14075,7 @@ function renderDash(){
         mainBtn.onclick=showCert;
         launchConfetti();
       } else if(lang==='en'){
-        mainBtn.textContent='▶ Day '+cs.day+' Shuru Karo';
+        mainBtn.textContent='▶ Start Day '+cs.day;
         mainBtn.style.background='var(--g)';
         mainBtn.style.color='#fff';
         mainBtn.onclick=goLesson;
@@ -14103,7 +14102,7 @@ function renderDash(){
   </div>`;
 
   // ── Streak fire card ──
-  const streakMsg=cs.streak===0?'Aaj shuru karo! 🔥':cs.streak<5?'Acha chal raha hai! 💪':cs.streak<10?'Zabardast! 🎯':'Legend! 🏆';
+  const streakMsg=cs.streak===0?'Start today! 🔥':cs.streak<5?'Keep it up! 💪':cs.streak<10?'Amazing! 🎯':'Legend! 🏆';
   const streakHtml=cs.streak>0?`<div class="streak-mini-card">
     <div>
       <div class="streak-mini-icon">🔥</div>
@@ -14166,7 +14165,7 @@ function _injectDashGoalCard() {
         ? '🔥 Adha ho gaya — jaari raho!'
         : pct > 0
           ? '🌱 Acha shuru — chalta raho!'
-          : '✨ Aaj ka goal start karo!';
+          : "✨ Start today's goal!";
 
   var card = document.createElement('div');
   card.id = 'dashGoalCard';
@@ -14871,7 +14870,7 @@ function openPreClass(lang){
   if(!done){
     var cmpBtn = document.createElement('button');
     cmpBtn.style.cssText = 'background:linear-gradient(135deg,#C77DFF,#9B40E8);border:none;border-radius:16px;padding:14px;font-family:Fredoka One,sans-serif;font-size:15px;color:#fff;cursor:pointer;box-shadow:0 4px 18px rgba(199,125,255,.4);width:100%;';
-    cmpBtn.innerHTML = '▶️ Pre-Class Shuru Karo!';
+    cmpBtn.innerHTML = '▶️ Start Pre-Class!';
     cmpBtn.onclick = function(){ var e=document.getElementById('pcOverlay'); if(e) e.remove(); launchPreClassLesson(lang, false); };
     btnRow.appendChild(cmpBtn);
   } else {
@@ -15332,7 +15331,7 @@ function renderPCSpeakingIntro(b){
     + '<div style="background:rgba(255,255,255,.05);border-radius:14px;padding:14px;margin-bottom:20px;">'
     + '<div style="font-size:12px;color:rgba(255,255,255,.5);line-height:2;">🔊 Pehle suno<br>&#127906; Phir tum bolo<br>📚 Score dekho</div>'
     + '</div>'
-    + '<button class="bg" onclick="pcNx()" style="width:100%;">&#128062; Shuru Karo</button>'
+    + '<button class="bg" onclick="pcNx()" style="width:100%;">🐢 Start</button>'
     + '</div>';
 }
 
@@ -17574,7 +17573,7 @@ function renderProf(){
   if(gb) gb.style.display=(IS_GUEST||!getLoggedInUser())?'flex':'none';
 
   const icons={7:'♟️',30:'⚡',60:'🎯',90:'🐢'};
-  const times={7:'45 minutes/din — Full Chess',30:'2 hours/day',60:'1 ghanta/din',90:'30 minutes/din'};
+  const times={7:'45 minutes/din — Full Chess',30:'2 hours/day',60:'1 hour/day',90:'30 minutes/day'};
   const colors={7:'#2ECC71',30:'var(--g)',60:'var(--b)',90:'var(--p)'};
 
   // Sirf active course card
@@ -18162,7 +18161,7 @@ function deleteMyOwnProfile(){
         try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith('su_preclass_')) localStorage.removeItem(k); }); }catch(e){}
         PROFILES=[]; ACTIVE_PID=null;
         S={name:'',avatar:'😊',activeLang:'en',activeCourse:0,langs:{en:{activeCourse:0,courses:emptyLangCourses()},fr:{activeCourse:0,courses:emptyLangCourses()},zh:{activeCourse:0,courses:emptyLangCourses()},ar:{activeCourse:0,courses:emptyLangCourses()}}};
-        showToast('🗑️ Profile delete ho gayi — fresh shuru karo!','var(--r)');
+        showToast('🗑️ Profile deleted — fresh start!','var(--r)');
         setTimeout(()=>{
           window._showOnboardingNext = true;
           if(typeof forceShowOnboarding==='function') forceShowOnboarding();
@@ -19698,7 +19697,7 @@ window.addEventListener('load',()=>{
 
   // ── Splash tagline animation ──
   const taglines=[
-    {text:'Urdu se Duniya Ki Har Learn Languages', sub:'10 Languages Available'},
+    {text:'Urdu se Duniya Ki Har Learn Languages', sub:'11 Languages Available'},
     {text:'English — Bonjour se Business tak',   sub:'Most Popular • 1 Billion Speakers'},
     {text:'French — Learn the Language of Paris',      sub:'300 Million Speakers Worldwide'},
     {text:'Chinese — Duniya ki sabse boli zubaan',sub:'1.4 Billion Speakers'},
@@ -22911,19 +22910,21 @@ Firebase Realtime Database Rules (add to existing):
       <!-- Owl mascot -->
       <div style="font-size:90px;margin-bottom:8px;filter:drop-shadow(0 0 30px rgba(46,229,157,.5));animation:obOwlBounce 2.5s ease infinite;">🦉</div>
       <div style="font-family:'Fredoka One',sans-serif;font-size:38px;background:linear-gradient(135deg,#2EE59D,#5B8DEF,#CE82FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;line-height:1.1;">SpeakUp!</div>
-      <div style="font-family:'Fredoka One',sans-serif;font-size:17px;color:rgba(255,255,255,.7);margin-bottom:6px;">Learning Languages Was Never This Easy</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.35);margin-bottom:36px;">10 languages • Daily practice</div>
+      <div style="font-family:'Fredoka One',sans-serif;font-size:17px;color:rgba(255,255,255,.7);margin-bottom:6px;">Learn Languages, Skills & Ace Your Exams</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.35);margin-bottom:36px;">11 Languages • Board Papers • Chess • Skills — All in One App</div>
 
       <!-- Feature pills -->
       <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:40px;">
-        <div style="background:rgba(46,229,157,.12);border:1px solid rgba(46,229,157,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#2EE59D;font-weight:700;">🎮 Game jaisi learning</div>
-        <div style="background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#5B8DEF;font-weight:700;">🔥 Daily Streak System</div>
-        <div style="background:rgba(199,125,255,.12);border:1px solid rgba(199,125,255,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#CE82FF;font-weight:700;">🏆 Leaderboard</div>
-        <div style="background:rgba(255,209,0,.12);border:1px solid rgba(255,209,0,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#FFD100;font-weight:700;">🎓 Certificate available</div>
+        <div style="background:rgba(46,229,157,.12);border:1px solid rgba(46,229,157,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#2EE59D;font-weight:700;">🌍 11 Languages</div>
+        <div style="background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#5B8DEF;font-weight:700;">📄 Board Papers</div>
+        <div style="background:rgba(199,125,255,.12);border:1px solid rgba(199,125,255,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#CE82FF;font-weight:700;">♟️ Chess & Skills</div>
+        <div style="background:rgba(255,209,0,.12);border:1px solid rgba(255,209,0,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#FFD100;font-weight:700;">🏆 League & Certificates</div>
+        <div style="background:rgba(255,100,100,.12);border:1px solid rgba(255,100,100,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#FF6464;font-weight:700;">🔥 Daily Streak System</div>
+        <div style="background:rgba(0,200,255,.12);border:1px solid rgba(0,200,255,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:#00C8FF;font-weight:700;">🎮 Game-Style Learning</div>
       </div>
 
       <button onclick="obNext()" style="width:100%;max-width:340px;padding:16px;border-radius:16px;border:none;background:linear-gradient(135deg,#2EE59D,#1BC47D);color:#0A0918;font-family:'Fredoka One',sans-serif;font-size:18px;cursor:pointer;box-shadow:0 6px 0 #13A068,0 10px 30px rgba(46,229,157,.35);transition:all .15s;active:transform:translateY(2px);">
-        Shuru Karo! 🚀
+        Start Now! 🚀
       </button>
       <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:16px;">Start free — no credit card required</div>
     </div>
@@ -22935,7 +22936,7 @@ Firebase Realtime Database Rules (add to existing):
       <div style="text-align:center;margin-bottom:28px;">
         <div style="font-size:44px;margin-bottom:8px;">🎯</div>
         <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:#fff;margin-bottom:6px;">What is Your Goal?</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.45);">Apna maqsad chunno — hum tumhari raah taiyaar karein ge</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.45);">Pick your goal — we will build your path</div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;" id="ob-goals">
@@ -22982,7 +22983,7 @@ Firebase Realtime Database Rules (add to existing):
         <div class="ob-goal-card" data-goal="family" onclick="obSelectGoal(this)">
           <div class="ob-goal-icon">👨‍👩‍👧‍👦</div>
           <div class="ob-goal-text">
-            <div class="ob-goal-title">Family / Rishtedaar</div>
+            <div class="ob-goal-title">Family / Relatives</div>
             <div class="ob-goal-sub">To talk with relatives abroad</div>
           </div>
           <div class="ob-goal-check">✓</div>
@@ -22990,7 +22991,7 @@ Firebase Realtime Database Rules (add to existing):
       </div>
 
       <button id="ob-goal-btn" onclick="obNext()" disabled style="width:100%;padding:16px;border-radius:16px;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.4);font-family:'Fredoka One',sans-serif;font-size:17px;cursor:not-allowed;transition:all .3s;">
-        Goal Select Karo
+        Select Your Goal
       </button>
     </div>
   </div>
@@ -23001,7 +23002,7 @@ Firebase Realtime Database Rules (add to existing):
       <div style="text-align:center;margin-bottom:24px;">
         <div style="font-size:44px;margin-bottom:8px;">🗣️</div>
         <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:#fff;margin-bottom:6px;">Which Language to Learn?</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.45);" id="ob-lang-hint">Tumhara goal: —</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.45);" id="ob-lang-hint">Your goal: —</div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;" id="ob-langs">
@@ -23009,7 +23010,7 @@ Firebase Realtime Database Rules (add to existing):
       </div>
 
       <button id="ob-lang-btn" onclick="obNext()" disabled style="width:100%;padding:16px;border-radius:16px;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.4);font-family:'Fredoka One',sans-serif;font-size:17px;cursor:not-allowed;transition:all .3s;">
-        Zubaan Select Karo
+        Select Language
       </button>
     </div>
   </div>
@@ -23020,14 +23021,14 @@ Firebase Realtime Database Rules (add to existing):
       <div style="text-align:center;margin-bottom:28px;">
         <div style="font-size:44px;margin-bottom:8px;">⏰</div>
         <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:#fff;margin-bottom:6px;">How Much Time Daily?</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.45);">Consistency sabse zaroori cheez hai!</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.45);">Consistency is the key to success!</div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:28px;" id="ob-times">
         <div class="ob-time-card" data-time="30" data-course="90" onclick="obSelectTime(this)">
           <div class="ob-time-icon">⚡</div>
           <div class="ob-time-text">
-            <div class="ob-time-val">30 minutes/din</div>
+            <div class="ob-time-val">30 minutes/day</div>
             <div class="ob-time-sub">90 Day Course • Steady Progress</div>
           </div>
           <div class="ob-time-badge" style="background:rgba(46,229,157,.2);color:#2EE59D;border:1px solid rgba(46,229,157,.4);">Popular ⭐</div>
@@ -23035,7 +23036,7 @@ Firebase Realtime Database Rules (add to existing):
         <div class="ob-time-card" data-time="60" data-course="60" onclick="obSelectTime(this)">
           <div class="ob-time-icon">🚀</div>
           <div class="ob-time-text">
-            <div class="ob-time-val">1 ghanta/din</div>
+            <div class="ob-time-val">1 hour/day</div>
             <div class="ob-time-sub">60 Day Course • Fast Track</div>
           </div>
           <div class="ob-time-badge" style="background:rgba(255,150,0,.2);color:#FF9500;border:1px solid rgba(255,150,0,.4);">Intensive</div>
@@ -23052,12 +23053,12 @@ Firebase Realtime Database Rules (add to existing):
 
       <!-- Commitment card -->
       <div id="ob-commitment-card" style="display:none;background:linear-gradient(135deg,rgba(46,229,157,.1),rgba(91,141,239,.1));border:1.5px solid rgba(46,229,157,.3);border-radius:20px;padding:18px;margin-bottom:20px;">
-        <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#2EE59D;margin-bottom:10px;">🤝 Tumhari Commitment!</div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#2EE59D;margin-bottom:10px;">🤝 Your Commitment!</div>
         <div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.7;" id="ob-commitment-text">—</div>
       </div>
 
       <button id="ob-time-btn" onclick="obGoToPaywall()" disabled style="width:100%;padding:16px;border-radius:16px;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.4);font-family:'Fredoka One',sans-serif;font-size:17px;cursor:not-allowed;transition:all .3s;">
-        Time Select Karo
+        Select Your Time
       </button>
     </div>
   </div>
@@ -23067,7 +23068,7 @@ Firebase Realtime Database Rules (add to existing):
     <div style="min-height:100vh;padding:80px 20px 40px;display:flex;flex-direction:column;">
       <div style="text-align:center;margin-bottom:24px;">
         <div style="font-size:48px;margin-bottom:8px;">👑</div>
-        <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:#fff;margin-bottom:6px;">Apna Plan Chunno</div>
+        <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:#fff;margin-bottom:6px;">Choose Your Plan</div>
         <div id="ob-paywall-personalized" style="font-size:13px;color:rgba(255,255,255,.45);">Start free or reach new heights with Pro!</div>
       </div>
 
@@ -23076,7 +23077,7 @@ Firebase Realtime Database Rules (add to existing):
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <div>
             <div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:#fff;">Free</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.4);">Hamesha free</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.4);">Always free</div>
           </div>
           <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:#fff;">₨ 0</div>
         </div>
@@ -23086,10 +23087,10 @@ Firebase Realtime Database Rules (add to existing):
           <div style="font-size:13px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px;"><span style="color:#2EE59D;">✓</span> ❤️ 5 hearts</div>
           <div style="font-size:13px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:8px;"><span>✗</span> Day 4+ locked</div>
           <div style="font-size:13px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:8px;"><span>✗</span> No certificate</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:8px;"><span>✗</span> Streak freeze nahi</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:8px;"><span>✗</span> No streak freeze</div>
         </div>
         <button onclick="obChooseFree()" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.6);font-family:'Fredoka One',sans-serif;font-size:15px;cursor:pointer;transition:all .2s;">
-          Free se Shuru Karo →
+          Start for Free →
         </button>
       </div>
 
@@ -23098,11 +23099,11 @@ Firebase Realtime Database Rules (add to existing):
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div>
             <div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:#2EE59D;">🔥 Pro — 15 Din</div>
-            <div style="font-size:12px;color:rgba(46,229,157,.6);">Trial plan • Azmaao pehle</div>
+            <div style="font-size:12px;color:rgba(46,229,157,.6);">Trial plan • Try first</div>
           </div>
           <div style="text-align:right;">
             <div style="font-family:'Fredoka One',sans-serif;font-size:26px;color:#2EE59D;">₨300</div>
-            <div style="font-size:10px;color:rgba(46,229,157,.5);">~₨20/din</div>
+            <div style="font-size:10px;color:rgba(46,229,157,.5);">~₨20/day</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;">
@@ -23136,7 +23137,7 @@ Firebase Realtime Database Rules (add to existing):
             <div style="font-size:12px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:6px;"><span style="color:#FFD700;">✓</span> 🎓 Certificate</div>
             <div style="font-size:12px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:6px;"><span style="color:#FFD700;">✓</span> 🧊 Streak freeze</div>
             <div style="font-size:12px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:6px;"><span style="color:#FFD700;">✓</span> 👑 Leaderboard</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:6px;"><span style="color:#FFD700;">✓</span> 10 Languages</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:6px;"><span style="color:#FFD700;">✓</span> 11 Languages</div>
           </div>
           <button onclick="obChoosePro('monthly')" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#FFD700,#FF9500);color:#000;font-family:'Fredoka One',sans-serif;font-size:16px;cursor:pointer;box-shadow:0 5px 0 #CC7700,0 8px 20px rgba(255,180,0,.3);transition:all .15s;">
             👑 Pro Lao — ₨500/month
@@ -23316,7 +23317,7 @@ const OB_LANGS = [
 
 const OB_GOAL_LABELS = {
   casual:'Timepass / Hobby', travel:'For Travel', work:'Career / Job',
-  study:'Study / Education', culture:'Culture / Deen', family:'Family / Rishtedaar'
+  study:'Study / Education', culture:'Culture / Deen', family:'Family / Relatives'
 };
 
 // ── Show onboarding if needed ──
@@ -23599,7 +23600,7 @@ function obApplyToApp(){
     const lang = OB_LANGS.find(l=>l.code===obState.lang);
     setTimeout(()=>{
       if(typeof showToast === 'function' && lang){
-        showToast(`🎉 ${lang.flag} ${lang.name} seekhna shuru! ${obState.course} din mein master banoge!`, '#2EE59D');
+        showToast(`🎉 ${lang.flag} ${lang.name} learning started! Master it in ${obState.course} days!`, '#2EE59D');
       }
       // Grant onboarding XP bonus
       if(typeof S !== 'undefined' && typeof CS === 'function'){
@@ -24699,7 +24700,7 @@ function showGoalModal() {
     { t:.75, m:'💪 Ekdum qareeb! Thodi aur mehnat!' },
     { t:.5,  m:'🔥 Adha ho gaya! Zabardast!' },
     { t:.25, m:'🌱 Acha shuru! Jaari raho!' },
-    { t:0,   m:'✨ Aaj shuru karo! Goal rakho!' }
+    { t:0,   m:'✨ Start today! Set your goal!' }
   ];
   var msg = msgs[msgs.length - 1];
   for (var i = 0; i < msgs.length; i++) {
@@ -25097,7 +25098,6 @@ function closeGoalModal() {
     notes.forEach(function(freq, i){
       _playTone(freq, now + i * 0.13, 0.22, 'sine', 0.35, ctx);
     });
-    // Soft sparkle overtone on G5
     _playTone(1567.98, now + 0.26, 0.18, 'sine', 0.08, ctx);
   }
 
@@ -25106,38 +25106,118 @@ function closeGoalModal() {
     var ctx = _getCtx();
     if(!ctx) return;
     var now = ctx.currentTime;
-    var notes = [392.00, 329.63, 261.63]; // G4, E4, C4
+    var notes = [392.00, 329.63, 261.63];
     notes.forEach(function(freq, i){
       _playTone(freq, now + i * 0.11, 0.18, 'sawtooth', 0.18, ctx);
     });
-    // Low thud
     _playTone(80, now, 0.25, 'sine', 0.3, ctx);
   }
 
-  // Lesson complete fanfare: C5-E5-G5-C6 with final chord
+  // Lesson complete fanfare
   function _playComplete(){
     var ctx = _getCtx();
     if(!ctx) return;
     var now = ctx.currentTime;
-    // Rising arpeggio
-    var rise = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    var rise = [523.25, 659.25, 783.99, 1046.50];
     rise.forEach(function(freq, i){
       _playTone(freq, now + i * 0.12, 0.20, 'sine', 0.3, ctx);
     });
-    // Final chord (C major) at the end
     var chordStart = now + 0.5;
     [523.25, 659.25, 783.99].forEach(function(freq){
       _playTone(freq, chordStart, 0.55, 'sine', 0.22, ctx);
     });
-    // Triumph bell
     _playTone(2093.00, chordStart, 0.5, 'sine', 0.12, ctx);
+  }
+
+  // Click: short soft tap
+  function _playClick(){
+    var ctx = _getCtx(); if(!ctx) return;
+    var now = ctx.currentTime;
+    _playTone(880, now, 0.06, 'sine', 0.12, ctx);
+  }
+
+  // Tab switch: swoosh up
+  function _playTab(){
+    var ctx = _getCtx(); if(!ctx) return;
+    var now = ctx.currentTime;
+    _playTone(440, now, 0.04, 'sine', 0.10, ctx);
+    _playTone(660, now + 0.04, 0.07, 'sine', 0.12, ctx);
+  }
+
+  // XP gain: coin ping
+  function _playXP(){
+    var ctx = _getCtx(); if(!ctx) return;
+    var now = ctx.currentTime;
+    _playTone(1046.50, now, 0.08, 'sine', 0.2, ctx);
+    _playTone(1318.51, now + 0.07, 0.10, 'sine', 0.18, ctx);
+  }
+
+  // Streak: fire crackle (two rapid pops)
+  function _playStreak(){
+    var ctx = _getCtx(); if(!ctx) return;
+    var now = ctx.currentTime;
+    _playTone(300, now, 0.05, 'sawtooth', 0.15, ctx);
+    _playTone(450, now + 0.06, 0.07, 'sawtooth', 0.12, ctx);
+    _playTone(600, now + 0.13, 0.09, 'sine', 0.1, ctx);
+  }
+
+  // Level up: triumphant ding
+  function _playLevelUp(){
+    var ctx = _getCtx(); if(!ctx) return;
+    var now = ctx.currentTime;
+    [523.25, 783.99, 1046.50, 1318.51].forEach(function(freq, i){
+      _playTone(freq, now + i * 0.1, 0.18, 'sine', 0.25, ctx);
+    });
+  }
+
+  // Login success: welcome chime
+  function _playLogin(){
+    var ctx = _getCtx(); if(!ctx) return;
+    var now = ctx.currentTime;
+    _playTone(659.25, now, 0.12, 'sine', 0.2, ctx);
+    _playTone(783.99, now + 0.1, 0.12, 'sine', 0.2, ctx);
+    _playTone(1046.50, now + 0.2, 0.18, 'sine', 0.22, ctx);
+  }
+
+  // Error/warning: low buzz
+  function _playError(){
+    var ctx = _getCtx(); if(!ctx) return;
+    var now = ctx.currentTime;
+    _playTone(150, now, 0.15, 'sawtooth', 0.2, ctx);
+    _playTone(120, now + 0.12, 0.12, 'sawtooth', 0.15, ctx);
+  }
+
+  // Unlock/start: rising pop
+  function _playUnlock(){
+    var ctx = _getCtx(); if(!ctx) return;
+    var now = ctx.currentTime;
+    _playTone(392, now, 0.06, 'sine', 0.15, ctx);
+    _playTone(523.25, now + 0.06, 0.06, 'sine', 0.18, ctx);
+    _playTone(659.25, now + 0.12, 0.10, 'sine', 0.2, ctx);
+  }
+
+  // Heart lost: thud
+  function _playHeartLost(){
+    var ctx = _getCtx(); if(!ctx) return;
+    var now = ctx.currentTime;
+    _playTone(200, now, 0.08, 'sine', 0.25, ctx);
+    _playTone(120, now + 0.07, 0.15, 'sine', 0.2, ctx);
   }
 
   // ── 5. Public API ──
   window.SU_SOUND = {
-    correct:  function(){ if(_soundOn) _playCorrect();  },
-    wrong:    function(){ if(_soundOn) _playWrong();    },
-    complete: function(){ if(_soundOn) _playComplete(); }
+    correct:   function(){ if(_soundOn) _playCorrect();   },
+    wrong:     function(){ if(_soundOn) _playWrong();     },
+    complete:  function(){ if(_soundOn) _playComplete();  },
+    click:     function(){ if(_soundOn) _playClick();     },
+    tab:       function(){ if(_soundOn) _playTab();       },
+    xp:        function(){ if(_soundOn) _playXP();        },
+    streak:    function(){ if(_soundOn) _playStreak();    },
+    levelUp:   function(){ if(_soundOn) _playLevelUp();   },
+    login:     function(){ if(_soundOn) _playLogin();     },
+    error:     function(){ if(_soundOn) _playError();     },
+    unlock:    function(){ if(_soundOn) _playUnlock();    },
+    heartLost: function(){ if(_soundOn) _playHeartLost(); }
   };
 
   // ── 6. Patch quiz answer functions ──
@@ -25255,8 +25335,8 @@ function closeGoalModal() {
       _origGoLesson = window.goLesson;
       var _prevGoLesson = window.goLesson;
       window.goLesson = function(){
+        SU_SOUND.unlock();
         var result = _prevGoLesson.apply(this, arguments);
-        // Repatch answer fns after lesson starts
         setTimeout(_patchAnswerFns, 500);
         return result;
       };
@@ -25265,6 +25345,102 @@ function closeGoalModal() {
     }
   }
   setTimeout(_patchGoLesson, 600);
+
+  // ── Tab navigation sounds ──
+  function _patchTabFn(){
+    if(typeof window.tab === 'function'){
+      var _origTab = window.tab;
+      window.tab = function(t){
+        SU_SOUND.tab();
+        return _origTab.apply(this, arguments);
+      };
+    } else { setTimeout(_patchTabFn, 400); }
+  }
+  setTimeout(_patchTabFn, 800);
+
+  // ── Login success sound ──
+  function _patchLogin(){
+    if(typeof window.onFirebaseAuthChange === 'function'){
+      var _origAuth = window.onFirebaseAuthChange;
+      window.onFirebaseAuthChange = function(user){
+        if(user) SU_SOUND.login();
+        return _origAuth.apply(this, arguments);
+      };
+    } else { setTimeout(_patchLogin, 500); }
+  }
+  setTimeout(_patchLogin, 1000);
+
+  // ── XP gain sound ──
+  function _patchXP(){
+    if(typeof window.addXP === 'function'){
+      var _origXP = window.addXP;
+      window.addXP = function(){
+        SU_SOUND.xp();
+        return _origXP.apply(this, arguments);
+      };
+    } else { setTimeout(_patchXP, 400); }
+  }
+  setTimeout(_patchXP, 800);
+
+  // ── Streak update sound ──
+  function _patchStreak(){
+    if(typeof window.updateStreak === 'function'){
+      var _origStreak = window.updateStreak;
+      window.updateStreak = function(){
+        SU_SOUND.streak();
+        return _origStreak.apply(this, arguments);
+      };
+    }
+  }
+  setTimeout(_patchStreak, 800);
+
+  // ── Heart lost sound ──
+  function _patchHearts(){
+    if(typeof window.loseHeart === 'function'){
+      var _origHeart = window.loseHeart;
+      window.loseHeart = function(){
+        SU_SOUND.heartLost();
+        return _origHeart.apply(this, arguments);
+      };
+    } else { setTimeout(_patchHearts, 500); }
+  }
+  setTimeout(_patchHearts, 800);
+
+  // ── Day/Level unlock sound ──
+  function _patchDayUnlock(){
+    if(typeof window.unlockNextDay === 'function'){
+      var _origUnlock = window.unlockNextDay;
+      window.unlockNextDay = function(){
+        SU_SOUND.levelUp();
+        return _origUnlock.apply(this, arguments);
+      };
+    }
+  }
+  setTimeout(_patchDayUnlock, 800);
+
+  // ── Onboarding next step sound ──
+  function _patchOnboarding(){
+    if(typeof window.obNext === 'function'){
+      var _origObNext = window.obNext;
+      window.obNext = function(){
+        SU_SOUND.click();
+        return _origObNext.apply(this, arguments);
+      };
+    } else { setTimeout(_patchOnboarding, 500); }
+  }
+  setTimeout(_patchOnboarding, 800);
+
+  // ── Profile switch sound ──
+  function _patchProfileSwitch(){
+    if(typeof window.switchProfile === 'function'){
+      var _origSwitch = window.switchProfile;
+      window.switchProfile = function(){
+        SU_SOUND.login();
+        return _origSwitch.apply(this, arguments);
+      };
+    }
+  }
+  setTimeout(_patchProfileSwitch, 800);
 
 })();
 </script>
@@ -26196,7 +26372,7 @@ function renderStreakScreen(){
   var daysToNext = nextMS ? nextMS.days - streak : 0;
 
   // Streak message
-  var msg = streak===0 ? 'Aaj pehla din shuru karo! 🌟'
+  var msg = streak===0 ? 'Start your first day today! 🌟'
            : streak<5  ? 'Acha shuru! Jaari raho 💪'
            : streak<10 ? 'Maza aa raha hai! Rokna mat 🔥'
            : streak<30 ? 'Koi nahi rok sakta tujhe! ⚡'
@@ -26516,7 +26692,7 @@ function renderStreakScreen(){
     document.querySelectorAll('.screen.active').forEach(function(s){ ctx = s.id; });
     var subEl = document.getElementById('pauseSubText');
     if(subEl){
-      if(ctx==='pastpapers') subEl.textContent='Paper pause hai — continue ya shuru se shuru karo!';
+      if(ctx==='pastpapers') subEl.textContent='Paper paused — continue or restart!';
       else subEl.textContent='Lesson paused — continue or restart!';
     }
     _savePause(ctx, { si: typeof si!=='undefined'?si:0, pcSI: typeof _pcSI!=='undefined'?_pcSI:0 });
@@ -26641,7 +26817,7 @@ function renderStreakScreen(){
     'Easy on the eyes':'Aankhon ke liye acha',
     'Sounds for quizzes':'Quiz ke liye awaazein',
     '🎯 Daily Learning Goal':'🎯 Roz Ka Seekhne Ka Goal',
-    '2 hours/day':'2 ghante/din','1 hour/day — Balanced':'1 ghanta/din — Balanced',
+    '2 hours/day':'2 ghante/din','1 hour/day — Balanced':'1 hour/day — Balanced',
     'Response within 24 hours — guaranteed!':'24 ghante mein jawab milega — guaranteed!',
     'This will delete your progress. Think twice!':'Yeh karne se progress delete ho jaayega. Sooch lo!',
     '🗑️ Reset My Progress':'🗑️ Mera Progress Reset Karo',
@@ -26660,7 +26836,7 @@ function renderStreakScreen(){
     'What is Your Goal?':'Tumhara Goal Kya Hai?',
     'SpeakUp — Learn Languages':'SpeakUp — Zubaan Seekho',
     'Learn Languages':'Zubaan Seekho',
-    '10 Languages':'10 Zubaanein','4 Languages':'4 Zubaanein',
+    '11 Languages':'11 Zubaanein','4 Languages':'4 Zubaanein',
     'Daily':'Roz',
     'Any issue? Contact admin':'Koi masla? Admin se rabta karo',
     'No notifications yet':'Koi notification nahi',
