@@ -2286,14 +2286,18 @@ ZAROORI RULES:
 <div class="modal-overlay" id="addDayModal" style="align-items: flex-start; padding-top: 0px; overflow-y: auto; display: none;">
   <div class="modal-sheet" style="max-height:95vh;overflow-y:auto;border-radius:22px 22px 0 0;width:100%;margin-top:auto;">
     <div class="modal-handle"></div>
-    <div class="modal-title">📅 Day Add/Edit Karo</div>
-    <div class="modal-sub">Is language ke liye naya din add karo ya lesson content paste karo</div>
+    <div class="modal-title" id="addDayModalTitle">📅 Day Add/Edit Karo</div>
+    <div class="modal-sub" id="addDayModalSub">Is language ke liye naya din add karo ya lesson content paste karo</div>
     <input type="hidden" id="modalEditLang" value="en">
     <input type="hidden" id="modalEditDayNum" value="5">
+    <input type="hidden" id="modalIsEditMode" value="0">
 
     <!-- Basic Info -->
     <div class="inp-label">Day Number</div>
-    <input class="inp" id="modalDayNum" type="number" min="1" max="90" placeholder="1">
+    <div style="position:relative;">
+      <input class="inp" id="modalDayNum" type="number" min="1" max="90" placeholder="1">
+      <div id="dayNumLockBadge" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,149,0,.2);border:1px solid rgba(255,149,0,.4);border-radius:8px;padding:3px 8px;font-size:11px;color:#FF9500;font-weight:700;">🔒 Edit Mode — Locked</div>
+    </div>
     <div class="inp-label">Day Title (English)</div>
     <input class="inp" id="modalDayTitle" placeholder="e.g. Shopping &amp; Market">
     <div class="inp-label">Day Theme (Urdu)</div>
@@ -7092,8 +7096,25 @@ function refreshLessonStats(){
   langs.forEach(({code, flag, name}) => {
     const builtIn = getInbuiltDayCount(code) || INBUILT_DAYS_FALLBACK[code] || 0;
     const fbDays = AD.langs?.[code]?.days || {};
-    const firebase = Object.keys(fbDays).filter(k => Number(k) > 0).length;
-    const total = builtIn + firebase;
+    const fbDayNums = Object.keys(fbDays).filter(k => Number(k) > 0).map(Number);
+
+    // ✅ FIX: Built-in day numbers find karo
+    const builtInData = window.ALL_DAYS?.[code];
+    const builtInNums = builtInData
+      ? (Array.isArray(builtInData)
+          ? builtInData.map((_,i)=>i).filter(i=>i>0 && builtInData[i])
+          : Object.keys(builtInData).map(Number).filter(n=>n>0))
+      : [];
+
+    // Firebase overrides: jo Firebase days builtIn mein already hain woh overrides hain
+    const overrides = fbDayNums.filter(n => builtInNums.includes(n));
+    // Firebase new days: jo builtIn mein nahi hain
+    const newFbDays = fbDayNums.filter(n => !builtInNums.includes(n));
+
+    // Total = builtIn unique days (overrides included, not double counted) + new Firebase days
+    const firebase = newFbDays.length; // sirf nayi days count karo
+    const overrideCount = overrides.length;
+    const total = builtIn + firebase; // overrides already builtIn mein hain
     const pct = Math.min(100, Math.round(total / TOTAL * 100));
 
     // Color based on progress
@@ -7104,7 +7125,7 @@ function refreshLessonStats(){
       <div style="display:grid;grid-template-columns:1fr 60px 60px 60px 80px;gap:6px;align-items:center;margin-bottom:8px;">
         <div style="font-size:13px;font-weight:700;color:var(--txt);">${flag} ${name}</div>
         <div style="font-size:13px;font-weight:800;color:#58CC02;text-align:center;">${builtIn}</div>
-        <div style="font-size:13px;font-weight:800;color:#5B8DEF;text-align:center;">${firebase > 0 ? '+'+firebase : '—'}</div>
+        <div style="font-size:13px;font-weight:800;color:#5B8DEF;text-align:center;">${firebase > 0 ? '+'+firebase : '—'}${overrideCount > 0 ? `<div style="font-size:9px;color:var(--o);font-weight:700;">${overrideCount} override</div>` : ''}</div>
         <div style="font-size:14px;font-weight:800;color:${totalColor};text-align:center;">${total}</div>
         <div style="text-align:center;">
           <span style="font-size:10px;color:var(--mut);">${pct}%</span>
@@ -7119,7 +7140,15 @@ function refreshLessonStats(){
 
   // Summary row
   const totalBuiltIn = langs.reduce((s,l) => s + (getInbuiltDayCount(l.code) || INBUILT_DAYS_FALLBACK[l.code]||0), 0);
-  const totalFirebase = langs.reduce((s,l) => s + Object.keys(AD.langs?.[l.code]?.days||{}).filter(k=>Number(k)>0).length, 0);
+  const totalFirebase = langs.reduce((s,l) => {
+    const fbDays = AD.langs?.[l.code]?.days || {};
+    const fbNums = Object.keys(fbDays).filter(k=>Number(k)>0).map(Number);
+    const builtInData = window.ALL_DAYS?.[l.code];
+    const builtInNums = builtInData
+      ? (Array.isArray(builtInData) ? builtInData.map((_,i)=>i).filter(i=>i>0&&builtInData[i]) : Object.keys(builtInData).map(Number).filter(n=>n>0))
+      : [];
+    return s + fbNums.filter(n=>!builtInNums.includes(n)).length;
+  }, 0);
   const totalAll = totalBuiltIn + totalFirebase;
 
   html += `<div style="background:rgba(91,141,239,.08);border:1px solid rgba(91,141,239,.2);border-radius:10px;padding:10px 12px;margin-top:4px;">
@@ -7670,30 +7699,40 @@ function switchLessonTab(tab){
 let _editLang='',_editDay=0;
 function editDay(lang,dayNum){
   _editLang=lang; _editDay=dayNum;
-  // Admin data (Firebase) pehle check karo
   const adminDay=AD.langs?.[lang]?.days?.[dayNum] || AD.langs?.[lang]?.days?.[String(dayNum)] || {};
-  // Agar admin data nahi toh built-in se lo
   const builtInDay = ALL_DAYS[lang] && (Array.isArray(ALL_DAYS[lang]) ? ALL_DAYS[lang][parseInt(dayNum)] : ALL_DAYS[lang][dayNum]);
-  const isBuiltIn = !adminDay.title && !!builtInDay;
-  // Merge: admin data override hoga, warna built-in
   const day = Object.keys(adminDay).length > 1 ? adminDay : (builtInDay ? {...builtInDay, ...adminDay} : adminDay);
-  document.getElementById('editDayTitle').textContent='Day '+dayNum+' — '+(LANG_INFO[lang]?.name||lang)+(isBuiltIn?' 📦 Built-in':'');
-  document.getElementById('edTitle').value=day.title||day.themeEn||day.theme||'';
-  document.getElementById('edLessonCount').value=day.lessonCount||(day.vocab?.length)||(day.lessonContent?.vocab?.length)||15;
-  document.getElementById('edStatus').value=adminDay.status||'unlocked';
-  // JSON tab — built-in content prefill karo taake admin easily edit kar sake
-  const jInp=document.getElementById('edJsonInp');
+
+  // ✅ FIX: addDayModal ko EDIT MODE mein kholo — day number LOCKED
+  document.getElementById('modalIsEditMode').value = '1';
+  document.getElementById('addDayModalTitle').textContent = '✏️ Day ' + dayNum + ' Edit Karo';
+  document.getElementById('addDayModalSub').textContent = '⚠️ Day ' + dayNum + ' — number locked hai, sirf content update hoga';
+
+  // Day number lock karo
+  document.getElementById('modalDayNum').value = dayNum;
+  document.getElementById('modalDayNum').readOnly = true;
+  document.getElementById('modalDayNum').style.opacity = '0.5';
+  document.getElementById('dayNumLockBadge').style.display = 'block';
+
+  document.getElementById('modalEditLang').value = lang;
+  document.getElementById('modalEditDayNum').value = dayNum;
+  document.getElementById('modalDayTitle').value = day.title || day.themeEn || day.theme || '';
+  document.getElementById('modalDayTheme').value = day.theme || day.themeUrdu || '';
+  document.getElementById('modalDayEmoji').value = day.emoji || '📚';
+  document.getElementById('modalDayStatus').value = adminDay.status || 'unlocked';
+
+  // JSON content prefill — admin ya built-in se
   const contentToShow = adminDay.lessonContent || builtInDay || null;
-  if(jInp) jInp.value=contentToShow?JSON.stringify(contentToShow,null,2):'';
-  if(isBuiltIn){
-    // Built-in badge dikhao
-    const titleEl=document.getElementById('editDayTitle');
-    if(titleEl) titleEl.style.color='#58CC02';
-  }
-  switchLessonTab('vocab');
-  const modal=document.getElementById('editDayModal');
-  modal.classList.add('open');
-  modal.style.display='flex';
+  const jsonEl = document.getElementById('lessonJson');
+  if(jsonEl) jsonEl.value = contentToShow ? JSON.stringify(contentToShow, null, 2) : '';
+
+  // Clear other tabs
+  ['lessonVocab','lessonSentences','lessonGrammar','lessonStory','lessonQuizzes'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+
+  switchLessonTab('json');
+  openModal('addDayModal');
 }
 
 function closeEditDay(){ const m=document.getElementById('editDayModal'); m.classList.remove('open'); m.style.display='none'; }
@@ -7721,13 +7760,11 @@ function saveEditDay(){
 }
 
 function addNewDay(){
-  // currentLang ko selector se sync karo
   const sel=document.getElementById('lessonLangSel');
   if(sel && sel.value) currentLang=sel.value;
   if(!AD.langs) AD.langs={};
   if(!AD.langs[currentLang]) AD.langs[currentLang]={enabled:true,days:{}};
   if(!AD.langs[currentLang].days) AD.langs[currentLang].days={};
-  // ✅ FIX: nextDay = max of ALL existing days (built-in + admin), Day 0 exclude
   const adminNums = Object.keys(AD.langs[currentLang].days)
     .map(Number).filter(n=>!isNaN(n) && n > 0);
   const builtInDaysObj = window.ALL_DAYS ? ALL_DAYS[currentLang] : null;
@@ -7738,19 +7775,25 @@ function addNewDay(){
     : [];
   const allNums = [...new Set([...adminNums, ...builtInNums])];
   const nextDay = allNums.length > 0 ? Math.max(...allNums) + 1 : 1;
-  // Prefill modal
-  document.getElementById('modalDayNum').value=nextDay;
+
+  // ADD MODE
+  document.getElementById('modalIsEditMode').value = '0';
+  document.getElementById('addDayModalTitle').textContent = '📅 New Day Add Karo';
+  document.getElementById('addDayModalSub').textContent = 'Naya lesson add karo — Day number automatically set hai';
+  document.getElementById('modalDayNum').value = nextDay;
+  document.getElementById('modalDayNum').readOnly = false;
+  document.getElementById('modalDayNum').style.opacity = '1';
+  document.getElementById('dayNumLockBadge').style.display = 'none';
   document.getElementById('modalDayTitle').value='';
   document.getElementById('modalDayTheme').value='';
   document.getElementById('modalDayEmoji').value='📚';
   document.getElementById('modalDayStatus').value='unlocked';
   document.getElementById('modalEditLang').value=currentLang;
   document.getElementById('modalEditDayNum').value=nextDay;
-  // Clear textareas
   ['lessonVocab','lessonSentences','lessonGrammar','lessonStory','lessonQuizzes','lessonJson'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
-  switchLessonTab('vocab');
+  switchLessonTab('json');
   openModal('addDayModal');
 }
 
@@ -7842,7 +7885,11 @@ function showNewDayBanner(lang, dayNum, title, emoji){
 // ════════════════════════════════════════════
 function saveDayFromModal(){
   const lang = document.getElementById('modalEditLang')?.value || currentLang;
-  const dayNum = parseInt(document.getElementById('modalEditDayNum')?.value || document.getElementById('modalDayNum')?.value) || 1;
+  const isEditMode = document.getElementById('modalIsEditMode')?.value === '1';
+  // ✅ FIX: Edit mode mein HAMESHA modalEditDayNum lo — number change nahi hona chahiye
+  const dayNum = isEditMode
+    ? parseInt(document.getElementById('modalEditDayNum')?.value) || 1
+    : parseInt(document.getElementById('modalDayNum')?.value || document.getElementById('modalEditDayNum')?.value) || 1;
   const title = document.getElementById('modalDayTitle')?.value || document.getElementById('modalDayTheme')?.value || 'Day '+dayNum;
   const emoji = document.getElementById('modalDayEmoji')?.value || '📚';
   const status = document.getElementById('modalDayStatus')?.value || 'unlocked';
@@ -8099,7 +8146,9 @@ function parseJsonLesson(){
     const extractedDayNum = dayNumMatch ? dayNumMatch[1] : (dayNumFromJson ? String(dayNumFromJson) : '');
 
     // JSON se aaya data hamesha override karo (modal defaults overwrite)
-    if(numEl   && extractedDayNum)              numEl.value   = extractedDayNum;
+    // ✅ FIX: Edit mode mein day number mat badlo — locked hai
+    const isEdit = document.getElementById('modalIsEditMode')?.value === '1';
+    if(!isEdit && numEl && extractedDayNum) numEl.value = extractedDayNum;
     if(titleEl && (parsed.themeEn||parsed.theme)) titleEl.value = parsed.themeEn || parsed.theme;
     if(themeEl && (parsed.theme||parsed.themeEn)) themeEl.value = parsed.theme   || parsed.themeEn;
     if(emojiEl && parsed.emoji)                 emojiEl.value = parsed.emoji;
