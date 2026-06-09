@@ -7495,14 +7495,22 @@ function loadAll(){
 
   // ── Step 2: Firebase se fresh data load (background, non-blocking) ──
   // Guest users ke liye skip
-  if(!IS_GUEST && uid && window.FIREBASE_READY){
-    loadFromFirebase().then(loaded=>{
-      if(loaded){
-        // UI refresh karo agar dashboard open hai
-        if(typeof renderDash==='function') try{renderDash();}catch(e){}
-        if(typeof renderProfileSelect==='function') try{renderProfileSelect();}catch(e){}
+  // 🔧 FIX: Retry logic — Firebase ready nahi toh wait karo (app reopen bug fix)
+  if(!IS_GUEST && uid){
+    (function _loadAllRetry(attempt){
+      if(window.FIREBASE_READY && window.FB_DB){
+        loadFromFirebase().then(loaded=>{
+          if(loaded){
+            if(typeof renderDash==='function') try{renderDash();}catch(e){}
+            if(typeof renderProfileSelect==='function') try{renderProfileSelect();}catch(e){}
+          } else if(PROFILES.length === 0 && attempt < 5){
+            setTimeout(function(){ _loadAllRetry(attempt+1); }, 800);
+          }
+        }).catch(function(){ if(attempt<5) setTimeout(function(){ _loadAllRetry(attempt+1); },800); });
+      } else if(attempt < 10){
+        setTimeout(function(){ _loadAllRetry(attempt+1); }, 500);
       }
-    });
+    })(0);
   }
 }
 
@@ -19290,16 +19298,27 @@ function onFirebaseAuthChange(user){
     }
 
     // 4️⃣ Firebase se progress load + migration
-    if(window.FIREBASE_READY && window.FB_DB){
-      setTimeout(function(){ migrateLocalStorageToFirebase(); }, 1500);
-      loadFromFirebase().then(function(loaded){
-        if(loaded){
-          console.log('☁️ Login ke baad Firebase se progress sync ho gaya!');
-          if(typeof renderDash==='function') try{renderDash();}catch(e){}
-          if(typeof renderProfileSelect==='function') try{renderProfileSelect();}catch(e){}
-        }
-      });
-    }
+    // 🔧 FIX: FIREBASE_READY condition hata di — retry logic lagaya taake app reopen par bhi profiles load hon
+    (function _loadProfilesWithRetry(attempt){
+      if(window.FIREBASE_READY && window.FB_DB){
+        setTimeout(function(){ migrateLocalStorageToFirebase(); }, 1500);
+        loadFromFirebase().then(function(loaded){
+          if(loaded){
+            console.log('☁️ Login ke baad Firebase se progress sync ho gaya!');
+            if(typeof renderDash==='function') try{renderDash();}catch(e){}
+            if(typeof renderProfileSelect==='function') try{renderProfileSelect();}catch(e){}
+          } else if(PROFILES.length === 0 && attempt < 5){
+            // Profiles nahi milin — dobara koshish karo
+            console.warn('⚠️ Profiles empty — retry attempt', attempt+1);
+            setTimeout(function(){ _loadProfilesWithRetry(attempt+1); }, 800);
+          }
+        }).catch(function(){ if(attempt<5) setTimeout(function(){ _loadProfilesWithRetry(attempt+1); },800); });
+      } else if(attempt < 10){
+        // Firebase abhi ready nahi — thoda ruko aur retry karo
+        console.log('⏳ Firebase not ready yet — retry', attempt+1);
+        setTimeout(function(){ _loadProfilesWithRetry(attempt+1); }, 500);
+      }
+    })(0);
 
     // 5️⃣ REAL-TIME PRO WATCHER — Admin Pro de ya hataye, foran app update ho
     // Logout/login ki zaroorat nahi — jaise hi Firebase mein change aye, UI update hoga
