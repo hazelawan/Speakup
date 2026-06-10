@@ -1401,8 +1401,10 @@ ZAROORI RULES:
 
     <!-- Article HTML input -->
     <div id="contentArticleWrap">
-      <div class="inp-label">Article HTML Content</div>
-      <textarea id="slArticle" placeholder="<h3>Title</h3><p>Content yahan...</p>" style="width:100%;min-height:140px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0;"></textarea>
+      <div class="inp-label">📄 Article Content (Bilingual JSON)</div>
+      <textarea id="slArticle" placeholder='{"ur":"<h3>Roman Urdu content...</h3>","en":"<h3>English content...</h3>"}' style="width:100%;min-height:160px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0;"></textarea>
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">Format: <code style="color:#F5C400;">{"ur":"...Roman Urdu HTML...","en":"...English HTML..."}</code></div>
+      <div style="font-size:10px;color:#888;">Sirf Urdu chahiye to: <code style="color:#F5C400;">{"ur":"...HTML..."}</code> — English toggle sirf tab dikhega jab "en" key ho</div>
     </div>
 
     <!-- Quiz JSON input -->
@@ -1432,6 +1434,38 @@ ZAROORI RULES:
         <button onclick="document.getElementById('articlePreviewModal').style.display='none'" style="background:rgba(255,75,75,.2);border:none;color:#ff6b6b;border-radius:8px;padding:4px 10px;cursor:pointer;">✕ Close</button>
       </div>
       <div id="articlePreviewContent" style="color:rgba(255,255,255,.85);font-size:13px;line-height:1.8;"></div>
+    </div>
+  </div>
+
+  <!-- ── Firebase Saved Levels List ── -->
+  <div class="card" style="margin-top:4px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div class="card-title" style="margin:0;">🔥 Firebase Saved Levels</div>
+      <button onclick="loadSkillsFromFirebaseAdmin();renderSkillsSavedList()" style="background:rgba(46,229,157,.12);border:1px solid rgba(46,229,157,.3);border-radius:8px;padding:5px 10px;font-size:11px;color:#2EE59D;cursor:pointer;">🔄 Refresh</button>
+    </div>
+    <div class="card-sub">Yeh levels Firebase mein save hain — edit ya delete kar sakte ho</div>
+    <div id="skillsSavedList" style="margin-top:10px;">
+      <div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">⏳ Loading...</div>
+    </div>
+  </div>
+
+  <!-- Edit Level Modal -->
+  <div id="skillsEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;overflow-y:auto;padding:20px;">
+    <div style="background:#111827;border-radius:20px;padding:20px;max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.1);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#F5C400;">✏️ Level Edit Karo — <span id="editModalTitle"></span></div>
+        <button onclick="document.getElementById('skillsEditModal').style.display='none'" style="background:rgba(255,75,75,.2);border:none;color:#ff6b6b;border-radius:8px;padding:4px 10px;cursor:pointer;">✕</button>
+      </div>
+      <div class="inp-label">📄 Bilingual JSON Content</div>
+      <textarea id="editModalContent" style="width:100%;min-height:200px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0 12px;box-sizing:border-box;"></textarea>
+      <input type="hidden" id="editModalSecId">
+      <input type="hidden" id="editModalLvId">
+      <input type="hidden" id="editModalType">
+      <div style="display:flex;gap:10px;">
+        <button onclick="saveEditedLevel()" style="flex:1;padding:12px;background:linear-gradient(135deg,#22C55E,#1aad54);border:none;border-radius:12px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">💾 Save Karo</button>
+        <button onclick="document.getElementById('skillsEditModal').style.display='none'" style="padding:12px 16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:var(--txt);cursor:pointer;font-size:13px;">Cancel</button>
+      </div>
+      <div id="editModalStatus" style="margin-top:8px;font-size:12px;font-weight:600;"></div>
     </div>
   </div>
 
@@ -14028,8 +14062,12 @@ function selectSkillLevel(secId, lvId) {
     const fbSec = (_saFirebaseData.sections||[]).find(s=>s.id===secId);
     const fbLv  = fbSec && fbSec.levels && fbSec.levels.find(l=>l.id===lvId);
     if (fbLv) {
-      if (fbLv.articleContent) document.getElementById('slArticle').value = fbLv.articleContent;
-      if (fbLv.quizQuestions)  document.getElementById('slQuizJson').value = JSON.stringify(fbLv.quizQuestions, null, 2);
+      if (fbLv.articleBilingual) {
+        document.getElementById('slArticle').value = JSON.stringify(fbLv.articleBilingual, null, 2);
+      } else if (fbLv.articleContent) {
+        document.getElementById('slArticle').value = fbLv.articleContent;
+      }
+      if (fbLv.quizQuestions) document.getElementById('slQuizJson').value = JSON.stringify(fbLv.quizQuestions, null, 2);
     }
   }
 
@@ -14046,8 +14084,18 @@ function copySkillsPrompt() {
 }
 
 function previewArticleContent() {
-  const html = document.getElementById('slArticle').value.trim();
-  if (!html) { showAdminToast('⚠️ Pehle content paste karo!'); return; }
+  const raw = document.getElementById('slArticle').value.trim();
+  if (!raw) { showAdminToast('⚠️ Pehle content paste karo!'); return; }
+  let html = raw;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed.ur || parsed.en) {
+      html = `<div style="margin-bottom:12px;display:flex;gap:8px;">
+        <button onclick="document.getElementById('articlePreviewContent').innerHTML=atob('${btoa(unescape(encodeURIComponent(parsed.ur||'')))}')" style="padding:5px 12px;border-radius:8px;background:#F5C400;color:#000;border:none;cursor:pointer;font-size:11px;font-weight:700;">🇵🇰 UR</button>
+        ${parsed.en ? `<button onclick="document.getElementById('articlePreviewContent').innerHTML=atob('${btoa(unescape(encodeURIComponent(parsed.en||'')))}')" style="padding:5px 12px;border-radius:8px;background:rgba(91,141,239,.3);color:#fff;border:1px solid rgba(91,141,239,.5);cursor:pointer;font-size:11px;font-weight:700;">🇬🇧 EN</button>` : ''}
+      </div>${parsed.ur||''}`;
+    }
+  } catch(e) { /* plain HTML, use as-is */ }
   document.getElementById('articlePreviewContent').innerHTML = html;
   document.getElementById('articlePreviewModal').style.display = 'block';
 }
@@ -14072,7 +14120,22 @@ function saveSingleLevel() {
     if (lv.type === 'article') {
       const content = document.getElementById('slArticle').value.trim();
       if (!content) { st.style.color='#ef4444'; st.textContent='❌ Article content khali hai!'; return; }
-      existing.articleContent = content;
+      // Try bilingual JSON format first
+      try {
+        const parsed = JSON.parse(content);
+        if (parsed.ur || parsed.en) {
+          existing.articleBilingual = parsed;
+          existing.articleContent = parsed.ur || '';
+          delete existing.articleContentEn;
+        } else {
+          throw new Error('no ur/en keys');
+        }
+      } catch(e) {
+        // Fallback: treat as plain HTML (legacy Roman Urdu only)
+        existing.articleContent = content;
+        delete existing.articleBilingual;
+        delete existing.articleContentEn;
+      }
     } else if (lv.type === 'quiz') {
       const qTxt = document.getElementById('slQuizJson').value.trim();
       if (!qTxt) { st.style.color='#ef4444'; st.textContent='❌ Quiz JSON khali hai!'; return; }
@@ -14175,9 +14238,10 @@ function loadSkillsFromFirebaseAdmin() {
     if (ta) ta.value = JSON.stringify(data, null, 2);
     if (preview) {
       const lvCount = (data.sections||[]).reduce((a,s)=>a+(s.levels?s.levels.length:0),0);
-      const doneCount = (data.sections||[]).reduce((a,s)=>a+(s.levels||[]).filter(l=>l.articleContent||l.quizQuestions||l.gameId).length,0);
+      const doneCount = (data.sections||[]).reduce((a,s)=>a+(s.levels||[]).filter(l=>l.articleContent||l.quizQuestions||l.gameId||l.articleBilingual).length,0);
       preview.innerHTML = `<div style="color:#22C55E;font-weight:700;">✅ Firebase: ${(data.sections||[]).length} sections, ${lvCount} levels — ${doneCount} content added</div>`;
     }
+    renderSkillsSavedList();
   }).catch(e=>{ if(preview) preview.innerHTML='<span style="color:#ef4444;">Error: '+e.message+'</span>'; });
 }
 
@@ -14190,6 +14254,126 @@ function deleteSkillLevel(secId,lvId){
     sec.levels=sec.levels.filter(l=>l.id!==lvId);
     set(ref(db,'skills/'+_saCurrentTopic),data).then(()=>{
       showAdminToast('🗑️ Level deleted!'); loadSkillsFromFirebaseAdmin();
+    });
+  });
+}
+
+function renderSkillsSavedList(){
+  const el = document.getElementById('skillsSavedList');
+  if(!el) return;
+  if(!_saFirebaseData || !_saFirebaseData.sections){
+    el.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Firebase mein abhi koi level save nahi — pehle koi article/quiz save karo</div>';
+    return;
+  }
+  let html='';
+  let totalSaved=0;
+  _saFirebaseData.sections.forEach(sec=>{
+    const savedLevels=(sec.levels||[]).filter(lv=>lv.articleContent||lv.articleBilingual||lv.quizQuestions||lv.gameId);
+    if(!savedLevels.length) return;
+    html+=`<div style="font-size:11px;font-weight:800;color:#F5C400;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px;">${sec.title||sec.id} <span style="font-weight:600;color:var(--mut);text-transform:none;">(${savedLevels.length} saved)</span></div>`;
+    savedLevels.forEach(lv=>{
+      totalSaved++;
+      const isBilingual = !!lv.articleBilingual;
+      const isQuiz = !!lv.quizQuestions;
+      const isGame = !!lv.gameId;
+      const typeBadge = isQuiz
+        ? '<span style="background:rgba(91,141,239,.2);color:#5B8DEF;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">📝 Quiz</span>'
+        : isGame
+        ? '<span style="background:rgba(255,165,0,.15);color:#F5C400;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">🎮 Game</span>'
+        : isBilingual
+        ? '<span style="background:rgba(46,229,157,.15);color:#2EE59D;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">🌐 Bilingual</span>'
+        : '<span style="background:rgba(199,125,255,.15);color:#C77DFF;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">📖 Article</span>';
+      html+=`<div style="background:var(--card2);border:1.5px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lv.icon||'📖'} ${lv.title||lv.id}</div>
+          <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${typeBadge}<span style="font-size:10px;color:var(--mut);">ID: ${lv.id}</span></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          ${!isGame?`<button onclick="openEditLevel('${sec.id}','${lv.id}')" style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;color:#5B8DEF;">✏️</button>`:''}
+          <button onclick="deleteSkillLevelContent('${sec.id}','${lv.id}')" style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;color:var(--r);">🗑️</button>
+        </div>
+      </div>`;
+    });
+  });
+  if(!totalSaved){
+    el.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Abhi koi content save nahi hai Firebase mein</div>';
+    return;
+  }
+  el.innerHTML=html;
+}
+
+function openEditLevel(secId, lvId){
+  if(!_saFirebaseData) return;
+  const sec=_saFirebaseData.sections.find(s=>s.id===secId);
+  const lv=sec&&sec.levels&&sec.levels.find(l=>l.id===lvId);
+  if(!lv) return;
+  document.getElementById('editModalTitle').textContent=lv.title||lvId;
+  document.getElementById('editModalSecId').value=secId;
+  document.getElementById('editModalLvId').value=lvId;
+  document.getElementById('editModalType').value=lv.quizQuestions?'quiz':'article';
+  document.getElementById('editModalStatus').textContent='';
+  if(lv.quizQuestions){
+    document.getElementById('editModalContent').value=JSON.stringify(lv.quizQuestions,null,2);
+  } else if(lv.articleBilingual){
+    document.getElementById('editModalContent').value=JSON.stringify(lv.articleBilingual,null,2);
+  } else {
+    document.getElementById('editModalContent').value=lv.articleContent||'';
+  }
+  document.getElementById('skillsEditModal').style.display='block';
+}
+
+function saveEditedLevel(){
+  const secId=document.getElementById('editModalSecId').value;
+  const lvId=document.getElementById('editModalLvId').value;
+  const type=document.getElementById('editModalType').value;
+  const content=document.getElementById('editModalContent').value.trim();
+  const st=document.getElementById('editModalStatus');
+  if(!content){st.style.color='#ef4444';st.textContent='❌ Content khali hai!';return;}
+  get(ref(db,'skills/'+_saCurrentTopic)).then(snap=>{
+    let data=snap.val(); if(!data) return;
+    const sec=data.sections&&data.sections.find(s=>s.id===secId);
+    const lv=sec&&sec.levels&&sec.levels.find(l=>l.id===lvId);
+    if(!lv){st.style.color='#ef4444';st.textContent='❌ Level nahi mila!';return;}
+    if(type==='quiz'){
+      try{lv.quizQuestions=JSON.parse(content);}
+      catch(e){st.style.color='#ef4444';st.textContent='❌ Invalid JSON: '+e.message;return;}
+    } else {
+      try{
+        const parsed=JSON.parse(content);
+        if(parsed.ur||parsed.en){
+          lv.articleBilingual=parsed;
+          lv.articleContent=parsed.ur||'';
+          delete lv.articleContentEn;
+        } else { throw new Error('no ur/en'); }
+      } catch(e){
+        lv.articleContent=content;
+        delete lv.articleBilingual;
+      }
+    }
+    set(ref(db,'skills/'+_saCurrentTopic),data).then(()=>{
+      st.style.color='#22C55E';st.textContent='✅ Saved!';
+      showAdminToast('✅ '+lv.title+' updated!');
+      setTimeout(()=>{document.getElementById('skillsEditModal').style.display='none';},800);
+      loadSkillsFromFirebaseAdmin();
+      setTimeout(renderSkillsSavedList,1200);
+    }).catch(e=>{st.style.color='#ef4444';st.textContent='❌ '+e.message;});
+  });
+}
+
+function deleteSkillLevelContent(secId,lvId){
+  showConfirm('🗑️','Content Delete Karo?','Is level ka Firebase content delete ho jayega (structure rahega)','Delete','#FF6B6B','#CC3333',()=>{
+    get(ref(db,'skills/'+_saCurrentTopic)).then(snap=>{
+      let data=snap.val(); if(!data) return;
+      const sec=data.sections&&data.sections.find(s=>s.id===secId);
+      const lv=sec&&sec.levels&&sec.levels.find(l=>l.id===lvId);
+      if(!lv) return;
+      delete lv.articleContent; delete lv.articleBilingual; delete lv.articleContentEn;
+      delete lv.quizQuestions; delete lv.gameId;
+      set(ref(db,'skills/'+_saCurrentTopic),data).then(()=>{
+        showAdminToast('🗑️ Content deleted!');
+        loadSkillsFromFirebaseAdmin();
+        setTimeout(renderSkillsSavedList,1200);
+      });
     });
   });
 }
