@@ -27051,83 +27051,132 @@ function renderStreakScreen(){
 // ── Default Electricity course (fallback if Firebase empty) ──
 const SKILLS_DEFAULT_DATA = {
   electricity: {
-    title: "Electricity",
+    title: "Electrician Course",
     icon: "⚡",
     sections: [
       {
-        id: "s1", title: "Spark Mode", eyebrow: "Section 1",
+        id: "s1", title: "Bijli Ki Duniya", eyebrow: "Section 1 — Foundations",
         levels: [
-          { id:"l1_1", title:"Place the Battery", type:"game", icon:"🔋", unlocked:true, gameId:"place_battery" },
-          { id:"l1_2", title:"Build It from Scratch", type:"game", icon:"🔌", unlocked:false, gameId:"build_scratch" },
-          { id:"l1_3", title:"Tune the Resistor", type:"game", icon:"〰️", unlocked:false, gameId:"tune_resistor" },
-          { id:"l1_4", title:"Doorbell", type:"game", icon:"🔔", unlocked:false, gameId:"doorbell" },
-          { id:"l1_5", title:"String of Lights", type:"game", icon:"💡", unlocked:false, gameId:"string_lights" },
-          { id:"l1_6", title:"AND logic — Safe", type:"game", icon:"🔐", unlocked:false, gameId:"and_safe" },
-          { id:"l1_7", title:"OR logic — Staircase", type:"game", icon:"🪜", unlocked:false, gameId:"or_staircase" },
-          { id:"l1_8", title:"The Circuit Breaker on the Wall", type:"game", icon:"⚡", unlocked:false, gameId:"circuit_breaker" },
-          { id:"l1_9", title:"One-Way Valve", type:"game", icon:"🔁", unlocked:false, gameId:"one_way_valve" },
-          { id:"l1_10", title:"Backup Cell", type:"game", icon:"🔋", unlocked:false, gameId:"backup_cell" },
-          { id:"l1_11", title:"Multiple Sources", type:"game", icon:"🔌", unlocked:false, gameId:"multi_source" },
-          { id:"l1_12", title:"The Selector", type:"game", icon:"🎛️", unlocked:false, gameId:"selector" },
-          { id:"l1_13", title:"XOR Logic", type:"game", icon:"💡", unlocked:false, gameId:"xor_logic" },
-          { id:"l1_14", title:"Hold The Light", type:"game", icon:"🕯️", unlocked:false, gameId:"hold_light" },
-          { id:"l1_15", title:"Backup Power", type:"game", icon:"🔋", unlocked:false, gameId:"backup_power" }
+          { id:"l1_1",  title:"Bijli Kya Hai?",                     type:"article", icon:"⚡", unlocked:true  },
+          { id:"l1_2",  title:"Atoms aur Electrons",                type:"article", icon:"⚛️", unlocked:false },
+          { id:"l1_3",  title:"Current, Voltage, Resistance",       type:"article", icon:"📊", unlocked:false },
+          { id:"l1_4",  title:"Ohm's Law — V = I × R",             type:"article", icon:"🔢", unlocked:false },
+          { id:"l1_5",  title:"Ohm's Law Quiz",                     type:"quiz",    icon:"✏️", unlocked:false },
+          { id:"l1_6",  title:"AC vs DC — Farq Kya Hai?",          type:"article", icon:"🔀", unlocked:false },
+          { id:"l1_7",  title:"Pakistan Mein Bijli Ka Nizam",       type:"article", icon:"🇵🇰", unlocked:false },
+          { id:"l1_8",  title:"WAPDA aur Distribution System",      type:"article", icon:"🏭", unlocked:false },
+          { id:"l1_9",  title:"Foundations Quiz",                   type:"quiz",    icon:"✏️", unlocked:false },
+          { id:"l1_10", title:"Basic Circuit — Game",               type:"game",    icon:"🎮", unlocked:false, gameId:"basic_circuit"   },
+          { id:"l1_11", title:"Open vs Closed Circuit — Game",      type:"game",    icon:"🔌", unlocked:false, gameId:"open_closed"     },
+          { id:"l1_12", title:"Series Circuit — Game",              type:"game",    icon:"➡️", unlocked:false, gameId:"series_circuit"  },
+          { id:"l1_13", title:"Parallel Circuit — Game",            type:"game",    icon:"⇉",  unlocked:false, gameId:"parallel_circuit"},
+          { id:"l1_14", title:"Section 1 Final Test",               type:"quiz",    icon:"🏆", unlocked:false }
         ]
       },
       {
-        id: "s2", title: "Circuit Builder", eyebrow: "Section 2",
+        id: "s2", title: "Auzaar aur Safety", eyebrow: "Section 2 — Tools & Safety",
         levels: [
-          { id:"l2_1", title:"The Flashlight (Easy)", type:"game", icon:"🔦", unlocked:false, gameId:"flashlight" },
-          { id:"l2_2", title:"The Wall Outlet (Medium)", type:"game", icon:"🔌", unlocked:false, gameId:"wall_outlet" },
-          { id:"l2_3", title:"The Fuse Box (Hard)", type:"game", icon:"🔧", unlocked:false, gameId:"fuse_box" },
-          { id:"l2_4", title:"Volts, Amps — The Only Things You Need", type:"article", icon:"📖", unlocked:false },
-          { id:"l2_5", title:"AC vs. DC, And Why Your House Uses Both", type:"article", icon:"📖", unlocked:false },
-          { id:"l2_6", title:"Why Circuits Need to Be Closed", type:"article", icon:"📖", unlocked:false },
-          { id:"l2_7", title:"Why Your Breaker Trips (And Why That's a Good Thing)", type:"article", icon:"📖", unlocked:false }
+          { id:"l2_1",  title:"Electrician Ke Zaroori Auzaar",      type:"article", icon:"🧰", unlocked:false },
+          { id:"l2_2",  title:"Multimeter — Poori Rahnamai",        type:"article", icon:"🔬", unlocked:false },
+          { id:"l2_3",  title:"Multimeter Use Karo — Game",         type:"game",    icon:"🎮", unlocked:false, gameId:"multimeter_game" },
+          { id:"l2_4",  title:"Wire Stripper aur Crimper",          type:"article", icon:"✂️", unlocked:false },
+          { id:"l2_5",  title:"Electrical Safety — Pehli Baat",     type:"article", icon:"⚠️", unlocked:false },
+          { id:"l2_6",  title:"Live Wire Se Bachao",                type:"article", icon:"🛡️", unlocked:false },
+          { id:"l2_7",  title:"PPE — Personal Protection",          type:"article", icon:"🧤", unlocked:false },
+          { id:"l2_8",  title:"Lockout / Tagout (LOTO)",            type:"article", icon:"🔒", unlocked:false },
+          { id:"l2_9",  title:"Shock Lagnay Par Kya Karain?",       type:"article", icon:"🚨", unlocked:false },
+          { id:"l2_10", title:"Safety Hazards — Spot Karo — Game",  type:"game",    icon:"🎮", unlocked:false, gameId:"hazard_spot"     },
+          { id:"l2_11", title:"Tools & Safety Quiz",                type:"quiz",    icon:"✏️", unlocked:false },
+          { id:"l2_12", title:"Section 2 Final Test",               type:"quiz",    icon:"🏆", unlocked:false }
         ]
       },
       {
-        id: "s3", title: "How Electricity Actually Works", eyebrow: "Section 3",
+        id: "s3", title: "Taar aur Components", eyebrow: "Section 3 — Wires & Components",
         levels: [
-          { id:"l3_1", title:"What Is Electricity, Really?", type:"article", icon:"📖", unlocked:false },
-          { id:"l3_2", title:"Why Circuits Need to Be Closed", type:"article", icon:"📖", unlocked:false },
-          { id:"l3_3", title:"AC vs. DC, And Why Your House Uses Both", type:"article", icon:"📖", unlocked:false },
-          { id:"l3_4", title:"Why Your Breaker Trips (And Why That's a Good Thing)", type:"article", icon:"📖", unlocked:false }
+          { id:"l3_1",  title:"Wire Ke Types — Poori List",         type:"article", icon:"🔴", unlocked:false },
+          { id:"l3_2",  title:"Wire Gauge — Kitna Mota?",           type:"article", icon:"📏", unlocked:false },
+          { id:"l3_3",  title:"Pakistan Mein Wire Colors",          type:"article", icon:"🎨", unlocked:false },
+          { id:"l3_4",  title:"Live, Neutral, Earth — Pehchano",    type:"article", icon:"🟡", unlocked:false },
+          { id:"l3_5",  title:"Wire Color Quiz",                    type:"quiz",    icon:"✏️", unlocked:false },
+          { id:"l3_6",  title:"MCB — Mini Circuit Breaker",         type:"article", icon:"⚡", unlocked:false },
+          { id:"l3_7",  title:"RCCB / ELCB — Life Saver",          type:"article", icon:"💚", unlocked:false },
+          { id:"l3_8",  title:"Fuse — Kaam aur Types",              type:"article", icon:"🔮", unlocked:false },
+          { id:"l3_9",  title:"Switch — Types aur Wiring",          type:"article", icon:"🔲", unlocked:false },
+          { id:"l3_10", title:"Socket / Outlet — Types",            type:"article", icon:"🔌", unlocked:false },
+          { id:"l3_11", title:"MCB Sizing — Game",                  type:"game",    icon:"🎮", unlocked:false, gameId:"mcb_sizing"      },
+          { id:"l3_12", title:"Earthing / Grounding Kya Hai?",      type:"article", icon:"🌍", unlocked:false },
+          { id:"l3_13", title:"Earthing System — Game",             type:"game",    icon:"🎮", unlocked:false, gameId:"earthing_game"   },
+          { id:"l3_14", title:"Capacitor aur Inductor — Basics",    type:"article", icon:"⚙️", unlocked:false },
+          { id:"l3_15", title:"Components Quiz",                    type:"quiz",    icon:"✏️", unlocked:false },
+          { id:"l3_16", title:"Section 3 Final Test",               type:"quiz",    icon:"🏆", unlocked:false }
         ]
       },
       {
-        id: "s4", title: "The Electrified Future", eyebrow: "Section 4",
+        id: "s4", title: "Ghar Ki Wiring", eyebrow: "Section 4 — Home Wiring",
         levels: [
-          { id:"l4_1", title:"Solar Panels & Batteries, Demystified", type:"article", icon:"🌞", unlocked:false },
-          { id:"l4_2", title:"How EV Charging Actually Works", type:"article", icon:"🚗", unlocked:false },
-          { id:"l4_3", title:"The Biggest Machine on Earth", type:"article", icon:"🏭", unlocked:false },
-          { id:"l4_4", title:"Smart Homes: What's Actually Smart About Them?", type:"article", icon:"🏠", unlocked:false }
+          { id:"l4_1",  title:"Single Phase Supply — Ghar Tak",     type:"article", icon:"🏠", unlocked:false },
+          { id:"l4_2",  title:"Distribution Board (DB Box)",        type:"article", icon:"📦", unlocked:false },
+          { id:"l4_3",  title:"DB Box Wiring — Game",               type:"game",    icon:"🎮", unlocked:false, gameId:"db_box_wiring"   },
+          { id:"l4_4",  title:"One-Way Switch Wiring",              type:"article", icon:"💡", unlocked:false },
+          { id:"l4_5",  title:"Two-Way Switch — Zina / Siri",       type:"article", icon:"🪜", unlocked:false },
+          { id:"l4_6",  title:"Switch Wiring — Game",               type:"game",    icon:"🎮", unlocked:false, gameId:"switch_wiring"   },
+          { id:"l4_7",  title:"Socket / Outlet Lagana",             type:"article", icon:"🔌", unlocked:false },
+          { id:"l4_8",  title:"Ghar Ki Wiring Plan Banana",         type:"article", icon:"📐", unlocked:false },
+          { id:"l4_9",  title:"Wiring Plan — Game",                 type:"game",    icon:"🎮", unlocked:false, gameId:"wiring_plan"     },
+          { id:"l4_10", title:"Ceiling Fan Installation",           type:"article", icon:"💨", unlocked:false },
+          { id:"l4_11", title:"Fan Wiring — Game",                  type:"game",    icon:"🎮", unlocked:false, gameId:"fan_wiring"      },
+          { id:"l4_12", title:"Geyser / Water Heater Wiring",       type:"article", icon:"🚿", unlocked:false },
+          { id:"l4_13", title:"Short Circuit — Kyon Hota Hai?",     type:"article", icon:"💥", unlocked:false },
+          { id:"l4_14", title:"Fault Finding — Game",               type:"game",    icon:"🎮", unlocked:false, gameId:"fault_finding"   },
+          { id:"l4_15", title:"Home Wiring Quiz",                   type:"quiz",    icon:"✏️", unlocked:false },
+          { id:"l4_16", title:"Section 4 Final Test",               type:"quiz",    icon:"🏆", unlocked:false }
         ]
       },
       {
-        id: "s5", title: "Electricity: Beyond the Basics", eyebrow: "Section 5",
+        id: "s5", title: "AC, Motor aur Advanced", eyebrow: "Section 5 — Advanced",
         levels: [
-          { id:"l5_1", title:"The Biggest Lie About Electricity", type:"article", icon:"📖", unlocked:false },
-          { id:"l5_2", title:"Lightning Goes Up, Not Down", type:"article", icon:"⛈️", unlocked:false },
-          { id:"l5_3", title:"Why Birds Survive Power Lines (But Eagles Don't)", type:"article", icon:"🦅", unlocked:false },
-          { id:"l5_4", title:"You Are an Electrical Machine", type:"article", icon:"⚡", unlocked:false }
+          { id:"l5_1",  title:"AC Unit — Andar Kya Hai?",           type:"article", icon:"❄️", unlocked:false },
+          { id:"l5_2",  title:"AC Wiring — Step by Step",           type:"article", icon:"🔧", unlocked:false },
+          { id:"l5_3",  title:"AC Wiring — Game",                   type:"game",    icon:"🎮", unlocked:false, gameId:"ac_wiring"       },
+          { id:"l5_4",  title:"3-Phase Supply Kya Hai?",            type:"article", icon:"🔱", unlocked:false },
+          { id:"l5_5",  title:"3-Phase vs Single Phase",            type:"article", icon:"📊", unlocked:false },
+          { id:"l5_6",  title:"Electric Motor — Kaise Kaam Karta?", type:"article", icon:"⚙️", unlocked:false },
+          { id:"l5_7",  title:"Motor Starter Types",                type:"article", icon:"▶️", unlocked:false },
+          { id:"l5_8",  title:"Motor Wiring — Game",                type:"game",    icon:"🎮", unlocked:false, gameId:"motor_wiring"    },
+          { id:"l5_9",  title:"Industrial Panel Board",             type:"article", icon:"🏭", unlocked:false },
+          { id:"l5_10", title:"Transformer — Basics",               type:"article", icon:"🔄", unlocked:false },
+          { id:"l5_11", title:"UPS aur Inverter",                   type:"article", icon:"🔋", unlocked:false },
+          { id:"l5_12", title:"Solar Panel System Wiring",          type:"article", icon:"☀️", unlocked:false },
+          { id:"l5_13", title:"Solar Wiring — Game",                type:"game",    icon:"🎮", unlocked:false, gameId:"solar_wiring"    },
+          { id:"l5_14", title:"Advanced Systems Quiz",              type:"quiz",    icon:"✏️", unlocked:false },
+          { id:"l5_15", title:"Section 5 Final Test",               type:"quiz",    icon:"🏆", unlocked:false }
+        ]
+      },
+      {
+        id: "s6", title: "Professional Electrician", eyebrow: "Section 6 — Job Ready",
+        levels: [
+          { id:"l6_1",  title:"Electrical Codes — Pakistan + IEC",  type:"article", icon:"📋", unlocked:false },
+          { id:"l6_2",  title:"Wiring Estimation — Material List",  type:"article", icon:"🧮", unlocked:false },
+          { id:"l6_3",  title:"Estimation — Game",                  type:"game",    icon:"🎮", unlocked:false, gameId:"estimation_game" },
+          { id:"l6_4",  title:"Troubleshooting — Masla Dhundho",    type:"article", icon:"🔍", unlocked:false },
+          { id:"l6_5",  title:"Troubleshooting — Game",             type:"game",    icon:"🎮", unlocked:false, gameId:"troubleshoot_game"},
+          { id:"l6_6",  title:"Client Se Baat Karna",               type:"article", icon:"🤝", unlocked:false },
+          { id:"l6_7",  title:"Rates aur Billing",                  type:"article", icon:"💰", unlocked:false },
+          { id:"l6_8",  title:"Interview Mein Kya Poochha Jata Hai",type:"article", icon:"💼", unlocked:false },
+          { id:"l6_9",  title:"Mock Interview — 30 Sawaal",         type:"quiz",    icon:"🎤", unlocked:false },
+          { id:"l6_10", title:"Real Scenario — House Fault — Game", type:"game",    icon:"🎮", unlocked:false, gameId:"house_fault"     },
+          { id:"l6_11", title:"Real Scenario — Industrial Fault — Game", type:"game", icon:"🏭", unlocked:false, gameId:"industrial_fault"},
+          { id:"l6_12", title:"Grand Final Test — 50 Sawaal",       type:"quiz",    icon:"🏆", unlocked:false },
+          { id:"l6_13", title:"Certificate — Certified Electrician",type:"article", icon:"🎓", unlocked:false }
         ]
       }
     ]
   }
 };
 
-// Article content (default — admin se override hoga)
-const SKILL_ARTICLES = {
-  "What Is Electricity, Really?": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">⚡ What Is Electricity, Really?</h3><p>Electricity ek tarah ki energy hai jo electrons ki movement se paida hoti hai. Har cheez atoms se bani hai — aur atoms mein electrons hote hain jo nucleus ke gird ghoomte hain.</p><p style="margin-top:12px;">Jab electrons ek jagah se doosri jagah move karte hain, to current paida hota hai. Yahi electricity ka asli matlab hai — electrons ka flow.</p><p style="margin-top:12px;"><strong style="color:#F5C400;">Current (I)</strong> = electrons kitni tezi se flow kar rahe hain (Ampere mein)<br><strong style="color:#F5C400;">Voltage (V)</strong> = kitna "pressure" hai electrons ko push karne ke liye (Volt mein)<br><strong style="color:#F5C400;">Resistance (R)</strong> = koi cheez current ko kitna rokti hai (Ohm mein)</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Ohm's Law:</strong> V = I × R — yeh electricity ka sabse important formula hai!</p>`,
-  "Why Circuits Need to Be Closed": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🔄 Why Circuits Need to Be Closed</h3><p>Current tabhi flow karta hai jab ek complete path ho — battery se nikle, components se guzre, aur wapas battery tak aaye. Agar path toot jaye (open circuit), current ruk jaata hai.</p><p style="margin-top:12px;">Isliye switch kaam karta hai — wire tod ke current band karta hai, jod ke on karta hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Key Point:</strong> Electricity ek "loop" mein chalti hai — ek direction mein jaana aur doosri se aana zaroori hai!</p>`,
-  "AC vs. DC, And Why Your House Uses Both": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🔀 AC vs DC</h3><p><strong style="color:#4F8EF7;">DC (Direct Current)</strong> — ek hi direction mein flow karta hai. Batteries, phones, laptops mein hota hai.</p><p style="margin-top:10px;"><strong style="color:#ef4444;">AC (Alternating Current)</strong> — direction baar baar badalta hai (50 baar per second Pakistan mein). Ghar ki bijli AC hai kyunki long distance mein transmit karna aasaan hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;">Phone charger AC ko DC mein convert karta hai — isliye charger garam hota hai!</p>`,
-  "Why Your Breaker Trips (And Why That's a Good Thing)": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">⚡ Circuit Breaker</h3><p>Jab ek wire se bahut zyada current guzarta hai — jaise bohot saari cheezein ek saath on hon — to wire garam hone lagti hai aur aag lag sakti hai.</p><p style="margin-top:12px;">Circuit breaker is situation mein automatically trip karta hai (circuit tod deta hai) — yeh ek safety device hai!</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Remember:</strong> Breaker trip hona problem nahi — yeh problem se bachana hai. Reset karne se pehle extra load hatao.</p>`,
-  "Solar Panels & Batteries, Demystified": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🌞 Solar Panels & Batteries</h3><p>Solar panel suraj ki roshni ko directly DC electricity mein convert karta hai. Yeh photovoltaic (PV) effect se hota hai — silicon cells mein photons electrons ko free karte hain.</p><p style="margin-top:12px;">Battery mein chemical energy store hoti hai jo zarorat par electricity ban jaati hai. Ghar mein solar + battery system se bijli store kar sakte ho aur raat ko bhi use kar sakte ho.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Pakistan mein:</strong> 1kW solar panel ~4-5 units bijli per day produce karta hai — roughly ek AC ka 4-5 ghante!</p>`,
-  "The Biggest Lie About Electricity": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🤔 The Biggest Lie</h3><p>Sabse badi ghalat fehmi: "Electricity wire mein electrons ki speed se chalti hai." Actually electrons bohot slow move karte hain — millimeters per second!</p><p style="margin-top:12px;">Jo cheez speed of light ke kareeb chalti hai woh electric field hai — energy wave — jo electrons ko push karta hai. Light bulb immediately jalti hai isliye nahi ke electrons tezi se pahunchte hain, balke field tezi se travel karta hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;">Analogy: Water pipe mein pani already bhara hota hai — tap kholte hi dusre end se paani aata hai, naya paani nahi!</p>`,
-  "Lightning Goes Up, Not Down": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">⛈️ Lightning Goes Up!</h3><p>Hum sochte hain bijli upar se neeche girti hai — lekin actually yeh NEECHE SE UPAR jaati hai! Pehle ek "stepped leader" badal se neeche aata hai, phir zameen se ek "return stroke" upar jaata hai — yeh itni tezi se hota hai ke humari aankh ko neeche-upar lagta hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;">Ek lightning bolt mein itni energy hoti hai ke ek 60W bulb 6 mahine jala sake — lekin yeh sirf milliseconds ke liye hoti hai!</p>`,
-  "Why Birds Survive Power Lines (But Eagles Don't)": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🦅 Birds on Power Lines</h3><p>Choti chidiyan power line pe safely baith sakti hain kyunki woh ek hi wire ko touch karti hain — current ke liye ek complete circuit chahiye. Single wire pe current koi alternative path nahi milta, isliye bird se nahi guzarta.</p><p style="margin-top:12px;">Eagle (baaz) mara isliye jaata hai kyunki uske bade pankh ek saath 2 wires ya wire + pole ko touch kar lete hain — complete circuit ban jaata hai aur current body se guzar jaata hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Lesson:</strong> Current path of least resistance follow karta hai — agar body better path de to current us se guzregi!</p>`
-};
+// Article content — Firebase se load hoga, admin panel se add karo
+const SKILL_ARTICLES = {};
+
 
 // ── Skills Pro Popup (same style as Papers) ──
 function showSkillProPopup(){
