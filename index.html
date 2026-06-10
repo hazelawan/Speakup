@@ -4700,6 +4700,11 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 <div class="screen pb80" id="skillArticle" style="">
   <div style="background:var(--bg,#0F0E17);padding:52px 20px 20px;position:relative;">
     <button onclick="closeSkillArticle()" style="position:absolute;top:14px;left:16px;background:rgba(255,255,255,.1);border:none;border-radius:50%;width:36px;height:36px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
+    <!-- Language Toggle — top right -->
+    <div id="saLangToggle" style="position:absolute;top:14px;right:16px;display:flex;gap:4px;background:rgba(255,255,255,.07);border-radius:12px;padding:3px;">
+      <button id="saLangEnBtn" onclick="setSkillArticleLang('en')" style="padding:5px 10px;border-radius:10px;border:none;font-family:'Fredoka One',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;">🇬🇧 EN</button>
+      <button id="saLangUrBtn" onclick="setSkillArticleLang('ur')" style="padding:5px 10px;border-radius:10px;border:none;font-family:'Fredoka One',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;">🇵🇰 UR</button>
+    </div>
     <div id="saSection" style="font-size:11px;color:#F5C400;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;"></div>
     <div id="saTitle" style="font-size:22px;font-weight:900;color:#fff;font-family:'Fredoka One',sans-serif;line-height:1.3;"></div>
   </div>
@@ -27558,6 +27563,10 @@ function showSkillHint(){
 }
 
 // ── Article functions ──
+// Store current article content for both languages
+var _saContentUR = '';
+var _saContentEN = '';
+
 function openSkillArticle(levelId, sectionId){
   // Pro check — same as papers
   if(!isPro()){
@@ -27571,11 +27580,48 @@ function openSkillArticle(levelId, sectionId){
   if(!lv) return;
   document.getElementById('saSection').textContent = sec.eyebrow||sec.title;
   document.getElementById('saTitle').textContent = lv.title;
-  // Load content — Firebase override or default
-  const content = (lv.articleContent) || SKILL_ARTICLES[lv.title] ||
-    `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">📖 ${lv.title}</h3><p style="color:rgba(255,255,255,.7);line-height:1.8;">Yeh article admin panel se add kiya jayega. Admin → Skills → Article content paste karo.</p>`;
-  document.getElementById('saContent').innerHTML = content;
+
+  // Support 3 formats:
+  // 1. New bilingual JSON: lv.articleBilingual = {ur:"...", en:"..."}
+  // 2. Old separate fields: lv.articleContent + lv.articleContentEn
+  // 3. Legacy: lv.articleContent only
+  const fallback = getAppLang()==='en'
+    ? `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">📖 ${lv.title}</h3><p style="color:rgba(255,255,255,.7);line-height:1.8;">This article will be added soon. Check back later!</p>`
+    : `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">📖 ${lv.title}</h3><p style="color:rgba(255,255,255,.7);line-height:1.8;">Yeh article admin panel se add kiya jayega. Admin → Skills → Article content paste karo.</p>`;
+  if(lv.articleBilingual && typeof lv.articleBilingual === 'object'){
+    _saContentUR = lv.articleBilingual.ur || lv.articleContent || fallback;
+    _saContentEN = lv.articleBilingual.en || '';
+  } else {
+    _saContentUR = lv.articleContent || SKILL_ARTICLES[lv.title] || fallback;
+    _saContentEN = lv.articleContentEn || '';
+  }
+
+  // Render correct language based on app setting
+  _renderSkillArticleLang(getAppLang());
   showScreen('skillArticle');
+}
+
+function _renderSkillArticleLang(lang){
+  var enBtn = document.getElementById('saLangEnBtn');
+  var urBtn = document.getElementById('saLangUrBtn');
+  var toggle = document.getElementById('saLangToggle');
+  // Show toggle only if English content exists
+  if(toggle) toggle.style.display = _saContentEN ? 'flex' : 'none';
+  if(enBtn && urBtn){
+    if(lang==='en' && _saContentEN){
+      enBtn.style.background='#F5C400'; enBtn.style.color='#000';
+      urBtn.style.background='transparent'; urBtn.style.color='rgba(255,255,255,.6)';
+    } else {
+      urBtn.style.background='#F5C400'; urBtn.style.color='#000';
+      enBtn.style.background='transparent'; enBtn.style.color='rgba(255,255,255,.6)';
+    }
+  }
+  var content = (lang==='en' && _saContentEN) ? _saContentEN : _saContentUR;
+  document.getElementById('saContent').innerHTML = content;
+}
+
+function setSkillArticleLang(lang){
+  _renderSkillArticleLang(lang);
 }
 
 function closeSkillArticle(){
