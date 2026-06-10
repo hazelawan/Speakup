@@ -1414,9 +1414,26 @@ ZAROORI RULES:
       <div style="font-size:10px;color:#888;margin-bottom:6px;">Format: q=sawaal, o=4 options array, a=sahi answer index (0-3), explain=wajah</div>
     </div>
 
-    <!-- Game type notice -->
-    <div id="contentGameWrap" style="display:none;padding:12px;background:rgba(91,141,239,.1);border:1px solid rgba(91,141,239,.3);border-radius:10px;font-size:12px;color:#5B8DEF;">
-      🎮 Game levels ka content code mein hota hai — admin se add nahi hota. Game ID Firebase mein already save hai.
+    <!-- Game type — JSON input -->
+    <div id="contentGameWrap" style="display:none;">
+      <div style="background:rgba(91,141,239,.1);border:1px solid rgba(91,141,239,.3);border-radius:10px;padding:10px 12px;font-size:12px;color:#5B8DEF;margin-bottom:10px;">
+        🎮 <strong>Game Data</strong> — Gemini se JSON banwao aur yahan paste karo. App Firebase se load karega.
+      </div>
+      <div class="inp-label">🎮 Game Type</div>
+      <select id="slGameType" onchange="updateGamePrompt()" style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:9px 10px;color:#fff;font-size:12px;margin-bottom:8px;outline:none;">
+        <option value="">-- Game type choose karo --</option>
+        <option value="circuit">🔌 Circuit Builder (drag & drop wiring)</option>
+        <option value="mcq">❓ MCQ / Scenario Quiz</option>
+        <option value="match">🎯 Drag & Match</option>
+        <option value="hazard">⚠️ Hazard Spotter</option>
+        <option value="multimeter">🔬 Multimeter Simulator</option>
+      </select>
+      <div class="inp-label">💡 Game Hint (optional)</div>
+      <input id="slGameHint" type="text" placeholder="e.g. Battery ko snap zone mein drag karo!" style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:9px 10px;color:#fff;font-size:12px;margin-bottom:8px;outline:none;">
+      <div class="inp-label">📋 Game Data JSON</div>
+      <textarea id="slGameJson" placeholder="Gemini se generate karo → yahan paste karo" style="width:100%;min-height:160px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0;"></textarea>
+      <div id="gameJsonError" style="font-size:11px;color:#ef4444;margin-bottom:4px;display:none;"></div>
+      <div style="font-size:10px;color:#888;margin-bottom:6px;">Gemini se generate karo → JSON validate hoga → Firebase pe save hoga</div>
     </div>
 
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
@@ -13965,15 +13982,176 @@ EXACT FORMAT (return only this, nothing else):
 Topic context: ${sectionContext} — ${lv.title}`;
   }
 
-  // game type
-  return `GAME LEVEL: ${lv.title}
-Section: ${sectionContext}
+  // ── GAME PROMPTS — engine ke mutabiq ──
+  const circuitGames = ['basic_circuit','open_closed','series_circuit','parallel_circuit',
+    'db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring','earthing_game'];
+  const mcqGames = ['mcb_sizing','estimation_game','troubleshoot_game','house_fault','industrial_fault','fault_finding'];
+  const matchGames = ['wire_color_match','tool_matcher','ppe_dresser','component_id','socket_wiring','step_sequence','wiring_plan'];
+  const gid = lv.gameId || '';
 
-Yeh ek interactive game level hai — is ka content app ke code mein built-in hoga.
-Admin panel se game content add nahi hota.
+  if(circuitGames.includes(gid)){
+    return `You are a game data generator for SpeakUp — a Pakistani electrician learning app.
+Generate a Circuit Builder game for this level:
 
-Game ID: ${lv.id}
-Is level ka gameId already Firebase mein save hai.`;
+SECTION: ${sectionContext}
+LEVEL: ${lv.title}
+GAME ID: ${gid}
+
+Return ONLY valid JSON — no markdown, no backticks, no explanation:
+{
+  "dragItem": { "icon": "🔋", "label": "9V Battery" },
+  "components": [
+    { "id": "comp1", "icon": "〰️", "label": "Resistor", "x": 130, "y": 98, "w": 88, "h": 46, "iconSize": 18,
+      "pins": [
+        { "id": "res-l", "side": "left",  "color": "#9ca3af" },
+        { "id": "res-r", "side": "right", "color": "#9ca3af" }
+      ]
+    },
+    { "id": "comp2", "icon": "💡", "label": "Bulb", "x": 228, "y": 156, "w": 68, "h": 82, "iconSize": 28,
+      "pins": [
+        { "id": "bul-t", "side": "top",    "color": "#ef4444" },
+        { "id": "bul-b", "side": "bottom", "color": "#3b82f6" }
+      ]
+    }
+  ],
+  "connections": [["bat-r","res-l"],["res-r","bul-t"],["bul-b","bat-b"]],
+  "connLabels": ["Battery(+) → Resistor left","Resistor right → Bulb top","Bulb bottom → Battery(−)"],
+  "successMsg": "Circuit complete! +50 XP ⭐",
+  "hint": "Battery drag karo snap zone mein, phir pins connect karo!"
+}
+
+RULES:
+- Circuit board: 350px wide × 290px tall. snapZone left:14,top:85 — wahan component mat rakho.
+- pin sides: "left","right","top","bottom". Colors: red=#ef4444, blue=#3b82f6, gray=#9ca3af
+- bat-r=battery+, bat-b=battery− (auto-added)
+- connections: valid pin ID pairs only
+- Make realistic for: ${lv.title}
+- successMsg Roman Urdu mein
+
+Now generate for: "${lv.title}"`;
+  }
+
+  if(mcqGames.includes(gid)){
+    return `You are a game data generator for SpeakUp — a Pakistani electrician learning app.
+Generate a Scenario MCQ game for this level:
+
+SECTION: ${sectionContext}
+LEVEL: ${lv.title}
+GAME ID: ${gid}
+
+Return ONLY valid JSON — no markdown, no backticks, no explanation:
+{
+  "questions": [
+    {
+      "q": "Scenario ya sawaal — Roman Urdu mein?",
+      "options": ["Option A","Option B","Option C","Option D"],
+      "correct": 0,
+      "explain": "Sahi jawab A hai kyunki..."
+    }
+  ],
+  "successMsg": "Sab sawaal sahi! +50 XP ⭐"
+}
+
+RULES:
+- 5-8 practical scenario questions
+- Pakistan context: WAPDA, local brands, 220V, rupee values
+- Roman Urdu + English technical terms
+- correct: 0-3 index
+- Mix: fault finding, calculation, safety, identification
+- Topic: ${lv.title}
+
+Now generate for: "${lv.title}"`;
+  }
+
+  if(matchGames.includes(gid)){
+    return `You are a game data generator for SpeakUp — a Pakistani electrician learning app.
+Generate a Drag & Match game for this level:
+
+SECTION: ${sectionContext}
+LEVEL: ${lv.title}
+GAME ID: ${gid}
+
+Return ONLY valid JSON — no markdown, no backticks, no explanation:
+{
+  "pairs": [
+    { "label": "Live wire ka standard color (Pakistan)", "answer": "Red" },
+    { "label": "Neutral wire ka standard color",         "answer": "Black" },
+    { "label": "Earth wire ka standard color",           "answer": "Green" }
+  ],
+  "successMsg": "Sab match sahi! +50 XP ⭐"
+}
+
+RULES:
+- 4-6 unique pairs
+- label: Roman Urdu prompt
+- answer: short 1-4 word answer (must be unique)
+- Pakistan-specific context
+- Topic: ${lv.title}
+
+Now generate for: "${lv.title}"`;
+  }
+
+  if(gid === 'hazard_spot'){
+    return `You are a game data generator for SpeakUp — a Pakistani electrician learning app.
+Generate a Hazard Spotter game for this level:
+
+SECTION: ${sectionContext}
+LEVEL: ${lv.title}
+
+Return ONLY valid JSON — no markdown, no backticks, no explanation:
+{
+  "imageUrl": "",
+  "sceneDescription": "Scene description",
+  "hazards": [
+    { "x": 20, "y": 30, "w": 15, "h": 12, "label": "⚠️ Bare wire exposed — shock ka khatra!" },
+    { "x": 55, "y": 60, "w": 12, "h": 10, "label": "⚠️ Overloaded socket — fire ka khatra!" }
+  ],
+  "successMsg": "Sab hazards dhund liye! +50 XP ⭐"
+}
+
+RULES:
+- 3-5 hazards
+- x/y/w/h: percentage values (0-100)
+- label: ⚠️ + Roman Urdu description
+- Pakistan electrical hazards mention karo
+- Topic: ${lv.title}
+
+Now generate for: "${lv.title}"`;
+  }
+
+  if(gid === 'multimeter_game'){
+    return `You are a game data generator for SpeakUp — a Pakistani electrician learning app.
+Generate a Multimeter Simulator game for this level:
+
+SECTION: ${sectionContext}
+LEVEL: ${lv.title}
+
+Return ONLY valid JSON — no markdown, no backticks, no explanation:
+{
+  "questions": [
+    {
+      "task": "AC voltage measure karna hai socket mein — kaunsi setting?",
+      "settings": ["ACV 750","DCV 20","Resistance Ω","Current mA"],
+      "correct": 0,
+      "unit": "V AC",
+      "hint": "Ghar mein AC hota hai — ACV use karo"
+    }
+  ],
+  "successMsg": "Multimeter expert! +50 XP ⭐"
+}
+
+RULES:
+- 3-5 questions
+- settings: exactly 4 options
+- correct: 0-3 index
+- Pakistan-relevant (WAPDA 220V, common appliances)
+- Task Roman Urdu mein
+
+Now generate for: "${lv.title}"`;
+  }
+
+  return `GAME: ${lv.title} — Game ID: ${gid}
+Upar se game type select karo toh sahi prompt milega.`;
 }
 
 function loadSkillsAdmin() {
@@ -14049,13 +14227,17 @@ function selectSkillLevel(secId, lvId) {
     typeHint.textContent = '✏️ Quiz — Gemini se JSON array copy karo, yahan paste karo';
   } else {
     typeHint.style.cssText = 'margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.3);color:#5B8DEF;';
-    typeHint.textContent = '🎮 Game — Code mein built-in hai';
+    typeHint.textContent = '🎮 Game — Firebase se gameData add karo';
   }
 
   // Clear previous status + inputs
   document.getElementById('slStatus').textContent = '';
   document.getElementById('slArticle').value = '';
-  if (document.getElementById('slQuizJson')) document.getElementById('slQuizJson').value = '';
+  if(document.getElementById('slQuizJson')) document.getElementById('slQuizJson').value = '';
+  if(document.getElementById('slGameJson')){ document.getElementById('slGameJson').value = ''; }
+  if(document.getElementById('slGameHint')){ document.getElementById('slGameHint').value = ''; }
+  if(document.getElementById('slGameType')){ document.getElementById('slGameType').value = ''; }
+  if(document.getElementById('gameJsonError')){ document.getElementById('gameJsonError').style.display='none'; }
 
   // Pre-fill if Firebase data exists
   if (_saFirebaseData) {
@@ -14068,6 +14250,22 @@ function selectSkillLevel(secId, lvId) {
         document.getElementById('slArticle').value = fbLv.articleContent;
       }
       if (fbLv.quizQuestions) document.getElementById('slQuizJson').value = JSON.stringify(fbLv.quizQuestions, null, 2);
+      // Game fields pre-fill
+      if(fbLv.gameData && document.getElementById('slGameJson')){
+        document.getElementById('slGameJson').value = JSON.stringify(fbLv.gameData, null, 2);
+      }
+      if(fbLv.hint && document.getElementById('slGameHint')){
+        document.getElementById('slGameHint').value = fbLv.hint;
+      }
+      // Auto-detect game type from gameId
+      if(lv.type==='game' && document.getElementById('slGameType')){
+        const gid = fbLv.gameId || lv.gameId || '';
+        const circuitIds=['basic_circuit','open_closed','series_circuit','parallel_circuit','db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring','earthing_game'];
+        const mcqIds=['mcb_sizing','estimation_game','troubleshoot_game','house_fault','industrial_fault','fault_finding'];
+        const matchIds=['wire_color_match','tool_matcher','ppe_dresser','component_id','socket_wiring','step_sequence','wiring_plan'];
+        const sel = circuitIds.includes(gid)?'circuit':mcqIds.includes(gid)?'mcq':matchIds.includes(gid)?'match':gid==='hazard_spot'?'hazard':gid==='multimeter_game'?'multimeter':'';
+        document.getElementById('slGameType').value = sel;
+      }
     }
   }
 
@@ -14076,6 +14274,25 @@ function selectSkillLevel(secId, lvId) {
 
   // Scroll to prompt
   document.getElementById('skillsPromptCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// Game type dropdown change → prompt update karo
+function updateGamePrompt(){
+  if(!_saSelectedLevel || _saSelectedLevel.type !== 'game') return;
+  const gameType = document.getElementById('slGameType').value;
+  if(!gameType) return;
+  // Temporarily override gameId for prompt generation
+  const course = SA_COURSE[_saCurrentTopic];
+  if(!course) return;
+  const sec = course.sections.find(s=>s.id===_saSelectedLevel.secId);
+  if(!sec) return;
+  const lv = {..._saSelectedLevel, gameId: gameType === 'circuit' ? (_saSelectedLevel.gameId||'basic_circuit')
+    : gameType === 'mcq' ? 'mcb_sizing'
+    : gameType === 'match' ? 'wire_color_match'
+    : gameType === 'hazard' ? 'hazard_spot'
+    : 'multimeter_game'};
+  const prompt = _buildPrompt(sec, lv);
+  document.getElementById('skillsPromptBox').textContent = prompt;
 }
 
 function copySkillsPrompt() {
@@ -14143,7 +14360,23 @@ function saveSingleLevel() {
         existing.quizQuestions = JSON.parse(qTxt);
       } catch(e) { st.style.color='#ef4444'; st.textContent='❌ Invalid JSON: '+e.message; return; }
     } else if (lv.type === 'game') {
-      existing.gameId = lv.id.replace(/[^a-z0-9]/gi,'_');
+      existing.gameId = lv.gameId || lv.id;
+      // Game data save karo
+      const gJson = document.getElementById('slGameJson') && document.getElementById('slGameJson').value.trim();
+      const errEl = document.getElementById('gameJsonError');
+      if(gJson){
+        try{
+          const parsed = JSON.parse(gJson);
+          existing.gameData = parsed;
+          if(errEl){ errEl.style.display='none'; errEl.textContent=''; }
+        } catch(e){
+          if(errEl){ errEl.style.display='block'; errEl.textContent='❌ Invalid JSON: '+e.message; }
+          st.style.color='#ef4444'; st.textContent='❌ Game JSON galat hai: '+e.message; return;
+        }
+      }
+      // Hint save karo
+      const hint = document.getElementById('slGameHint') && document.getElementById('slGameHint').value.trim();
+      if(hint) existing.hint = hint;
     }
 
     set(ref(db, 'skills/' + _saCurrentTopic), data).then(() => {
@@ -14229,8 +14462,8 @@ function loadSkillsFromFirebaseAdmin() {
       (sec.levels||[]).forEach(lv=>{
         const badge = document.getElementById('lvStatus-'+lv.id);
         if (!badge) return;
-        const hasContent = lv.articleContent || lv.quizQuestions || lv.gameId;
-        badge.textContent = hasContent ? '✅' : '';
+        const hasContent = lv.articleContent || lv.articleBilingual || lv.quizQuestions || lv.gameData || lv.gameId;
+        badge.textContent = hasContent ? (lv.gameData ? '🎮✅' : '✅') : '';
       });
     });
     // Update JSON textarea
@@ -14238,7 +14471,7 @@ function loadSkillsFromFirebaseAdmin() {
     if (ta) ta.value = JSON.stringify(data, null, 2);
     if (preview) {
       const lvCount = (data.sections||[]).reduce((a,s)=>a+(s.levels?s.levels.length:0),0);
-      const doneCount = (data.sections||[]).reduce((a,s)=>a+(s.levels||[]).filter(l=>l.articleContent||l.quizQuestions||l.gameId||l.articleBilingual).length,0);
+      const doneCount = (data.sections||[]).reduce((a,s)=>a+(s.levels||[]).filter(l=>l.articleContent||l.quizQuestions||l.gameData||l.articleBilingual).length,0);
       preview.innerHTML = `<div style="color:#22C55E;font-weight:700;">✅ Firebase: ${(data.sections||[]).length} sections, ${lvCount} levels — ${doneCount} content added</div>`;
     }
     renderSkillsSavedList();
@@ -14268,18 +14501,20 @@ function renderSkillsSavedList(){
   let html='';
   let totalSaved=0;
   _saFirebaseData.sections.forEach(sec=>{
-    const savedLevels=(sec.levels||[]).filter(lv=>lv.articleContent||lv.articleBilingual||lv.quizQuestions||lv.gameId);
+    const savedLevels=(sec.levels||[]).filter(lv=>lv.articleContent||lv.articleBilingual||lv.quizQuestions||lv.gameData||lv.gameId);
     if(!savedLevels.length) return;
     html+=`<div style="font-size:11px;font-weight:800;color:#F5C400;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px;">${sec.title||sec.id} <span style="font-weight:600;color:var(--mut);text-transform:none;">(${savedLevels.length} saved)</span></div>`;
     savedLevels.forEach(lv=>{
       totalSaved++;
       const isBilingual = !!lv.articleBilingual;
       const isQuiz = !!lv.quizQuestions;
-      const isGame = !!lv.gameId;
+      const isGame = !!lv.gameData; const isGameNoData = !!lv.gameId && !lv.gameData;
       const typeBadge = isQuiz
         ? '<span style="background:rgba(91,141,239,.2);color:#5B8DEF;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">📝 Quiz</span>'
         : isGame
-        ? '<span style="background:rgba(255,165,0,.15);color:#F5C400;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">🎮 Game</span>'
+        ? '<span style="background:rgba(34,197,94,.15);color:#22C55E;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">🎮 Game ✅</span>'
+        : isGameNoData
+        ? '<span style="background:rgba(255,165,0,.15);color:#F5C400;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">🎮 No Data</span>'
         : isBilingual
         ? '<span style="background:rgba(46,229,157,.15);color:#2EE59D;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">🌐 Bilingual</span>'
         : '<span style="background:rgba(199,125,255,.15);color:#C77DFF;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;">📖 Article</span>';
@@ -14289,7 +14524,7 @@ function renderSkillsSavedList(){
           <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${typeBadge}<span style="font-size:10px;color:var(--mut);">ID: ${lv.id}</span></div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;">
-          ${!isGame?`<button onclick="openEditLevel('${sec.id}','${lv.id}')" style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;color:#5B8DEF;">✏️</button>`:''}
+          ${!isGameNoData?`<button onclick="openEditLevel('${sec.id}','${lv.id}')" style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;color:#5B8DEF;">✏️</button>`:''}
           <button onclick="deleteSkillLevelContent('${sec.id}','${lv.id}')" style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;color:var(--r);">🗑️</button>
         </div>
       </div>`;
