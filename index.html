@@ -4686,10 +4686,10 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 
   <!-- Controls -->
   <div style="padding:10px 14px;display:flex;gap:10px;align-items:center;">
-    <button style="width:40px;height:40px;background:white;border:1px solid #ddd;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">↩</button>
-    <button style="width:40px;height:40px;background:white;border:1px solid #ddd;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">↪</button>
+    <button onclick="sgUndoAction()" style="width:40px;height:40px;background:white;border:1px solid #ddd;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Undo">↩</button>
+    <button onclick="sgRedoAction()" style="width:40px;height:40px;background:white;border:1px solid #ddd;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Redo">↪</button>
     <button id="sgRunBtn" onclick="runSkillGame()" disabled style="flex:1;background:#22C55E;color:white;border:none;border-radius:24px;padding:13px;font-family:'Fredoka One',sans-serif;font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(34,197,94,.35);">▶ Run</button>
-    <button style="width:40px;height:40px;background:white;border:1.5px solid #ddd;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">📖</button>
+    <button onclick="sgOpenArticle()" style="width:40px;height:40px;background:white;border:1.5px solid #ddd;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Article">📖</button>
   </div>
 
   <!-- Inventory area -->
@@ -27343,48 +27343,194 @@ function openSkillGame(levelId, sectionId){
 }
 
 function closeSkillGame(){
+  _sgBatDragging = false;
+  _sgWireDragging = false;
+  if(_sgTempLine){ try{ _sgTempLine.remove(); }catch(e){} _sgTempLine=null; }
+  const ghost = document.getElementById('sgBatGhost');
+  if(ghost) ghost.remove();
   showScreen('skills');
   document.querySelectorAll('[id$="nb_skills"]').forEach(b=>b.classList.add('on'));
+  setTimeout(initSkillsScreen, 200);
+}
+
+// 📖 Book button — related article kholna
+function sgOpenArticle(){
+  if(!_currentSkillLevel || !_currentSkillSection){
+    if(typeof showSuToast==='function') showSuToast('📖 Pehle koi game open karo!');
+    return;
+  }
+  const sec = _skillsData && _skillsData.sections.find(s=>s.id===_currentSkillSection);
+  if(!sec){ if(typeof showSuToast==='function') showSuToast('📖 Article nahi mila!'); return; }
+  const li = sec.levels.findIndex(l=>l.id===_currentSkillLevel);
+  let articleLevel = null;
+  for(let i = li-1; i >= 0; i--){
+    if(sec.levels[i].type==='article'){ articleLevel = sec.levels[i]; break; }
+  }
+  if(!articleLevel){
+    if(typeof showSuToast==='function') showSuToast('📖 Is game ka koi article nahi hai.');
+    return;
+  }
+  openSkillArticle(articleLevel.id, _currentSkillSection);
+}
+
+// ↩ Undo last action
+function sgUndoAction(){
+  const keys = Object.keys(_sgConnections);
+  if(keys.length === 0){
+    if(_sgBatPlaced){
+      _sgBatPlaced = false;
+      const snap = document.getElementById('sgSnapZone');
+      if(snap){ snap.innerHTML = '<span style="font-size:18px">🔋</span><span style="font-size:10px;color:#aaa;font-weight:600;">Drag here</span>'; snap.style.border='2.5px dashed #bbb'; snap.style.background=''; }
+      renderSgInventory();
+      document.getElementById('sgStepBadge').innerHTML='<span>⚡</span><span>STEP 1 / 3</span>';
+      document.getElementById('sgStepText').textContent='Battery wapas — dobara drag karo snap zone mein.';
+      document.getElementById('sgRunBtn').disabled=true;
+      if(typeof showSuToast==='function') showSuToast('↩ Battery wapas inventory mein!');
+    } else {
+      if(typeof showSuToast==='function') showSuToast('↩ Kuch nahi undo karne ko!');
+    }
+    return;
+  }
+  const lastKey = keys[keys.length-1];
+  delete _sgConnections[lastKey];
+  const svg = document.getElementById('sgWireSvg');
+  if(svg && svg.lastChild) svg.removeChild(svg.lastChild);
+  const ck = document.getElementById('sgCk'+keys.length);
+  if(ck){ ck.textContent='○'; ck.style.color=''; }
+  document.getElementById('sgRunBtn').disabled=true;
+  document.getElementById('sgStepBadge').innerHTML='<span>⚡</span><span>STEP 2 / 3</span>';
+  document.getElementById('sgStepText').textContent='Wire hata diya — dobara connect karo pins se.';
+  if(typeof showSuToast==='function') showSuToast('↩ Last wire hata diya!');
+}
+
+// ↪ Redo
+function sgRedoAction(){
+  if(typeof showSuToast==='function') showSuToast('↪ Wire dobara lagao manually!');
 }
 
 function buildSkillGameBoard(lv){
   const area = document.getElementById('sgGameArea');
-  // Build circuit area with grid
-  area.innerHTML = `
-    <div id="sgCircuit" style="background:white;border-radius:18px;border:1px solid #ddd;position:relative;overflow:hidden;height:290px;touch-action:none;user-select:none;">
-      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.05) 1px,transparent 1px);background-size:22px 22px;"></div>
-      <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;" id="sgWireSvg"></svg>
-      <div class="snap-zone" id="sgSnapZone" style="left:14px;top:85px;width:100px;height:60px;border:2.5px dashed #bbb;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;z-index:2;position:absolute;">
-        <span style="font-size:18px">🔋</span><span style="font-size:10px;color:#aaa;font-weight:600;">Drag here</span>
+  const gd = lv.gameData || null; // Firebase se aata hai
+
+  // ── CIRCUIT BUILDER engine (gameType: 'circuit') ──
+  const circuitGames = ['basic_circuit','open_closed','series_circuit','parallel_circuit',
+    'db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring','earthing_game'];
+
+  if(circuitGames.includes(lv.gameId)){
+    // Firebase gameData format:
+    // { dragItem:{icon,label}, components:[{id,icon,label,x,y,pins:[{id,side,color}]}],
+    //   connections:[[pin1,pin2],...], connLabels:['label1',...], successMsg:'...' }
+    if(!gd){
+      area.innerHTML = `<div style="padding:30px;text-align:center;color:#888;font-size:13px;">
+        ⚠️ Game data Firebase se load nahi hua.<br>Admin panel se gameData add karo.
+      </div>`;
+      return;
+    }
+    _sgRequired = gd.connections || [];
+    _sgConnLabels = gd.connLabels || _sgRequired.map(([a,b])=>a+' → '+b);
+    _sgSuccessMsg = gd.successMsg || 'Circuit complete! +50 XP ⭐';
+    _sgDragItem = gd.dragItem || {icon:'🔋', label:'Component'};
+
+    // Build components HTML
+    let compHTML = '';
+    (gd.components||[]).forEach(comp=>{
+      let pinsHTML = (comp.pins||[]).map(pin=>{
+        const posStyle = pin.side==='left'  ? 'left:-7px;top:50%;transform:translateY(-50%)'
+                       : pin.side==='right' ? 'right:-7px;top:50%;transform:translateY(-50%)'
+                       : pin.side==='top'   ? 'top:-7px;left:50%;transform:translateX(-50%)'
+                       : 'bottom:-7px;left:50%;transform:translateX(-50%)';
+        return `<div data-pin="${pin.id}" style="width:14px;height:14px;border-radius:50%;background:${pin.color||'#9ca3af'};position:absolute;${posStyle};border:2px solid white;cursor:crosshair;z-index:5;"></div>`;
+      }).join('');
+      compHTML += `<div style="position:absolute;left:${comp.x||100}px;top:${comp.y||80}px;width:${comp.w||80}px;height:${comp.h||50}px;background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:1.5px solid #e0e0e0;padding:6px;z-index:3;">
+        <div id="${comp.id}Em" style="font-size:${comp.iconSize||20}px">${comp.icon||'⚙️'}</div>
+        <div style="font-size:10px;color:#666;font-weight:600;">${comp.label||''}</div>
+        ${pinsHTML}
+      </div>`;
+    });
+
+    // Wire connections checklist
+    let ckHTML = (_sgConnLabels||[]).map((lbl,i)=>{
+      const dot = _sgRequired[i] ? `<div style="width:9px;height:9px;border-radius:50%;background:${_sgWireColor&&_sgWireColor(_sgRequired[i][0],_sgRequired[i][1])||'#9ca3af'};"></div>` : '';
+      return `<div style="display:flex;align-items:center;gap:7px;margin:3px 0;">${dot}<span style="color:#555;font-size:11px;">${lbl}</span><span id="sgCk${i+1}" style="margin-left:auto">○</span></div>`;
+    }).join('');
+
+    area.innerHTML = `
+      <div id="sgCircuit" style="background:white;border-radius:18px;border:1px solid #ddd;position:relative;overflow:hidden;height:290px;touch-action:none;user-select:none;">
+        <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.05) 1px,transparent 1px);background-size:22px 22px;"></div>
+        <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;" id="sgWireSvg"></svg>
+        <div class="snap-zone" id="sgSnapZone" style="left:14px;top:85px;width:100px;height:60px;border:2.5px dashed #bbb;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;z-index:2;position:absolute;">
+          <span style="font-size:20px">${_sgDragItem.icon}</span>
+          <span style="font-size:10px;color:#aaa;font-weight:600;">Drag here</span>
+        </div>
+        ${compHTML}
       </div>
-      <div id="sgResistor" style="position:absolute;left:130px;top:98px;width:88px;height:46px;background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:1.5px solid #e0e0e0;padding:6px;z-index:3;">
-        <div style="font-size:18px">〰️</div><div style="font-size:10px;color:#666;font-weight:600;">Resistor</div>
-        <div id="sgResL" data-pin="res-l" style="width:13px;height:13px;border-radius:50%;background:#9ca3af;position:absolute;left:-6px;top:50%;transform:translateY(-50%);border:2px solid white;cursor:crosshair;z-index:5;"></div>
-        <div id="sgResR" data-pin="res-r" style="width:13px;height:13px;border-radius:50%;background:#9ca3af;position:absolute;right:-6px;top:50%;transform:translateY(-50%);border:2px solid white;cursor:crosshair;z-index:5;"></div>
-      </div>
-      <div id="sgBulb" style="position:absolute;left:228px;top:156px;width:68px;height:82px;background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:1.5px solid #e0e0e0;padding:6px;z-index:3;">
-        <div id="sgBulbEm" style="font-size:28px">💡</div><div style="font-size:10px;color:#666;font-weight:600;">Bulb</div>
-        <div id="sgBulT" data-pin="bul-t" style="width:13px;height:13px;border-radius:50%;background:#ef4444;position:absolute;top:-6px;left:50%;transform:translateX(-50%);border:2px solid white;cursor:crosshair;z-index:5;"></div>
-        <div id="sgBulB" data-pin="bul-b" style="width:13px;height:13px;border-radius:50%;background:#3b82f6;position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);border:2px solid white;cursor:crosshair;z-index:5;"></div>
-      </div>
-    </div>
-    <div style="background:#fff8e1;border-radius:12px;padding:9px 13px;border:1px solid #ffe082;margin-top:8px;font-size:11px;">
-      <div style="font-weight:700;color:#888;margin-bottom:4px;">WIRE CONNECTIONS:</div>
-      <div style="display:flex;align-items:center;gap:7px;margin:3px 0;"><div style="width:9px;height:9px;border-radius:50%;background:#ef4444;"></div><span style="color:#555;">Battery (+) → Resistor left</span><span id="sgCk1" style="margin-left:auto">○</span></div>
-      <div style="display:flex;align-items:center;gap:7px;margin:3px 0;"><div style="width:9px;height:9px;border-radius:50%;background:#9ca3af;"></div><span style="color:#555;">Resistor right → Bulb top</span><span id="sgCk2" style="margin-left:auto">○</span></div>
-      <div style="display:flex;align-items:center;gap:7px;margin:3px 0;"><div style="width:9px;height:9px;border-radius:50%;background:#3b82f6;"></div><span style="color:#555;">Bulb bottom → Battery (−)</span><span id="sgCk3" style="margin-left:auto">○</span></div>
-    </div>
-  `;
-  initSkillGameLogic();
+      <div style="background:#fff8e1;border-radius:12px;padding:9px 13px;border:1px solid #ffe082;margin-top:8px;font-size:11px;">
+        <div style="font-weight:700;color:#888;margin-bottom:4px;">WIRE CONNECTIONS:</div>
+        ${ckHTML}
+      </div>`;
+    initSkillGameLogic();
+    return;
+  }
+
+  // ── MCQ / Scenario engine (gameType: 'mcq') ──
+  if(['mcb_sizing','estimation_game','troubleshoot_game','house_fault','industrial_fault','fault_finding'].includes(lv.gameId)){
+    if(!gd){
+      area.innerHTML = `<div style="padding:30px;text-align:center;color:#888;font-size:13px;">⚠️ Game data Firebase se load nahi hua.</div>`;
+      return;
+    }
+    _sgMcqData = gd; _sgMcqIdx = 0; _sgMcqScore = 0;
+    renderSgMcq();
+    document.getElementById('sgRunBtn').style.display='none';
+    return;
+  }
+
+  // ── Drag & Match engine (gameType: 'match') ──
+  if(['wire_color_match','tool_matcher','ppe_dresser','component_id','socket_wiring','step_sequence'].includes(lv.gameId)){
+    if(!gd){
+      area.innerHTML = `<div style="padding:30px;text-align:center;color:#888;font-size:13px;">⚠️ Game data Firebase se load nahi hua.</div>`;
+      return;
+    }
+    _sgMatchData = gd; _sgMatchScore = 0;
+    renderSgMatch();
+    document.getElementById('sgRunBtn').style.display='none';
+    return;
+  }
+
+  // ── Hazard Spotter engine ──
+  if(lv.gameId==='hazard_spot'){
+    if(!gd){
+      area.innerHTML = `<div style="padding:30px;text-align:center;color:#888;font-size:13px;">⚠️ Game data Firebase se load nahi hua.</div>`;
+      return;
+    }
+    renderSgHazard(gd);
+    document.getElementById('sgRunBtn').style.display='none';
+    return;
+  }
+
+  // ── Multimeter Simulator engine ──
+  if(lv.gameId==='multimeter_game'){
+    if(!gd){
+      area.innerHTML = `<div style="padding:30px;text-align:center;color:#888;font-size:13px;">⚠️ Game data Firebase se load nahi hua.</div>`;
+      return;
+    }
+    renderSgMultimeter(gd);
+    document.getElementById('sgRunBtn').style.display='none';
+    return;
+  }
+
+  // Unknown game
+  area.innerHTML = `<div style="padding:30px;text-align:center;color:#888;font-size:13px;">🔜 Yeh game jald aa raha hai!</div>`;
+  document.getElementById('sgRunBtn').style.display='none';
 }
 
-// Inventory render for game
+// Inventory render — dynamic (Firebase gameData se)
 function renderSgInventory(){
+  const item = (typeof _sgDragItem!=='undefined' && _sgDragItem) ? _sgDragItem : {icon:'🔋', label:'Component'};
   document.getElementById('sgInventory').innerHTML = `
     <div id="sgBatInv" style="background:white;border:2.5px solid #F5C400;border-radius:14px;padding:11px 13px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(0,0,0,.08);cursor:grab;user-select:none;touch-action:none;position:relative;"
       ontouchstart="sgStartBatTouch(event)" onmousedown="sgStartBatMouse(event)">
-      <div style="font-size:36px">🔋</div>
-      <div><div style="font-size:13px;font-weight:700;color:#111;">9V Battery</div><div id="sgInvCnt" style="font-size:11px;color:#22C55E;font-weight:600;">1 left</div></div>
+      <div style="font-size:36px">${item.icon}</div>
+      <div><div style="font-size:13px;font-weight:700;color:#111;">${item.label}</div><div id="sgInvCnt" style="font-size:11px;color:#22C55E;font-weight:600;">1 left</div></div>
       <div style="position:absolute;right:13px;background:#111;color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;">Drag onto field</div>
     </div>`;
 }
@@ -27393,12 +27539,163 @@ function restartSkillGame(){
   if(!_currentSkillLevel || !_currentSkillSection) return;
   const sec = _skillsData.sections.find(s=>s.id===_currentSkillSection);
   const lv = sec && sec.levels.find(l=>l.id===_currentSkillLevel);
-  if(lv) { buildSkillGameBoard(lv); }
+  if(lv){
+    document.getElementById('sgRunBtn').style.display='';
+    buildSkillGameBoard(lv);
+  }
 }
 
-// ── Full game logic (same as electrolearn but for SpeakUp) ──
+// ── MCQ Engine ──
+var _sgMcqData=null, _sgMcqIdx=0, _sgMcqScore=0;
+function renderSgMcq(){
+  const area = document.getElementById('sgGameArea');
+  if(!_sgMcqData||!_sgMcqData.questions||_sgMcqIdx>=_sgMcqData.questions.length){
+    const total=_sgMcqData&&_sgMcqData.questions?_sgMcqData.questions.length:0;
+    area.innerHTML=`<div style="padding:24px 16px;text-align:center;">
+      <div style="font-size:52px;margin-bottom:10px;">🎉</div>
+      <div style="font-size:20px;font-weight:800;color:#22C55E;font-family:'Fredoka One',sans-serif;">Completed!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);margin:8px 0 18px;">Score: ${_sgMcqScore} / ${total}</div>
+      <button onclick="_sgShowSuccess()" style="background:#F5C400;color:#000;border:none;border-radius:16px;padding:13px 24px;font-family:'Fredoka One',sans-serif;font-size:15px;font-weight:800;cursor:pointer;">← Back to Map</button>
+    </div>`;
+    return;
+  }
+  const q=_sgMcqData.questions[_sgMcqIdx];
+  document.getElementById('sgStepBadge').innerHTML=`<span>❓</span><span>Q ${_sgMcqIdx+1} / ${_sgMcqData.questions.length}</span>`;
+  document.getElementById('sgStepText').textContent=q.q||'';
+  const opts=(q.options||[]).map((o,i)=>`
+    <button onclick="sgMcqAnswer(${i})" style="width:100%;text-align:left;background:white;border:1.5px solid #e0e0e0;border-radius:14px;padding:12px 14px;font-size:13px;font-weight:600;color:#111;cursor:pointer;margin-bottom:8px;font-family:'Nunito',sans-serif;">
+      ${['A','B','C','D'][i]}. ${o}
+    </button>`).join('');
+  area.innerHTML=`<div style="padding:4px 0;">${opts}</div>`;
+}
+function sgMcqAnswer(idx){
+  const q=_sgMcqData.questions[_sgMcqIdx];
+  const btns=document.getElementById('sgGameArea').querySelectorAll('button');
+  btns.forEach(b=>b.disabled=true);
+  if(idx===q.correct){
+    _sgMcqScore++;
+    btns[idx].style.background='#dcfce7'; btns[idx].style.borderColor='#22C55E';
+    if(typeof showSuToast==='function') showSuToast('✅ '+(q.explain||'Sahi!'));
+  } else {
+    btns[idx].style.background='#fee2e2'; btns[idx].style.borderColor='#ef4444';
+    if(q.correct<btns.length){btns[q.correct].style.background='#dcfce7';btns[q.correct].style.borderColor='#22C55E';}
+    if(typeof showSuToast==='function') showSuToast('❌ '+(q.explain||'Galat!'));
+  }
+  setTimeout(()=>{_sgMcqIdx++;renderSgMcq();},1400);
+}
+
+// ── Drag & Match Engine ──
+var _sgMatchData=null, _sgMatchScore=0, _sgMatchDragging=null;
+function renderSgMatch(){
+  const area=document.getElementById('sgGameArea');
+  if(!_sgMatchData||!_sgMatchData.pairs) return;
+  const pairs=_sgMatchData.pairs;
+  const opts=[...pairs.map(p=>p.answer)].sort(()=>Math.random()-.5);
+  area.innerHTML=`
+    <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px;">Sahi cheez drag karo sahi jagah pe:</div>
+    <div id="sgMatchTargets" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+      ${pairs.map((p,i)=>`
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:600;color:#374151;">${p.label}</div>
+          <div id="sgTarget${i}" data-target="${i}" style="width:110px;min-height:40px;border:2.5px dashed #d1d5db;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#9ca3af;font-weight:600;padding:6px;"
+            ondragover="event.preventDefault()" ondrop="sgMatchDrop(event,${i})">Drop here</div>
+        </div>`).join('')}
+    </div>
+    <div id="sgMatchOpts" style="display:flex;flex-wrap:wrap;gap:8px;">
+      ${opts.map((o,i)=>`
+        <div draggable="true" id="sgOpt${i}" data-val="${o}" ondragstart="sgMatchDragStart(event,'${o}')"
+          style="background:#dbeafe;border:1.5px solid #93c5fd;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:#1e40af;cursor:grab;">${o}</div>`).join('')}
+    </div>`;
+}
+function sgMatchDragStart(e,val){_sgMatchDragging=val;e.dataTransfer&&e.dataTransfer.setData('text',val);}
+function sgMatchDrop(e,targetIdx){
+  e.preventDefault();
+  const val=_sgMatchDragging||(e.dataTransfer&&e.dataTransfer.getData('text'));
+  if(!val||!_sgMatchData) return;
+  const pair=_sgMatchData.pairs[targetIdx];
+  const tgt=document.getElementById('sgTarget'+targetIdx);
+  if(tgt.dataset.done) return;
+  if(val===pair.answer){
+    tgt.dataset.done='1';
+    tgt.innerHTML=`<span style="color:#22C55E;font-weight:700;font-size:12px;">✅ ${val}</span>`;
+    tgt.style.borderColor='#22C55E';tgt.style.borderStyle='solid';
+    _sgMatchScore++;
+    document.querySelectorAll('[data-val="'+val+'"]').forEach(el=>el.remove());
+    if(typeof showSuToast==='function') showSuToast('✅ Sahi match!');
+    if(_sgMatchScore===_sgMatchData.pairs.length) setTimeout(_sgShowSuccess,1200);
+  } else {
+    tgt.style.borderColor='#ef4444';
+    setTimeout(()=>{tgt.style.borderColor='#d1d5db';},800);
+    if(typeof showSuToast==='function') showSuToast('❌ Galat! Dobara try karo.');
+  }
+  _sgMatchDragging=null;
+}
+
+// ── Hazard Spotter Engine ──
+function renderSgHazard(gd){
+  const area=document.getElementById('sgGameArea');
+  const total=(gd.hazards||[]).length;
+  const spotsHTML=(gd.hazards||[]).map((h,i)=>`
+    <div onclick="sgHazardTap(${i})" id="sgHz${i}" style="position:absolute;left:${h.x}%;top:${h.y}%;width:${h.w||12}%;height:${h.h||10}%;cursor:pointer;border:2px solid transparent;border-radius:8px;z-index:5;"></div>`).join('');
+  area.innerHTML=`
+    <div style="position:relative;border-radius:18px;overflow:hidden;height:260px;background:#f0f0f0;">
+      ${gd.imageUrl?`<img src="${gd.imageUrl}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;background:#e5e7eb;">🏠</div>`}
+      ${spotsHTML}
+    </div>
+    <div style="background:#fff8e1;border-radius:12px;padding:9px 13px;border:1px solid #ffe082;margin-top:8px;font-size:12px;">
+      <span style="font-weight:700;color:#888;">Hazards found: </span><span id="sgHzCount" style="font-weight:800;color:#ef4444;">0 / ${total}</span>
+    </div>`;
+  window._sgHzFound=0;window._sgHzTotal=total;window._sgHzData=gd.hazards||[];
+}
+function sgHazardTap(idx){
+  const el=document.getElementById('sgHz'+idx);
+  if(!el||el.dataset.done) return;
+  el.dataset.done='1';
+  el.style.background='rgba(239,68,68,.25)';el.style.borderColor='#ef4444';
+  window._sgHzFound=(window._sgHzFound||0)+1;
+  const h=window._sgHzData[idx];
+  if(typeof showSuToast==='function') showSuToast('⚠️ '+(h&&h.label||'Hazard found!'));
+  document.getElementById('sgHzCount').textContent=window._sgHzFound+' / '+window._sgHzTotal;
+  if(window._sgHzFound>=window._sgHzTotal) setTimeout(_sgShowSuccess,1200);
+}
+
+// ── Multimeter Simulator Engine ──
+function renderSgMultimeter(gd){
+  const area=document.getElementById('sgGameArea');
+  const q=gd.questions&&gd.questions[0];
+  if(!q){area.innerHTML='<div style="padding:30px;text-align:center;color:#888;">⚠️ Data nahi mila</div>';return;}
+  document.getElementById('sgStepBadge').innerHTML='<span>🔬</span><span>MULTIMETER</span>';
+  document.getElementById('sgStepText').textContent=q.task||'Sahi setting choose karo';
+  const opts=(q.settings||[]).map((s,i)=>`
+    <button onclick="sgMultimeterSelect(${i})" style="background:white;border:1.5px solid #e0e0e0;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#111;font-family:'Nunito',sans-serif;margin:4px;">${s}</button>`).join('');
+  area.innerHTML=`
+    <div style="background:#1a1a2e;border-radius:18px;padding:20px;text-align:center;margin-bottom:10px;">
+      <div style="font-size:48px;margin-bottom:8px;">🔬</div>
+      <div style="font-size:28px;font-weight:800;color:#00ff88;font-family:monospace;" id="sgMmDisplay">- - -</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px;">${q.unit||'V'}</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;">${opts}</div>`;
+  window._sgMmCorrect=q.correct;
+}
+function sgMultimeterSelect(idx){
+  const btns=document.getElementById('sgGameArea').querySelectorAll('button');
+  btns.forEach(b=>b.disabled=true);
+  const disp=document.getElementById('sgMmDisplay');
+  if(idx===window._sgMmCorrect){
+    btns[idx].style.background='#dcfce7';btns[idx].style.borderColor='#22C55E';
+    if(disp) disp.textContent='✅ OK';
+    if(typeof showSuToast==='function') showSuToast('✅ Sahi setting!');
+    setTimeout(_sgShowSuccess,1400);
+  } else {
+    btns[idx].style.background='#fee2e2';
+    if(typeof showSuToast==='function') showSuToast('❌ Galat! Dobara try karo.');
+    setTimeout(()=>btns.forEach(b=>{b.disabled=false;b.style.background='white';b.style.borderColor='#e0e0e0';}),1000);
+  }
+}
+
+// ── Full circuit game logic ──
 let _sgBatPlaced=false, _sgConnections={}, _sgWireDragging=false, _sgWireStart=null, _sgTempLine=null;
-const _sgRequired=[['bat-r','res-l'],['res-r','bul-t'],['bul-b','bat-b']];
+let _sgRequired=[], _sgConnLabels=[], _sgSuccessMsg='', _sgDragItem={icon:'🔋',label:'Component'};
 
 function initSkillGameLogic(){
   _sgBatPlaced=false; _sgConnections={}; _sgWireDragging=false; _sgWireStart=null; _sgTempLine=null;
@@ -27538,28 +27835,46 @@ function runSkillGame(){
 }
 
 function _sgShowSuccess(){
-  // Mark level complete
   _skillsProgress[_currentSkillLevel]=true;
   localStorage.setItem('su_skills_progress',JSON.stringify(_skillsProgress));
-  // Show success toast + go back
-  const sec=_skillsData.sections.find(s=>s.id===_currentSkillSection);
-  const lv=sec&&sec.levels.find(l=>l.id===_currentSkillLevel);
-  // Simple success overlay
+  const msg = (typeof _sgSuccessMsg!=='undefined' && _sgSuccessMsg) ? _sgSuccessMsg : 'Level complete! +50 XP ⭐';
   const ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:9999;padding:30px;';
   ov.innerHTML=`<div style="background:#111827;border-radius:24px;padding:26px 20px;text-align:center;border:2px solid #22C55E;width:100%;max-width:320px;">
     <div style="font-size:52px;margin-bottom:8px;">🎉</div>
     <div style="font-size:22px;font-weight:800;color:#22C55E;font-family:'Fredoka One',sans-serif;margin-bottom:6px;">Level Complete!</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:18px;">Circuit complete! Battery → Resistor → Bulb!<br>You earned <strong style="color:#F5C400;">50 XP ⭐</strong></div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:18px;">${msg}</div>
     <button onclick="this.parentElement.parentElement.remove();closeSkillGame();" style="background:#F5C400;color:#000;border:none;border-radius:16px;padding:13px;font-family:'Fredoka One',sans-serif;font-size:15px;font-weight:800;cursor:pointer;width:100%;">← Back to Map</button>
   </div>`;
   document.body.appendChild(ov);
 }
 
 function showSkillHint(){
-  const hints=['Battery ko neeche se drag karo upar snap zone mein!','Pin se pin tak drag karo — 3 connections banao!','Sab connected! Run button press karo!'];
-  const step=_sgBatPlaced?(Object.keys(_sgConnections).length===3?2:1):0;
-  if(typeof showSuToast==='function') showSuToast('💡 '+hints[step]);
+  // Game-specific hints based on current gameId
+  const sec = _skillsData && _skillsData.sections.find(s=>s.id===_currentSkillSection);
+  const lv = sec && sec.levels.find(l=>l.id===_currentSkillLevel);
+  const gameId = lv && lv.gameId;
+  // Firebase se custom hint aaye toh use karo, warna generic
+  if(lv && lv.hint){
+    if(typeof showSuToast==='function') showSuToast('💡 '+lv.hint);
+    return;
+  }
+  // Circuit builder games ke liye step-based hints
+  const circuitGames = ['basic_circuit','open_closed','series_circuit','parallel_circuit','db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring'];
+  if(circuitGames.includes(gameId)){
+    const batOk = typeof _sgBatPlaced !== 'undefined' ? _sgBatPlaced : false;
+    const connCount = typeof _sgConnections !== 'undefined' ? Object.keys(_sgConnections).length : 0;
+    const hints = [
+      '💡 Neeche inventory se component drag karo circuit board mein!',
+      '💡 Pin se pin tak drag karo — wires connect karo!',
+      '💡 Sab connected! Ab ▶ Run button press karo!'
+    ];
+    const step = batOk ? (connCount >= (_sgRequired&&_sgRequired.length||3) ? 2 : 1) : 0;
+    if(typeof showSuToast==='function') showSuToast(hints[step]);
+    return;
+  }
+  // Generic hint
+  if(typeof showSuToast==='function') showSuToast('💡 Sawaal dhyan se parho aur sahi option choose karo!');
 }
 
 // ── Article functions ──
