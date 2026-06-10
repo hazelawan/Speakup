@@ -4339,8 +4339,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
   <div class="bn">
     <button class="nb" id="nb_home" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
     <button class="nb" id="nb_papers" onclick="tab('pastpapers')"><span class="ni">📄</span>Papers</button>
-    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
+    <button class="nb" id="nb_skills" onclick="tab('skills')"><span class="ni">🎓</span>Skills</button>
     <button class="nb" id="nb_profile" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
     <button class="nb" id="nb_settings" onclick="tab('settings')" style="position: relative; overflow: hidden;"><span class="ni">⚙️</span>Settings</button>
   </div>
 </div>
@@ -4487,8 +4488,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
   <div class="bn">
     <button class="nb" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
     <button class="nb on" id="pp_nb_papers"><span class="ni">📄</span>Papers</button>
-    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
+    <button class="nb" onclick="tab('skills')"><span class="ni">🎓</span>Skills</button>
     <button class="nb" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
     <button class="nb" onclick="tab('settings')"><span class="ni">⚙️</span>Settings</button>
   </div>
 </div>
@@ -4588,8 +4590,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
   <div class="bn">
     <button class="nb" id="pnb_home" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
     <button class="nb" id="pnb_papers" onclick="tab('pastpapers')"><span class="ni">📄</span>Papers</button>
-    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
+    <button class="nb" id="pnb_skills" onclick="tab('skills')"><span class="ni">🎓</span>Skills</button>
     <button class="nb" id="pnb_profile" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" id="pnb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
     <button class="nb" id="pnb_settings" onclick="tab('settings')" style="position: relative; overflow: hidden;"><span class="ni">⚙️</span>Settings</button>
   </div>
 </div>
@@ -4598,6 +4601,123 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 
 
 <!-- ▲ END: 10-profile.html ▲ -->
+
+<!-- ▼ INCLUDE: screens/10b-skills.html ▼ -->
+<!-- ═══ Skills Screen — Electricity Course ═══ -->
+<div class="screen pb80" id="skills" style="">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#0A0E1A,#1a1040);padding:52px 20px 20px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(245,196,0,.15),transparent 70%);pointer-events:none;"></div>
+    <div style="font-size:11px;color:#F5C400;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">⚡ Practical Skills</div>
+    <div style="font-size:26px;font-weight:900;color:#fff;font-family:'Fredoka One',sans-serif;margin-bottom:4px;">Skills Hub</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);">Real-world skills seekho — step by step</div>
+    <!-- Pro badge -->
+    <div id="skillsProBadge" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:20px;padding:4px 12px;margin-top:10px;font-size:11px;font-weight:800;color:#000;">👑 PRO ONLY</div>
+  </div>
+
+  <!-- Pro lock overlay — shown to non-pro users -->
+  <div id="skillsProLock" style="display:none;margin:16px;background:var(--card,#1a1a2e);border-radius:20px;padding:28px 20px;text-align:center;border:2px solid rgba(255,215,0,.3);">
+    <div style="font-size:48px;margin-bottom:12px;">👑</div>
+    <div style="font-size:20px;font-weight:800;color:#FFD700;font-family:'Fredoka One',sans-serif;margin-bottom:8px;">Pro Feature</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:18px;">Skills Hub sirf Pro users ke liye hai. Upgrade karo aur electricity, electronics aur bahut kuch seekho!</div>
+    <button onclick="tab('proScreen')" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:14px;padding:13px 28px;font-family:'Fredoka One',sans-serif;font-size:15px;font-weight:800;color:#000;cursor:pointer;width:100%;">⚡ Pro Upgrade Karo</button>
+  </div>
+
+  <!-- Skills content — shown to pro users -->
+  <div id="skillsProContent">
+
+    <!-- Topic selector -->
+    <div style="padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:11px;color:var(--mut,#888);text-transform:uppercase;letter-spacing:.8px;">Current Topic</div>
+        <div style="font-size:20px;font-weight:800;color:var(--txt,#fff);font-family:'Fredoka One',sans-serif;" id="skillTopicName">⚡ Electricity</div>
+      </div>
+      <button onclick="showSkillTopics()" style="background:rgba(245,196,0,.15);border:1.5px solid rgba(245,196,0,.4);border-radius:20px;padding:7px 14px;color:#F5C400;font-family:'Fredoka One',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Change</button>
+    </div>
+
+    <!-- Progress strip -->
+    <div style="padding:10px 16px;display:flex;align-items:center;gap:10px;">
+      <div id="skillProgressPct" style="background:#F5C400;color:#000;font-weight:800;font-size:11px;padding:3px 8px;border-radius:10px;font-family:'Fredoka One',sans-serif;white-space:nowrap;">0%</div>
+      <div style="flex:1;height:5px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;">
+        <div id="skillProgressBar" style="height:100%;background:#F5C400;border-radius:4px;width:0%;transition:width .5s;"></div>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="skillsLoadingState" style="padding:40px 20px;text-align:center;color:rgba(255,255,255,.4);">
+      <div style="font-size:32px;margin-bottom:10px;">⚡</div>
+      <div style="font-size:14px;">Course load ho raha hai...</div>
+    </div>
+
+    <!-- Sections container — rendered by JS -->
+    <div id="skillSectionsContainer" style="padding:0 0 20px;"></div>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bn">
+    <button class="nb" id="sk_nb_home" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
+    <button class="nb" id="sk_nb_papers" onclick="tab('pastpapers')"><span class="ni">📄</span>Papers</button>
+    <button class="nb on" id="sk_nb_skills"><span class="ni">🎓</span>Skills</button>
+    <button class="nb" id="sk_nb_profile" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" id="sk_nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
+    <button class="nb" id="sk_nb_settings" onclick="tab('settings')"><span class="ni">⚙️</span>Settings</button>
+  </div>
+</div>
+
+<!-- ═══ Skill Level Game Screen ═══ -->
+<div class="screen" id="skillGame" style="">
+  <div style="background:#fff;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:100;">
+    <button onclick="closeSkillGame()" style="width:36px;height:36px;background:#f0f0f0;border:none;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    <div id="skillGameTitle" style="font-size:16px;font-weight:700;color:#111;font-family:'Fredoka One',sans-serif;">Level</div>
+    <button onclick="restartSkillGame()" style="background:#f0f0f0;border:none;border-radius:20px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;color:#333;display:flex;align-items:center;gap:4px;">↺ Restart</button>
+  </div>
+
+  <!-- Step instruction -->
+  <div style="margin:12px 14px;background:#111827;border-radius:18px;padding:14px 16px;">
+    <div id="sgStepBadge" style="color:#F5C400;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:5px;margin-bottom:5px;"><span>⚡</span><span>STEP 1</span></div>
+    <div id="sgStepText" style="font-size:14px;color:#dde;line-height:1.5;"></div>
+    <button onclick="showSkillHint()" style="color:#F5C400;font-size:12px;font-weight:600;margin-top:8px;display:flex;align-items:center;gap:4px;cursor:pointer;background:none;border:none;font-family:'Nunito',sans-serif;">❓ Need a hint?</button>
+  </div>
+
+  <!-- Circuit/Game area — dynamic content injected here -->
+  <div id="sgGameArea" style="margin:0 14px;"></div>
+
+  <!-- Controls -->
+  <div style="padding:10px 14px;display:flex;gap:10px;align-items:center;">
+    <button style="width:40px;height:40px;background:white;border:1px solid #ddd;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">↩</button>
+    <button style="width:40px;height:40px;background:white;border:1px solid #ddd;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">↪</button>
+    <button id="sgRunBtn" onclick="runSkillGame()" disabled style="flex:1;background:#22C55E;color:white;border:none;border-radius:24px;padding:13px;font-family:'Fredoka One',sans-serif;font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(34,197,94,.35);">▶ Run</button>
+    <button style="width:40px;height:40px;background:white;border:1.5px solid #ddd;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">📖</button>
+  </div>
+
+  <!-- Inventory area -->
+  <div id="sgInventory" style="padding:0 14px 14px;"></div>
+</div>
+
+<!-- ═══ Skill Article Screen ═══ -->
+<div class="screen pb80" id="skillArticle" style="">
+  <div style="background:var(--bg,#0F0E17);padding:52px 20px 20px;position:relative;">
+    <button onclick="closeSkillArticle()" style="position:absolute;top:14px;left:16px;background:rgba(255,255,255,.1);border:none;border-radius:50%;width:36px;height:36px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
+    <div id="saSection" style="font-size:11px;color:#F5C400;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;"></div>
+    <div id="saTitle" style="font-size:22px;font-weight:900;color:#fff;font-family:'Fredoka One',sans-serif;line-height:1.3;"></div>
+  </div>
+  <div id="saContent" style="padding:20px 16px;color:var(--txt,#f0f4ff);font-size:14px;line-height:1.8;"></div>
+  <div style="padding:0 16px 20px;">
+    <button id="saCompleteBtn" onclick="completeSkillArticle()" style="width:100%;background:linear-gradient(135deg,#22C55E,#1aad54);border:none;border-radius:16px;padding:14px;font-family:'Fredoka One',sans-serif;font-size:16px;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(34,197,94,.3);">✅ Completed — Next</button>
+  </div>
+  <div class="bn">
+    <button class="nb" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
+    <button class="nb" onclick="tab('pastpapers')"><span class="ni">📄</span>Papers</button>
+    <button class="nb on"><span class="ni">🎓</span>Skills</button>
+    <button class="nb" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
+    <button class="nb" onclick="tab('settings')"><span class="ni">⚙️</span>Settings</button>
+  </div>
+</div>
+
+<!-- ▲ END: 10b-skills.html ▲ -->
 
 <!-- ▼ INCLUDE: screens/11-certificate.html ▼ -->
 <!-- ═══ Certificate v1 + v2 ═══ -->
@@ -5849,8 +5969,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
   <div class="bn">
     <button class="nb" id="nb_home" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
     <button class="nb" id="nb_papers" onclick="tab('pastpapers')"><span class="ni">📄</span>Papers</button>
-    <button class="nb on" id="nb_leaderboard"><span class="ni">🏆</span>League</button>
+    <button class="nb" id="nb_skills" onclick="tab('skills')"><span class="ni">🎓</span>Skills</button>
     <button class="nb" id="nb_profile" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
     <button class="nb" onclick="tab('settings')"><span class="ni">⚙️</span>Settings</button>
   </div>
 
@@ -6708,8 +6829,9 @@ function openProUpgradeScreen(dayNum) {
   <div class="bn">
     <button class="nb" onclick="tab('dashboard')" style="position: relative; overflow: hidden;"><span class="ni">🏠</span>Home</button>
     <button class="nb" onclick="tab('pastpapers')"><span class="ni">📄</span>Papers</button>
-    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
+    <button class="nb" onclick="tab('skills')"><span class="ni">🎓</span>Skills</button>
     <button class="nb" onclick="tab('profile')" style="position: relative; overflow: hidden;"><span class="ni">👤</span>Profile</button>
+    <button class="nb" id="nb_leaderboard" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
     <button class="nb" onclick="tab('settings')"><span class="ni">⚙️</span>Settings</button>
   </div>
 </div>
@@ -13899,7 +14021,7 @@ function tab(t){
   } else if(t==='leaderboard'){
     showScreen('leaderboard');
     if(typeof renderLeaderboard==='function') renderLeaderboard();
-    document.querySelectorAll('[id$="nb_leaderboard"],[id="nb_leaderboard"]').forEach(b=>b.classList.add('on'));
+    document.querySelectorAll('[id$="nb_leaderboard"],[id="nb_leaderboard"],[id="pnb_leaderboard"],[id="sk_nb_leaderboard"]').forEach(b=>b.classList.add('on'));
   } else if(t==='profile'){
     if(IS_GUEST || !getLoggedInUser()){
       showScreen('guestProfileScreen');
@@ -13916,6 +14038,13 @@ function tab(t){
       if(b.getAttribute('onclick') && b.getAttribute('onclick').includes("'settings'")) b.classList.add('on');
       if(b.id && (b.id.includes('nb_settings') || b.id.includes('pnb_settings'))) b.classList.add('on');
     });
+  } else if(t==='skills'){
+    // Sab users Skills screen dekh sakte hain (guest bhi) — pro check sirf level click pe
+    showScreen('skills');
+    document.getElementById('skillsProLock').style.display='none';
+    document.getElementById('skillsProContent').style.display='block';
+    if(typeof initSkillsScreen==='function') initSkillsScreen();
+    document.querySelectorAll('[id$="nb_skills"],[id="sk_nb_skills"]').forEach(b=>b.classList.add('on'));
   }
 
   // ── Sab .nb buttons check karo — onclick se match karo bhi (id nahi hone wale ke liye) ──
@@ -26913,6 +27042,521 @@ function renderStreakScreen(){
   document.addEventListener('screensLoaded', function(){ _tryUpdateToggle(); });
 })();
 
+</script>
+
+<!-- ═══════════════════════════════════════
+     SKILLS HUB — Full JavaScript
+════════════════════════════════════════ -->
+<script>
+// ── Default Electricity course (fallback if Firebase empty) ──
+const SKILLS_DEFAULT_DATA = {
+  electricity: {
+    title: "Electricity",
+    icon: "⚡",
+    sections: [
+      {
+        id: "s1", title: "Spark Mode", eyebrow: "Section 1",
+        levels: [
+          { id:"l1_1", title:"Place the Battery", type:"game", icon:"🔋", unlocked:true, gameId:"place_battery" },
+          { id:"l1_2", title:"Build It from Scratch", type:"game", icon:"🔌", unlocked:false, gameId:"build_scratch" },
+          { id:"l1_3", title:"Tune the Resistor", type:"game", icon:"〰️", unlocked:false, gameId:"tune_resistor" },
+          { id:"l1_4", title:"Doorbell", type:"game", icon:"🔔", unlocked:false, gameId:"doorbell" },
+          { id:"l1_5", title:"String of Lights", type:"game", icon:"💡", unlocked:false, gameId:"string_lights" },
+          { id:"l1_6", title:"AND logic — Safe", type:"game", icon:"🔐", unlocked:false, gameId:"and_safe" },
+          { id:"l1_7", title:"OR logic — Staircase", type:"game", icon:"🪜", unlocked:false, gameId:"or_staircase" },
+          { id:"l1_8", title:"The Circuit Breaker on the Wall", type:"game", icon:"⚡", unlocked:false, gameId:"circuit_breaker" },
+          { id:"l1_9", title:"One-Way Valve", type:"game", icon:"🔁", unlocked:false, gameId:"one_way_valve" },
+          { id:"l1_10", title:"Backup Cell", type:"game", icon:"🔋", unlocked:false, gameId:"backup_cell" },
+          { id:"l1_11", title:"Multiple Sources", type:"game", icon:"🔌", unlocked:false, gameId:"multi_source" },
+          { id:"l1_12", title:"The Selector", type:"game", icon:"🎛️", unlocked:false, gameId:"selector" },
+          { id:"l1_13", title:"XOR Logic", type:"game", icon:"💡", unlocked:false, gameId:"xor_logic" },
+          { id:"l1_14", title:"Hold The Light", type:"game", icon:"🕯️", unlocked:false, gameId:"hold_light" },
+          { id:"l1_15", title:"Backup Power", type:"game", icon:"🔋", unlocked:false, gameId:"backup_power" }
+        ]
+      },
+      {
+        id: "s2", title: "Circuit Builder", eyebrow: "Section 2",
+        levels: [
+          { id:"l2_1", title:"The Flashlight (Easy)", type:"game", icon:"🔦", unlocked:false, gameId:"flashlight" },
+          { id:"l2_2", title:"The Wall Outlet (Medium)", type:"game", icon:"🔌", unlocked:false, gameId:"wall_outlet" },
+          { id:"l2_3", title:"The Fuse Box (Hard)", type:"game", icon:"🔧", unlocked:false, gameId:"fuse_box" },
+          { id:"l2_4", title:"Volts, Amps — The Only Things You Need", type:"article", icon:"📖", unlocked:false },
+          { id:"l2_5", title:"AC vs. DC, And Why Your House Uses Both", type:"article", icon:"📖", unlocked:false },
+          { id:"l2_6", title:"Why Circuits Need to Be Closed", type:"article", icon:"📖", unlocked:false },
+          { id:"l2_7", title:"Why Your Breaker Trips (And Why That's a Good Thing)", type:"article", icon:"📖", unlocked:false }
+        ]
+      },
+      {
+        id: "s3", title: "How Electricity Actually Works", eyebrow: "Section 3",
+        levels: [
+          { id:"l3_1", title:"What Is Electricity, Really?", type:"article", icon:"📖", unlocked:false },
+          { id:"l3_2", title:"Why Circuits Need to Be Closed", type:"article", icon:"📖", unlocked:false },
+          { id:"l3_3", title:"AC vs. DC, And Why Your House Uses Both", type:"article", icon:"📖", unlocked:false },
+          { id:"l3_4", title:"Why Your Breaker Trips (And Why That's a Good Thing)", type:"article", icon:"📖", unlocked:false }
+        ]
+      },
+      {
+        id: "s4", title: "The Electrified Future", eyebrow: "Section 4",
+        levels: [
+          { id:"l4_1", title:"Solar Panels & Batteries, Demystified", type:"article", icon:"🌞", unlocked:false },
+          { id:"l4_2", title:"How EV Charging Actually Works", type:"article", icon:"🚗", unlocked:false },
+          { id:"l4_3", title:"The Biggest Machine on Earth", type:"article", icon:"🏭", unlocked:false },
+          { id:"l4_4", title:"Smart Homes: What's Actually Smart About Them?", type:"article", icon:"🏠", unlocked:false }
+        ]
+      },
+      {
+        id: "s5", title: "Electricity: Beyond the Basics", eyebrow: "Section 5",
+        levels: [
+          { id:"l5_1", title:"The Biggest Lie About Electricity", type:"article", icon:"📖", unlocked:false },
+          { id:"l5_2", title:"Lightning Goes Up, Not Down", type:"article", icon:"⛈️", unlocked:false },
+          { id:"l5_3", title:"Why Birds Survive Power Lines (But Eagles Don't)", type:"article", icon:"🦅", unlocked:false },
+          { id:"l5_4", title:"You Are an Electrical Machine", type:"article", icon:"⚡", unlocked:false }
+        ]
+      }
+    ]
+  }
+};
+
+// Article content (default — admin se override hoga)
+const SKILL_ARTICLES = {
+  "What Is Electricity, Really?": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">⚡ What Is Electricity, Really?</h3><p>Electricity ek tarah ki energy hai jo electrons ki movement se paida hoti hai. Har cheez atoms se bani hai — aur atoms mein electrons hote hain jo nucleus ke gird ghoomte hain.</p><p style="margin-top:12px;">Jab electrons ek jagah se doosri jagah move karte hain, to current paida hota hai. Yahi electricity ka asli matlab hai — electrons ka flow.</p><p style="margin-top:12px;"><strong style="color:#F5C400;">Current (I)</strong> = electrons kitni tezi se flow kar rahe hain (Ampere mein)<br><strong style="color:#F5C400;">Voltage (V)</strong> = kitna "pressure" hai electrons ko push karne ke liye (Volt mein)<br><strong style="color:#F5C400;">Resistance (R)</strong> = koi cheez current ko kitna rokti hai (Ohm mein)</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Ohm's Law:</strong> V = I × R — yeh electricity ka sabse important formula hai!</p>`,
+  "Why Circuits Need to Be Closed": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🔄 Why Circuits Need to Be Closed</h3><p>Current tabhi flow karta hai jab ek complete path ho — battery se nikle, components se guzre, aur wapas battery tak aaye. Agar path toot jaye (open circuit), current ruk jaata hai.</p><p style="margin-top:12px;">Isliye switch kaam karta hai — wire tod ke current band karta hai, jod ke on karta hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Key Point:</strong> Electricity ek "loop" mein chalti hai — ek direction mein jaana aur doosri se aana zaroori hai!</p>`,
+  "AC vs. DC, And Why Your House Uses Both": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🔀 AC vs DC</h3><p><strong style="color:#4F8EF7;">DC (Direct Current)</strong> — ek hi direction mein flow karta hai. Batteries, phones, laptops mein hota hai.</p><p style="margin-top:10px;"><strong style="color:#ef4444;">AC (Alternating Current)</strong> — direction baar baar badalta hai (50 baar per second Pakistan mein). Ghar ki bijli AC hai kyunki long distance mein transmit karna aasaan hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;">Phone charger AC ko DC mein convert karta hai — isliye charger garam hota hai!</p>`,
+  "Why Your Breaker Trips (And Why That's a Good Thing)": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">⚡ Circuit Breaker</h3><p>Jab ek wire se bahut zyada current guzarta hai — jaise bohot saari cheezein ek saath on hon — to wire garam hone lagti hai aur aag lag sakti hai.</p><p style="margin-top:12px;">Circuit breaker is situation mein automatically trip karta hai (circuit tod deta hai) — yeh ek safety device hai!</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Remember:</strong> Breaker trip hona problem nahi — yeh problem se bachana hai. Reset karne se pehle extra load hatao.</p>`,
+  "Solar Panels & Batteries, Demystified": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🌞 Solar Panels & Batteries</h3><p>Solar panel suraj ki roshni ko directly DC electricity mein convert karta hai. Yeh photovoltaic (PV) effect se hota hai — silicon cells mein photons electrons ko free karte hain.</p><p style="margin-top:12px;">Battery mein chemical energy store hoti hai jo zarorat par electricity ban jaati hai. Ghar mein solar + battery system se bijli store kar sakte ho aur raat ko bhi use kar sakte ho.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Pakistan mein:</strong> 1kW solar panel ~4-5 units bijli per day produce karta hai — roughly ek AC ka 4-5 ghante!</p>`,
+  "The Biggest Lie About Electricity": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🤔 The Biggest Lie</h3><p>Sabse badi ghalat fehmi: "Electricity wire mein electrons ki speed se chalti hai." Actually electrons bohot slow move karte hain — millimeters per second!</p><p style="margin-top:12px;">Jo cheez speed of light ke kareeb chalti hai woh electric field hai — energy wave — jo electrons ko push karta hai. Light bulb immediately jalti hai isliye nahi ke electrons tezi se pahunchte hain, balke field tezi se travel karta hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;">Analogy: Water pipe mein pani already bhara hota hai — tap kholte hi dusre end se paani aata hai, naya paani nahi!</p>`,
+  "Lightning Goes Up, Not Down": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">⛈️ Lightning Goes Up!</h3><p>Hum sochte hain bijli upar se neeche girti hai — lekin actually yeh NEECHE SE UPAR jaati hai! Pehle ek "stepped leader" badal se neeche aata hai, phir zameen se ek "return stroke" upar jaata hai — yeh itni tezi se hota hai ke humari aankh ko neeche-upar lagta hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;">Ek lightning bolt mein itni energy hoti hai ke ek 60W bulb 6 mahine jala sake — lekin yeh sirf milliseconds ke liye hoti hai!</p>`,
+  "Why Birds Survive Power Lines (But Eagles Don't)": `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">🦅 Birds on Power Lines</h3><p>Choti chidiyan power line pe safely baith sakti hain kyunki woh ek hi wire ko touch karti hain — current ke liye ek complete circuit chahiye. Single wire pe current koi alternative path nahi milta, isliye bird se nahi guzarta.</p><p style="margin-top:12px;">Eagle (baaz) mara isliye jaata hai kyunki uske bade pankh ek saath 2 wires ya wire + pole ko touch kar lete hain — complete circuit ban jaata hai aur current body se guzar jaata hai.</p><p style="margin-top:12px;background:rgba(245,196,0,.1);border-radius:12px;padding:12px;border-left:3px solid #F5C400;"><strong>Lesson:</strong> Current path of least resistance follow karta hai — agar body better path de to current us se guzregi!</p>`
+};
+
+// ── Skills Pro Popup (same style as Papers) ──
+function showSkillProPopup(){
+  var pop = document.getElementById('skillProPopup');
+  if(pop) pop.remove();
+  pop = document.createElement('div');
+  pop.id = 'skillProPopup';
+  pop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99999;display:flex;align-items:flex-end;justify-content:center;';
+  var html = '<div style="background:var(--bg);border-radius:24px 24px 0 0;padding:28px 22px 36px;max-width:420px;width:100%;text-align:center;">';
+  html += '<div style="width:40px;height:4px;background:var(--bdr);border-radius:4px;margin:0 auto 20px;"></div>';
+  html += '<div style="font-size:52px;margin-bottom:10px;">⚡👑</div>';
+  html += '<div style="font-family:\'Fredoka One\',sans-serif;font-size:22px;background:linear-gradient(135deg,#FFD700,#FF9500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;">Skills Hub — Pro Only!</div>';
+  html += '<div style="font-size:13px;color:var(--mut);margin-bottom:18px;">Pro Account se electricity, electronician aur bahut kuch seekho — interactive games ke saath!</div>';
+
+  if(typeof IS_GUEST !== 'undefined' && IS_GUEST){
+    // Guest user — show login first
+    html += '<button onclick="document.getElementById(\'skillProPopup\').remove();showScreen(\'signup\');" style="width:100%;padding:13px;background:linear-gradient(135deg,#22C55E,#1aad54);border:none;border-radius:12px;color:#fff;font-family:\'Fredoka One\',sans-serif;font-size:15px;cursor:pointer;margin-bottom:8px;font-weight:800;">✨ Sign Up — Free!</button>';
+    html += '<button onclick="document.getElementById(\'skillProPopup\').remove();showScreen(\'login\');" style="width:100%;padding:13px;background:linear-gradient(135deg,#7B2FBE,#9B59B6);border:none;border-radius:12px;color:#fff;font-family:\'Fredoka One\',sans-serif;font-size:15px;cursor:pointer;margin-bottom:8px;font-weight:800;">🔑 Login</button>';
+  } else {
+    // Logged in but not pro
+    html += '<div style="display:flex;gap:10px;margin-bottom:16px;">';
+    html += '<div onclick="document.getElementById(\'skillProPopup\').remove();showPayPopup(\'2week\')" style="flex:1;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:12px 8px;cursor:pointer;"><div style="font-size:11px;color:var(--mut);">2 Weeks</div><div style="font-size:17px;font-weight:700;color:var(--txt);">Rs.300</div></div>';
+    html += '<div onclick="document.getElementById(\'skillProPopup\').remove();showPayPopup(\'month\')" style="flex:1;background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,149,0,.1));border:2px solid #FFD700;border-radius:14px;padding:12px 8px;cursor:pointer;position:relative;"><div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#FFD700;border-radius:20px;padding:2px 8px;font-size:9px;font-weight:800;color:#000;">POPULAR</div><div style="font-size:11px;color:var(--mut);">1 Month</div><div style="font-size:17px;font-weight:700;color:#FFD700;">Rs.500</div></div>';
+    html += '<div onclick="document.getElementById(\'skillProPopup\').remove();showPayPopup(\'year\')" style="flex:1;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:12px 8px;cursor:pointer;"><div style="font-size:11px;color:var(--mut);">1 Year</div><div style="font-size:17px;font-weight:700;color:var(--txt);">Rs.4000</div></div>';
+    html += '</div>';
+    html += '<button onclick="document.getElementById(\'skillProPopup\').remove();showProScreen(0);" style="width:100%;padding:13px;background:linear-gradient(135deg,#FFD700,#FF9500);border:none;border-radius:12px;color:#000;font-family:\'Fredoka One\',sans-serif;font-size:15px;cursor:pointer;margin-bottom:8px;font-weight:800;">Pro Plans Dekho &amp; Upgrade</button>';
+  }
+
+  html += '<button onclick="document.getElementById(\'skillProPopup\').remove();" style="width:100%;padding:10px;background:transparent;border:1px solid var(--bdr);border-radius:12px;color:var(--mut);font-family:\'Fredoka One\',sans-serif;font-size:14px;cursor:pointer;">Baad Mein</button>';
+  html += '</div>';
+  pop.innerHTML = html;
+  document.body.appendChild(pop);
+  pop.addEventListener('click', function(e){ if(e.target===pop) pop.remove(); });
+}
+
+// ── Skills state ──
+let _skillsData = null;
+let _skillsProgress = {};
+let _currentSkillTopic = 'electricity';
+let _currentSkillLevel = null;
+let _currentSkillSection = null;
+
+// ── Init Skills Screen ──
+function initSkillsScreen(){
+  _skillsProgress = JSON.parse(localStorage.getItem('su_skills_progress') || '{}');
+  loadSkillsFromFirebase();
+}
+
+function loadSkillsFromFirebase(){
+  document.getElementById('skillsLoadingState').style.display='block';
+  document.getElementById('skillSectionsContainer').innerHTML='';
+  // Try Firebase
+  try {
+    const dbRef = window.FB_REF(window.FB_DB, 'skills/'+_currentSkillTopic);
+    window.FB_GET(dbRef).then(snap => {
+      const val = snap && snap.val ? snap.val() : null;
+      if(val && val.sections && val.sections.length > 0){
+        _skillsData = val;
+      } else {
+        _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
+      }
+      renderSkillsScreen();
+    }).catch(()=>{
+      _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
+      renderSkillsScreen();
+    });
+  } catch(e){
+    _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
+    renderSkillsScreen();
+  }
+}
+
+function renderSkillsScreen(){
+  document.getElementById('skillsLoadingState').style.display='none';
+  if(!_skillsData) return;
+
+  // Calculate progress
+  const allLevels = _skillsData.sections.flatMap(s=>s.levels);
+  const doneCount = allLevels.filter(l=>_skillsProgress[l.id]).length;
+  const pct = allLevels.length ? Math.round(doneCount/allLevels.length*100) : 0;
+  document.getElementById('skillProgressPct').textContent = pct+'%';
+  document.getElementById('skillProgressBar').style.width = pct+'%';
+
+  // Topic name
+  document.getElementById('skillTopicName').textContent = (_skillsData.icon||'⚡')+' '+_skillsData.title;
+
+  let html = '';
+  _skillsData.sections.forEach((sec, si) => {
+    html += `<div style="padding:20px 16px 4px;text-align:center;">
+      <div style="font-size:11px;color:var(--mut,#888);text-transform:uppercase;letter-spacing:2px;font-weight:700;">${sec.eyebrow||'Section '+(si+1)}</div>
+      <div style="font-size:24px;font-weight:900;color:var(--txt,#fff);font-family:'Fredoka One',sans-serif;margin-top:4px;">${sec.title}</div>
+    </div>`;
+
+    // Level cards in zigzag
+    sec.levels.forEach((lv, li) => {
+      const isCompleted = !!_skillsProgress[lv.id];
+      const isLeft = li % 2 === 0;
+      // All levels visible to all users — Pro check happens on click
+
+      const align = isLeft ? 'flex-start;padding-left:16px' : 'flex-end;padding-right:16px';
+      const imgBg = isCompleted ? 'linear-gradient(135deg,#0f1f0f,#142214)' : '#0d1520';
+      const borderColor = isCompleted ? '#22C55E' : 'rgba(255,255,255,.18)';
+      const shadow = isCompleted ? '0 0 16px rgba(34,197,94,.2)' : 'none';
+
+      let overlay = '';
+      if(isCompleted) overlay = `<div style="position:absolute;inset:0;background:rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center;border-radius:16px;"><div style="width:44px;height:44px;background:#22C55E;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 16px rgba(34,197,94,.5);">✓</div></div>`;
+      // No lock overlay — free users can see all levels
+
+      const typeBadge = lv.type==='game' ? `<div style="position:absolute;top:7px;right:7px;width:28px;height:28px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;">🎮</div>` :
+        `<div style="position:absolute;top:7px;right:7px;width:28px;height:28px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;">📖</div>`;
+
+      // Pro lock badge on non-completed levels for free users visibility
+      const proHint = !isCompleted ? `<div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);border-radius:10px;padding:2px 7px;font-size:9px;color:#FFD700;font-weight:700;white-space:nowrap;">👑 PRO</div>` : '';
+
+      const clickFn = lv.type==='game' ? `openSkillGame('${lv.id}','${sec.id}')` : `openSkillArticle('${lv.id}','${sec.id}')`;
+
+      html += `<div style="display:flex;justify-content:${align};margin:4px 0;">
+        <div style="width:148px;cursor:pointer;" onclick="${clickFn}">
+          <div style="width:148px;height:120px;border-radius:18px;overflow:hidden;position:relative;border:2px solid ${borderColor};box-shadow:${shadow};">
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:46px;background:${imgBg};">${lv.img ? `<img src="${lv.img}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">` : lv.icon||'⚡'}</div>
+            ${overlay}${!isCompleted?proHint:''}${typeBadge}
+          </div>
+          <div style="margin-top:8px;font-size:13px;font-weight:600;color:var(--txt,#fff);text-align:center;line-height:1.3;">${lv.title}</div>
+        </div>
+      </div>`;
+
+      // Zigzag connector (not after last item in section)
+      if(li < sec.levels.length - 1){
+        const fromLeft = isLeft;
+        const d = fromLeft ?
+          'M 85 0 Q 85 25 160 25 Q 235 25 235 50' :
+          'M 235 0 Q 235 25 160 25 Q 85 25 85 50';
+        html += `<div style="height:44px;margin:0 20px;"><svg viewBox="0 0 320 50" style="width:100%;height:100%;" preserveAspectRatio="none"><path d="${d}" stroke="rgba(255,255,255,.12)" stroke-width="2" fill="none"/></svg></div>`;
+      }
+    });
+  });
+
+  document.getElementById('skillSectionsContainer').innerHTML = html;
+}
+
+// ── Open Game Level ──
+function openSkillGame(levelId, sectionId){
+  // Pro check — same as papers
+  if(!isPro()){
+    showSkillProPopup();
+    return;
+  }
+  _currentSkillLevel = levelId;
+  _currentSkillSection = sectionId;
+  // Find level data
+  const sec = _skillsData.sections.find(s=>s.id===sectionId);
+  const lv = sec && sec.levels.find(l=>l.id===levelId);
+  if(!lv) return;
+  document.getElementById('skillGameTitle').textContent = lv.title;
+  document.getElementById('sgStepBadge').innerHTML = '<span>⚡</span><span>STEP 1 / 3</span>';
+  document.getElementById('sgStepText').textContent = 'Drag the 9V battery from below and drop it into the empty slot on the circuit board.';
+  buildSkillGameBoard(lv);
+  showScreen('skillGame');
+}
+
+function closeSkillGame(){
+  showScreen('skills');
+  document.querySelectorAll('[id$="nb_skills"]').forEach(b=>b.classList.add('on'));
+}
+
+function buildSkillGameBoard(lv){
+  const area = document.getElementById('sgGameArea');
+  // Build circuit area with grid
+  area.innerHTML = `
+    <div id="sgCircuit" style="background:white;border-radius:18px;border:1px solid #ddd;position:relative;overflow:hidden;height:290px;touch-action:none;user-select:none;">
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.05) 1px,transparent 1px);background-size:22px 22px;"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;" id="sgWireSvg"></svg>
+      <div class="snap-zone" id="sgSnapZone" style="left:14px;top:85px;width:100px;height:60px;border:2.5px dashed #bbb;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;z-index:2;position:absolute;">
+        <span style="font-size:18px">🔋</span><span style="font-size:10px;color:#aaa;font-weight:600;">Drag here</span>
+      </div>
+      <div id="sgResistor" style="position:absolute;left:130px;top:98px;width:88px;height:46px;background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:1.5px solid #e0e0e0;padding:6px;z-index:3;">
+        <div style="font-size:18px">〰️</div><div style="font-size:10px;color:#666;font-weight:600;">Resistor</div>
+        <div id="sgResL" data-pin="res-l" style="width:13px;height:13px;border-radius:50%;background:#9ca3af;position:absolute;left:-6px;top:50%;transform:translateY(-50%);border:2px solid white;cursor:crosshair;z-index:5;"></div>
+        <div id="sgResR" data-pin="res-r" style="width:13px;height:13px;border-radius:50%;background:#9ca3af;position:absolute;right:-6px;top:50%;transform:translateY(-50%);border:2px solid white;cursor:crosshair;z-index:5;"></div>
+      </div>
+      <div id="sgBulb" style="position:absolute;left:228px;top:156px;width:68px;height:82px;background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:1.5px solid #e0e0e0;padding:6px;z-index:3;">
+        <div id="sgBulbEm" style="font-size:28px">💡</div><div style="font-size:10px;color:#666;font-weight:600;">Bulb</div>
+        <div id="sgBulT" data-pin="bul-t" style="width:13px;height:13px;border-radius:50%;background:#ef4444;position:absolute;top:-6px;left:50%;transform:translateX(-50%);border:2px solid white;cursor:crosshair;z-index:5;"></div>
+        <div id="sgBulB" data-pin="bul-b" style="width:13px;height:13px;border-radius:50%;background:#3b82f6;position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);border:2px solid white;cursor:crosshair;z-index:5;"></div>
+      </div>
+    </div>
+    <div style="background:#fff8e1;border-radius:12px;padding:9px 13px;border:1px solid #ffe082;margin-top:8px;font-size:11px;">
+      <div style="font-weight:700;color:#888;margin-bottom:4px;">WIRE CONNECTIONS:</div>
+      <div style="display:flex;align-items:center;gap:7px;margin:3px 0;"><div style="width:9px;height:9px;border-radius:50%;background:#ef4444;"></div><span style="color:#555;">Battery (+) → Resistor left</span><span id="sgCk1" style="margin-left:auto">○</span></div>
+      <div style="display:flex;align-items:center;gap:7px;margin:3px 0;"><div style="width:9px;height:9px;border-radius:50%;background:#9ca3af;"></div><span style="color:#555;">Resistor right → Bulb top</span><span id="sgCk2" style="margin-left:auto">○</span></div>
+      <div style="display:flex;align-items:center;gap:7px;margin:3px 0;"><div style="width:9px;height:9px;border-radius:50%;background:#3b82f6;"></div><span style="color:#555;">Bulb bottom → Battery (−)</span><span id="sgCk3" style="margin-left:auto">○</span></div>
+    </div>
+  `;
+  initSkillGameLogic();
+}
+
+// Inventory render for game
+function renderSgInventory(){
+  document.getElementById('sgInventory').innerHTML = `
+    <div id="sgBatInv" style="background:white;border:2.5px solid #F5C400;border-radius:14px;padding:11px 13px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(0,0,0,.08);cursor:grab;user-select:none;touch-action:none;position:relative;"
+      ontouchstart="sgStartBatTouch(event)" onmousedown="sgStartBatMouse(event)">
+      <div style="font-size:36px">🔋</div>
+      <div><div style="font-size:13px;font-weight:700;color:#111;">9V Battery</div><div id="sgInvCnt" style="font-size:11px;color:#22C55E;font-weight:600;">1 left</div></div>
+      <div style="position:absolute;right:13px;background:#111;color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;">Drag onto field</div>
+    </div>`;
+}
+
+function restartSkillGame(){
+  if(!_currentSkillLevel || !_currentSkillSection) return;
+  const sec = _skillsData.sections.find(s=>s.id===_currentSkillSection);
+  const lv = sec && sec.levels.find(l=>l.id===_currentSkillLevel);
+  if(lv) { buildSkillGameBoard(lv); }
+}
+
+// ── Full game logic (same as electrolearn but for SpeakUp) ──
+let _sgBatPlaced=false, _sgConnections={}, _sgWireDragging=false, _sgWireStart=null, _sgTempLine=null;
+const _sgRequired=[['bat-r','res-l'],['res-r','bul-t'],['bul-b','bat-b']];
+
+function initSkillGameLogic(){
+  _sgBatPlaced=false; _sgConnections={}; _sgWireDragging=false; _sgWireStart=null; _sgTempLine=null;
+  document.getElementById('sgRunBtn').disabled=true;
+  renderSgInventory();
+  // Attach pin listeners (only when battery is placed)
+}
+
+// Battery drag
+let _sgBatDragging=false;
+function sgStartBatTouch(e){
+  if(_sgBatPlaced) return; e.preventDefault(); _sgBatDragging=true;
+  const t=e.touches[0]; _showSgGhost(t.clientX,t.clientY);
+  document.addEventListener('touchmove',_sgBatTM,{passive:false});
+  document.addEventListener('touchend',_sgBatTE);
+}
+function sgStartBatMouse(e){
+  if(_sgBatPlaced) return; e.preventDefault(); _sgBatDragging=true;
+  _showSgGhost(e.clientX,e.clientY);
+  document.addEventListener('mousemove',_sgBatMM);
+  document.addEventListener('mouseup',_sgBatMU);
+}
+function _showSgGhost(x,y){ const g=document.getElementById('drag-ghost')||document.createElement('div'); g.style.cssText=`position:fixed;pointer-events:none;z-index:9999;font-size:40px;transform:translate(-50%,-60%);left:${x}px;top:${y}px;display:block;`; g.id='sg-ghost'; g.textContent='🔋'; if(!document.getElementById('sg-ghost')) document.body.appendChild(g); }
+function _moveSgGhost(x,y){ const g=document.getElementById('sg-ghost'); if(g){g.style.left=x+'px';g.style.top=y+'px';} }
+function _hideSgGhost(){ const g=document.getElementById('sg-ghost'); if(g) g.style.display='none'; }
+function _sgBatTM(e){ e.preventDefault(); const t=e.touches[0]; _moveSgGhost(t.clientX,t.clientY); _sgHiZone(t.clientX,t.clientY); }
+function _sgBatTE(e){ _hideSgGhost(); _sgBatDragging=false; const t=e.changedTouches[0]; const sz=document.getElementById('sgSnapZone'); if(sz)sz.style.borderColor='#bbb'; if(_sgIsOverZone(t.clientX,t.clientY)) _sgPlaceBattery(); document.removeEventListener('touchmove',_sgBatTM); document.removeEventListener('touchend',_sgBatTE); }
+function _sgBatMM(e){ _moveSgGhost(e.clientX,e.clientY); _sgHiZone(e.clientX,e.clientY); }
+function _sgBatMU(e){ _hideSgGhost(); _sgBatDragging=false; const sz=document.getElementById('sgSnapZone'); if(sz)sz.style.borderColor='#bbb'; if(_sgIsOverZone(e.clientX,e.clientY)) _sgPlaceBattery(); document.removeEventListener('mousemove',_sgBatMM); document.removeEventListener('mouseup',_sgBatMU); }
+function _sgHiZone(x,y){ const sz=document.getElementById('sgSnapZone'); if(sz) sz.style.borderColor=_sgIsOverZone(x,y)?'#F5C400':'#bbb'; }
+function _sgIsOverZone(x,y){ const sz=document.getElementById('sgSnapZone'); if(!sz) return false; const r=sz.getBoundingClientRect(); return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom; }
+
+function _sgPlaceBattery(){
+  _sgBatPlaced=true;
+  const sz=document.getElementById('sgSnapZone'); if(sz){sz.style.border='none';sz.innerHTML='';}
+  const ca=document.getElementById('sgCircuit');
+  const bat=document.createElement('div');
+  bat.id='sg-pbat';
+  bat.style.cssText='position:absolute;left:14px;top:85px;width:100px;height:60px;background:white;border-radius:12px;box-shadow:0 0 12px rgba(245,196,0,.3);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:2px solid #F5C400;padding:6px;z-index:3;cursor:default;';
+  bat.innerHTML='<div style="font-size:22px">🔋</div><div style="font-size:10px;color:#666;font-weight:600;">9V Battery</div><div id="sgBatR" data-pin="bat-r" style="width:13px;height:13px;border-radius:50%;background:#ef4444;position:absolute;right:-6px;top:40%;transform:translateY(-50%);border:2px solid white;cursor:crosshair;z-index:5;"></div><div id="sgBatB" data-pin="bat-b" style="width:13px;height:13px;border-radius:50%;background:#3b82f6;position:absolute;bottom:-6px;left:35%;border:2px solid white;cursor:crosshair;z-index:5;"></div>';
+  ca.appendChild(bat);
+  const inv=document.getElementById('sgBatInv'); if(inv){inv.style.opacity='.5';inv.style.cursor='default';}
+  document.getElementById('sgInvCnt').textContent='0 left';
+  document.getElementById('sgInvCnt').style.color='#aaa';
+  document.getElementById('sgStepBadge').innerHTML='<span>⚡</span><span>STEP 2 / 3</span>';
+  document.getElementById('sgStepText').textContent='Battery placed! Now connect the 3 wires by dragging from pin to pin.';
+  // Attach pin listeners
+  setTimeout(_sgAttachPins, 100);
+  if(typeof showSuToast==='function') showSuToast('🔋 Battery placed! Connect the wires now.');
+}
+
+function _sgAttachPins(){
+  document.querySelectorAll('#sgCircuit [data-pin]').forEach(p=>{
+    p.addEventListener('touchstart',_sgPinTS,{passive:false});
+    p.addEventListener('mousedown',_sgPinMS);
+  });
+}
+
+function _sgPinCenter(el){ const ca=document.getElementById('sgCircuit').getBoundingClientRect(); const r=el.getBoundingClientRect(); return {x:r.left+r.width/2-ca.left,y:r.top+r.height/2-ca.top}; }
+function _sgPinColor(id){ if(id==='bat-r'||id==='bul-t') return '#ef4444'; if(id==='bat-b'||id==='bul-b') return '#3b82f6'; return '#9ca3af'; }
+function _sgWireColor(p1,p2){ if((p1==='bat-r'&&p2==='res-l')||(p2==='bat-r'&&p1==='res-l')) return '#ef4444'; if((p1==='res-r'&&p2==='bul-t')||(p2==='res-r'&&p1==='bul-t')) return '#9ca3af'; if((p1==='bul-b'&&p2==='bat-b')||(p2==='bul-b'&&p1==='bat-b')) return '#3b82f6'; return '#aaa'; }
+
+function _sgPinTS(e){ e.preventDefault(); e.stopPropagation(); _sgStartWire(e.currentTarget); document.addEventListener('touchmove',_sgWTM,{passive:false}); document.addEventListener('touchend',_sgWTE); }
+function _sgPinMS(e){ e.preventDefault(); e.stopPropagation(); _sgStartWire(e.currentTarget); document.addEventListener('mousemove',_sgWMM); document.addEventListener('mouseup',_sgWMU); }
+
+function _sgStartWire(el){
+  _sgWireDragging=true; _sgWireStart={pinId:el.dataset.pin,el};
+  const pos=_sgPinCenter(el);
+  const svg=document.getElementById('sgWireSvg');
+  _sgTempLine=document.createElementNS('http://www.w3.org/2000/svg','line');
+  _sgTempLine.setAttribute('x1',pos.x);_sgTempLine.setAttribute('y1',pos.y);
+  _sgTempLine.setAttribute('x2',pos.x);_sgTempLine.setAttribute('y2',pos.y);
+  _sgTempLine.setAttribute('stroke',_sgPinColor(el.dataset.pin));
+  _sgTempLine.setAttribute('stroke-width','2.5');_sgTempLine.setAttribute('stroke-linecap','round');
+  _sgTempLine.setAttribute('stroke-dasharray','6 4');
+  svg.appendChild(_sgTempLine);
+}
+function _sgUpdateTemp(cx,cy){ if(!_sgTempLine) return; const ca=document.getElementById('sgCircuit').getBoundingClientRect(); _sgTempLine.setAttribute('x2',cx-ca.left);_sgTempLine.setAttribute('y2',cy-ca.top); }
+function _sgWTM(e){ e.preventDefault(); _sgUpdateTemp(e.touches[0].clientX,e.touches[0].clientY); }
+function _sgWMM(e){ _sgUpdateTemp(e.clientX,e.clientY); }
+function _sgWTE(e){ _sgEndWire(e.changedTouches[0].clientX,e.changedTouches[0].clientY); document.removeEventListener('touchmove',_sgWTM);document.removeEventListener('touchend',_sgWTE); }
+function _sgWMU(e){ _sgEndWire(e.clientX,e.clientY); document.removeEventListener('mousemove',_sgWMM);document.removeEventListener('mouseup',_sgWMU); }
+
+function _sgEndWire(cx,cy){
+  _sgWireDragging=false;
+  if(_sgTempLine){_sgTempLine.remove();_sgTempLine=null;}
+  const target=_sgFindPin(cx,cy);
+  if(target&&_sgWireStart&&target.dataset.pin!==_sgWireStart.pinId) _sgTryConnect(_sgWireStart.pinId,target.dataset.pin);
+  _sgWireStart=null;
+}
+function _sgFindPin(cx,cy){
+  const pins=document.querySelectorAll('#sgCircuit [data-pin]');
+  for(const p of pins){ const r=p.getBoundingClientRect(); const pad=20; if(cx>=r.left-pad&&cx<=r.right+pad&&cy>=r.top-pad&&cy<=r.bottom+pad) return p; }
+  return null;
+}
+function _sgTryConnect(p1,p2){
+  const mi=_sgRequired.findIndex(([a,b])=>(a===p1&&b===p2)||(a===p2&&b===p1));
+  if(mi===-1){ if(typeof showSuToast==='function') showSuToast('⚠️ Wrong connection! Try again.'); return; }
+  const key=_sgRequired[mi][0]+'-'+_sgRequired[mi][1];
+  if(_sgConnections[key]) return;
+  _sgConnections[key]=true;
+  // Draw wire
+  const el1=document.querySelector(`[data-pin="${p1}"]`), el2=document.querySelector(`[data-pin="${p2}"]`);
+  if(el1&&el2){
+    const c1=_sgPinCenter(el1),c2=_sgPinCenter(el2);
+    const svg=document.getElementById('sgWireSvg');
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M ${c1.x} ${c1.y} L ${c2.x} ${c1.y} L ${c2.x} ${c2.y}`);
+    path.setAttribute('stroke',_sgWireColor(p1,p2));path.setAttribute('stroke-width','2.5');
+    path.setAttribute('fill','none');path.setAttribute('stroke-linecap','round');
+    svg.appendChild(path);
+    [el1,el2].forEach(e=>e.style.boxShadow='0 0 0 3px rgba(34,197,94,.4)');
+  }
+  // Update checklist
+  const ck=document.getElementById('sgCk'+(mi+1));
+  if(ck){ck.textContent='✅';ck.style.color='#22C55E';}
+  if(typeof showSuToast==='function') showSuToast(['Battery → Resistor ✅','Resistor → Bulb ✅','Bulb → Battery ✅'][mi]);
+  if(Object.keys(_sgConnections).length===3){
+    document.getElementById('sgStepBadge').innerHTML='<span>⚡</span><span>STEP 3 / 3</span>';
+    document.getElementById('sgStepText').textContent='All wired! Press ▶ Run to power the circuit!';
+    document.getElementById('sgRunBtn').disabled=false;
+  }
+}
+
+function runSkillGame(){
+  document.getElementById('sgRunBtn').disabled=true;
+  const svg=document.getElementById('sgWireSvg');
+  svg.querySelectorAll('path').forEach(p=>{ p.style.strokeDasharray='6 4'; p.style.animation='sgFlow .5s linear infinite'; });
+  // Add keyframe if not exists
+  if(!document.getElementById('sgFlowStyle')){
+    const st=document.createElement('style');st.id='sgFlowStyle';
+    st.textContent='@keyframes sgFlow{0%{stroke-dashoffset:18}100%{stroke-dashoffset:0}}';
+    document.head.appendChild(st);
+  }
+  setTimeout(()=>{ document.getElementById('sgBulbEm').textContent='🌟'; },600);
+  setTimeout(()=>{ _sgShowSuccess(); },2000);
+}
+
+function _sgShowSuccess(){
+  // Mark level complete
+  _skillsProgress[_currentSkillLevel]=true;
+  localStorage.setItem('su_skills_progress',JSON.stringify(_skillsProgress));
+  // Show success toast + go back
+  const sec=_skillsData.sections.find(s=>s.id===_currentSkillSection);
+  const lv=sec&&sec.levels.find(l=>l.id===_currentSkillLevel);
+  // Simple success overlay
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:9999;padding:30px;';
+  ov.innerHTML=`<div style="background:#111827;border-radius:24px;padding:26px 20px;text-align:center;border:2px solid #22C55E;width:100%;max-width:320px;">
+    <div style="font-size:52px;margin-bottom:8px;">🎉</div>
+    <div style="font-size:22px;font-weight:800;color:#22C55E;font-family:'Fredoka One',sans-serif;margin-bottom:6px;">Level Complete!</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:18px;">Circuit complete! Battery → Resistor → Bulb!<br>You earned <strong style="color:#F5C400;">50 XP ⭐</strong></div>
+    <button onclick="this.parentElement.parentElement.remove();closeSkillGame();" style="background:#F5C400;color:#000;border:none;border-radius:16px;padding:13px;font-family:'Fredoka One',sans-serif;font-size:15px;font-weight:800;cursor:pointer;width:100%;">← Back to Map</button>
+  </div>`;
+  document.body.appendChild(ov);
+}
+
+function showSkillHint(){
+  const hints=['Battery ko neeche se drag karo upar snap zone mein!','Pin se pin tak drag karo — 3 connections banao!','Sab connected! Run button press karo!'];
+  const step=_sgBatPlaced?(Object.keys(_sgConnections).length===3?2:1):0;
+  if(typeof showSuToast==='function') showSuToast('💡 '+hints[step]);
+}
+
+// ── Article functions ──
+function openSkillArticle(levelId, sectionId){
+  // Pro check — same as papers
+  if(!isPro()){
+    showSkillProPopup();
+    return;
+  }
+  _currentSkillLevel = levelId;
+  _currentSkillSection = sectionId;
+  const sec = _skillsData.sections.find(s=>s.id===sectionId);
+  const lv = sec && sec.levels.find(l=>l.id===levelId);
+  if(!lv) return;
+  document.getElementById('saSection').textContent = sec.eyebrow||sec.title;
+  document.getElementById('saTitle').textContent = lv.title;
+  // Load content — Firebase override or default
+  const content = (lv.articleContent) || SKILL_ARTICLES[lv.title] ||
+    `<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">📖 ${lv.title}</h3><p style="color:rgba(255,255,255,.7);line-height:1.8;">Yeh article admin panel se add kiya jayega. Admin → Skills → Article content paste karo.</p>`;
+  document.getElementById('saContent').innerHTML = content;
+  showScreen('skillArticle');
+}
+
+function closeSkillArticle(){
+  showScreen('skills');
+}
+
+function completeSkillArticle(){
+  if(!_currentSkillLevel) return;
+  _skillsProgress[_currentSkillLevel]=true;
+  localStorage.setItem('su_skills_progress',JSON.stringify(_skillsProgress));
+  // Find next level
+  const sec=_skillsData.sections.find(s=>s.id===_currentSkillSection);
+  const li=sec&&sec.levels.findIndex(l=>l.id===_currentSkillLevel);
+  const next=sec&&sec.levels[li+1];
+  if(next && (next.type==='article'||next.type==='game')){
+    if(next.type==='article') openSkillArticle(next.id,_currentSkillSection);
+    else openSkillGame(next.id,_currentSkillSection);
+  } else {
+    showScreen('skills');
+    if(typeof showSuToast==='function') showSuToast('✅ Level complete! +50 XP');
+    setTimeout(initSkillsScreen, 300);
+  }
+}
+
+// ── Topic selector ──
+function showSkillTopics(){
+  if(typeof showSuToast==='function') showSuToast('🔜 More topics coming soon! (Electrician, Electronics...)');
+}
+
+// Show leaderboard nav fix - remove league from leaderboard bn if it breaks
 </script>
 
 </body></html>
