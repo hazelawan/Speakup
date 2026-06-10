@@ -1369,124 +1369,90 @@ ZAROORI RULES:
 ════════════════════════════ -->
 <div class="page" id="page-skills-admin">
 
-  <!-- Gemini Prompt Card -->
+  <!-- ── Course Map (levels list) ── -->
   <div class="card">
-    <div class="card-title">🤖 Gemini Prompt — Skills JSON Banao</div>
-    <div class="card-sub">Yeh prompt copy karo → Gemini mein paste karo → JSON milega → neeche paste karo → Firebase pe save karo</div>
-    <div style="background:#0d1117;border-radius:12px;padding:14px;font-family:monospace;font-size:11px;color:#7ee787;line-height:1.7;white-space:pre-wrap;margin:12px 0;max-height:200px;overflow-y:auto;border:1px solid rgba(255,255,255,.1);" id="skillsPromptBox">Ek electricity course ka JSON banao SpeakUp app ke liye.
+    <div class="card-title">🗺️ Course Map — Level Select Karo</div>
+    <div class="card-sub">Kisi bhi level pe tap karo → us ka prompt neeche aa jayega → copy karo → Gemini mein paste karo</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px;">
+      <button onclick="setSkillsTopic('electricity')" id="stBtn-electricity" class="btn btn-green" style="font-size:12px;padding:7px 13px;">⚡ Electricity</button>
+      <button onclick="addNewSkillTopic()" class="btn" style="font-size:12px;padding:7px 13px;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.3);color:rgba(255,255,255,.5);border-radius:10px;cursor:pointer;">+ New Topic</button>
+    </div>
+    <div style="font-size:11px;color:var(--mut);margin-bottom:10px;">Selected: <strong id="skillsCurrentTopicLabel" style="color:#F5C400;">⚡ Electricity</strong></div>
+    <div id="skillsCourseMap" style="font-size:12px;color:var(--mut);">
+      <span style="color:#888;">⏳ Firebase se load ho raha hai...</span>
+    </div>
+  </div>
 
-Format exactly yeh hona chahiye (koi extra text nahi):
-{
-  "title": "Electricity",
-  "icon": "⚡",
-  "sections": [
-    {
-      "id": "s1",
-      "title": "Section Title",
-      "eyebrow": "Section 1",
-      "levels": [
-        {
-          "id": "l1_1",
-          "title": "Level Title",
-          "type": "game",
-          "icon": "🔋",
-          "unlocked": true,
-          "gameId": "place_battery"
-        },
-        {
-          "id": "l1_2",
-          "title": "Article Title",
-          "type": "article",
-          "icon": "📖",
-          "unlocked": false,
-          "articleContent": "<p>Article HTML content here</p>"
-        }
-      ]
-    }
-  ]
-}
-
-Rules:
-1. type = "game" ya "article" — game ke liye gameId bhi do
-2. articleContent mein proper HTML dalo — headings, paragraphs, bold text
-3. Sirf JSON return karo — koi explanation nahi
-4. Section 1 ka pehla level unlocked:true hoga, baqi false
-5. 5 sections banao, har section mein 4-15 levels
-
-Topic: [TOPIC NAME]</div>
+  <!-- ── Selected Level Prompt ── -->
+  <div class="card" id="skillsPromptCard" style="display:none;">
+    <div class="card-title">🤖 Gemini Prompt — <span id="promptLevelTitle" style="color:#F5C400;"></span></div>
+    <div class="card-sub">Yeh prompt copy karo → Gemini mein paste karo → milne wala HTML content wapas neeche paste karo → Save karo</div>
+    <div style="background:#0d1117;border-radius:12px;padding:14px;font-family:monospace;font-size:11px;color:#7ee787;line-height:1.7;white-space:pre-wrap;margin:12px 0;max-height:260px;overflow-y:auto;border:1px solid rgba(255,255,255,.1);" id="skillsPromptBox"></div>
     <button class="btn btn-blue" onclick="copySkillsPrompt()">📋 Prompt Copy Karo</button>
   </div>
 
-  <!-- Topic Selector -->
-  <div class="card">
-    <div class="card-title">🎯 Topic Select Karo</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;">
-      <button onclick="setSkillsTopic('electricity')" id="stBtn-electricity" class="btn btn-green" style="font-size:12px;padding:8px 14px;">⚡ Electricity</button>
-      <button onclick="setSkillsTopic('electronician')" id="stBtn-electronician" class="btn" style="font-size:12px;padding:8px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:10px;cursor:pointer;">🔌 Electrician</button>
-      <button onclick="addNewSkillTopic()" class="btn" style="font-size:12px;padding:8px 14px;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.3);color:rgba(255,255,255,.5);border-radius:10px;cursor:pointer;">+ New Topic</button>
-    </div>
-    <div style="font-size:12px;color:var(--mut);">Current: <strong id="skillsCurrentTopicLabel" style="color:#F5C400;">⚡ Electricity</strong></div>
-  </div>
+  <!-- ── Content Paste & Save ── -->
+  <div class="card" id="skillsContentCard" style="display:none;">
+    <div class="card-title">📥 Content Paste Karo — <span id="contentLevelTitle" style="color:#F5C400;"></span></div>
+    <div class="card-sub">Gemini se mila HTML content yahan paste karo. Quiz ke liye JSON array paste karo.</div>
 
-  <!-- JSON Input Card -->
-  <div class="card">
-    <div class="card-title">📋 JSON Paste Karo — App Mein Live Ho Jayega</div>
-    <div class="card-sub">Gemini se mila JSON yahan paste karo. Firebase pe save hone ke baad app mein automatically show hoga.</div>
-    <textarea id="skillsJsonInput" placeholder='{"title":"Electricity","icon":"⚡","sections":[...]}' style="width:100%;min-height:160px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:12px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:10px 0;"></textarea>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button onclick="validateSkillsJson()" class="btn" style="background:rgba(91,141,239,.2);border:1px solid rgba(91,141,239,.4);color:#5B8DEF;border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;">🔍 Validate JSON</button>
-      <button onclick="saveSkillsToFirebase()" class="btn btn-green">💾 Firebase Pe Save Karo</button>
-      <button onclick="loadSkillsFromFirebaseAdmin()" class="btn" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;">🔄 Firebase Se Load Karo</button>
-    </div>
-    <div id="skillsJsonStatus" style="margin-top:10px;font-size:12px;font-weight:600;"></div>
-  </div>
+    <!-- Type indicator -->
+    <div id="contentTypeHint" style="margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;"></div>
 
-  <!-- Individual Level Editor -->
-  <div class="card">
-    <div class="card-title">✏️ Single Level Edit / Add Karo</div>
-    <div class="card-sub">Kisi ek level ka content update karo bina pura JSON dobara paste kiye</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin:10px 0;">
-      <div>
-        <div class="inp-label">Section ID (maslan: s1)</div>
-        <input id="slSecId" placeholder="s1" class="inp">
-      </div>
-      <div>
-        <div class="inp-label">Level ID (maslan: l1_1)</div>
-        <input id="slLvId" placeholder="l1_1" class="inp">
-      </div>
-      <div>
-        <div class="inp-label">Level Title</div>
-        <input id="slTitle" placeholder="Level ka naam" class="inp">
-      </div>
-      <div>
-        <div class="inp-label">Type</div>
-        <select id="slType" class="inp" style="background:rgba(255,255,255,.08);color:#fff;">
-          <option value="game">🎮 Game</option>
-          <option value="article">📖 Article</option>
-        </select>
-      </div>
-      <div>
-        <div class="inp-label">Icon (emoji)</div>
-        <input id="slIcon" placeholder="🔋" class="inp">
-      </div>
-      <div>
-        <div class="inp-label">Image URL (optional)</div>
-        <input id="slImg" placeholder="https://... ya khali choro" class="inp">
-      </div>
-      <div>
-        <div class="inp-label">Article Content (HTML — sirf article type ke liye)</div>
-        <textarea id="slArticle" placeholder="&lt;p&gt;Article content yahan...&lt;/p&gt;" style="width:100%;min-height:100px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;"></textarea>
-      </div>
+    <!-- Article HTML input -->
+    <div id="contentArticleWrap">
+      <div class="inp-label">Article HTML Content</div>
+      <textarea id="slArticle" placeholder="<h3>Title</h3><p>Content yahan...</p>" style="width:100%;min-height:140px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0;"></textarea>
     </div>
-    <button onclick="saveSingleLevel()" class="btn btn-green">💾 Is Level Ko Save Karo</button>
+
+    <!-- Quiz JSON input -->
+    <div id="contentQuizWrap" style="display:none;">
+      <div class="inp-label">Quiz Questions (JSON Array)</div>
+      <textarea id="slQuizJson" placeholder='[{"q":"Sawaal?","o":["A","B","C","D"],"a":0,"explain":"Wajah..."}]' style="width:100%;min-height:140px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0;"></textarea>
+      <div style="font-size:10px;color:#888;margin-bottom:6px;">Format: q=sawaal, o=4 options array, a=sahi answer index (0-3), explain=wajah</div>
+    </div>
+
+    <!-- Game type notice -->
+    <div id="contentGameWrap" style="display:none;padding:12px;background:rgba(91,141,239,.1);border:1px solid rgba(91,141,239,.3);border-radius:10px;font-size:12px;color:#5B8DEF;">
+      🎮 Game levels ka content code mein hota hai — admin se add nahi hota. Game ID Firebase mein already save hai.
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button onclick="saveSingleLevel()" class="btn btn-green">💾 Save Karo — Firebase Pe</button>
+      <button onclick="previewArticleContent()" id="previewBtn" class="btn" style="background:rgba(255,165,0,.15);border:1px solid rgba(255,165,0,.4);color:#F5C400;border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;">👁️ Preview</button>
+    </div>
     <div id="slStatus" style="margin-top:8px;font-size:12px;font-weight:600;"></div>
   </div>
 
-  <!-- Live Preview -->
-  <div class="card">
-    <div class="card-title">👁️ Firebase Data Preview</div>
-    <div id="skillsPreview" style="font-size:12px;color:var(--mut);">Data load karne ke liye "Firebase Se Load Karo" press karo</div>
+  <!-- Article Preview Modal -->
+  <div id="articlePreviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;overflow-y:auto;padding:20px;">
+    <div style="background:#111827;border-radius:20px;padding:20px;max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.1);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#F5C400;">👁️ Preview</div>
+        <button onclick="document.getElementById('articlePreviewModal').style.display='none'" style="background:rgba(255,75,75,.2);border:none;color:#ff6b6b;border-radius:8px;padding:4px 10px;cursor:pointer;">✕ Close</button>
+      </div>
+      <div id="articlePreviewContent" style="color:rgba(255,255,255,.85);font-size:13px;line-height:1.8;"></div>
+    </div>
   </div>
+
+  <!-- ── Full JSON (Advanced) ── -->
+  <div class="card">
+    <div class="card-title" onclick="toggleAdvanced()" style="cursor:pointer;user-select:none;">
+      ⚙️ Advanced — Full JSON <span id="advToggleIcon" style="float:right;color:#888;">▼ Show</span>
+    </div>
+    <div id="advancedSection" style="display:none;margin-top:10px;">
+      <div class="card-sub">Pura structure ek saath update karna ho to yahan karo</div>
+      <textarea id="skillsJsonInput" placeholder='{"title":"Electricity","icon":"⚡","sections":[...]}' style="width:100%;min-height:160px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:12px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:10px 0;"></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button onclick="validateSkillsJson()" class="btn" style="background:rgba(91,141,239,.2);border:1px solid rgba(91,141,239,.4);color:#5B8DEF;border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;">🔍 Validate</button>
+        <button onclick="saveSkillsToFirebase()" class="btn btn-green">💾 Firebase Pe Save</button>
+        <button onclick="loadSkillsFromFirebaseAdmin()" class="btn" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;">🔄 Load</button>
+      </div>
+      <div id="skillsJsonStatus" style="margin-top:10px;font-size:12px;font-weight:600;"></div>
+    </div>
+  </div>
+
+</div>
 
 </div>
 
@@ -13786,142 +13752,444 @@ window.saveOnboardingToFirebase = function(data){
 //   SKILLS ADMIN — JavaScript
 // ═══════════════════════════════
 let _saCurrentTopic = 'electricity';
+let _saSelectedLevel = null; // { secId, lvId, title, type, icon }
+let _saFirebaseData  = null; // cached firebase data
 
-function loadSkillsAdmin(){
+// ── Course structure (mirrors app's SKILLS_DEFAULT_DATA) ──
+const SA_COURSE = {
+  electricity: {
+    title:"Electrician Course", icon:"⚡",
+    sections:[
+      { id:"s1", title:"Bijli Ki Duniya", eyebrow:"Section 1 — Foundations",
+        levels:[
+          {id:"l1_1",  title:"Bijli Kya Hai?",                    type:"article", icon:"⚡"},
+          {id:"l1_2",  title:"Atoms aur Electrons",               type:"article", icon:"⚛️"},
+          {id:"l1_3",  title:"Current, Voltage, Resistance",      type:"article", icon:"📊"},
+          {id:"l1_4",  title:"Ohm's Law — V = I × R",            type:"article", icon:"🔢"},
+          {id:"l1_5",  title:"Ohm's Law Quiz",                    type:"quiz",    icon:"✏️"},
+          {id:"l1_6",  title:"AC vs DC — Farq Kya Hai?",         type:"article", icon:"🔀"},
+          {id:"l1_7",  title:"Pakistan Mein Bijli Ka Nizam",      type:"article", icon:"🇵🇰"},
+          {id:"l1_8",  title:"WAPDA aur Distribution System",     type:"article", icon:"🏭"},
+          {id:"l1_9",  title:"Foundations Quiz",                  type:"quiz",    icon:"✏️"},
+          {id:"l1_10", title:"Basic Circuit — Game",              type:"game",    icon:"🎮"},
+          {id:"l1_11", title:"Open vs Closed Circuit — Game",     type:"game",    icon:"🔌"},
+          {id:"l1_12", title:"Series Circuit — Game",             type:"game",    icon:"➡️"},
+          {id:"l1_13", title:"Parallel Circuit — Game",           type:"game",    icon:"⇉"},
+          {id:"l1_14", title:"Section 1 Final Test",              type:"quiz",    icon:"🏆"}
+        ]},
+      { id:"s2", title:"Auzaar aur Safety", eyebrow:"Section 2 — Tools & Safety",
+        levels:[
+          {id:"l2_1",  title:"Electrician Ke Zaroori Auzaar",     type:"article", icon:"🧰"},
+          {id:"l2_2",  title:"Multimeter — Poori Rahnamai",       type:"article", icon:"🔬"},
+          {id:"l2_3",  title:"Multimeter Use Karo — Game",        type:"game",    icon:"🎮"},
+          {id:"l2_4",  title:"Wire Stripper aur Crimper",         type:"article", icon:"✂️"},
+          {id:"l2_5",  title:"Electrical Safety — Pehli Baat",    type:"article", icon:"⚠️"},
+          {id:"l2_6",  title:"Live Wire Se Bachao",               type:"article", icon:"🛡️"},
+          {id:"l2_7",  title:"PPE — Personal Protection",         type:"article", icon:"🧤"},
+          {id:"l2_8",  title:"Lockout / Tagout (LOTO)",           type:"article", icon:"🔒"},
+          {id:"l2_9",  title:"Shock Lagnay Par Kya Karain?",      type:"article", icon:"🚨"},
+          {id:"l2_10", title:"Safety Hazards — Spot Karo — Game", type:"game",    icon:"🎮"},
+          {id:"l2_11", title:"Tools & Safety Quiz",               type:"quiz",    icon:"✏️"},
+          {id:"l2_12", title:"Section 2 Final Test",              type:"quiz",    icon:"🏆"}
+        ]},
+      { id:"s3", title:"Taar aur Components", eyebrow:"Section 3 — Wires & Components",
+        levels:[
+          {id:"l3_1",  title:"Wire Ke Types — Poori List",        type:"article", icon:"🔴"},
+          {id:"l3_2",  title:"Wire Gauge — Kitna Mota?",          type:"article", icon:"📏"},
+          {id:"l3_3",  title:"Pakistan Mein Wire Colors",         type:"article", icon:"🎨"},
+          {id:"l3_4",  title:"Live, Neutral, Earth — Pehchano",   type:"article", icon:"🟡"},
+          {id:"l3_5",  title:"Wire Color Quiz",                   type:"quiz",    icon:"✏️"},
+          {id:"l3_6",  title:"MCB — Mini Circuit Breaker",        type:"article", icon:"⚡"},
+          {id:"l3_7",  title:"RCCB / ELCB — Life Saver",         type:"article", icon:"💚"},
+          {id:"l3_8",  title:"Fuse — Kaam aur Types",             type:"article", icon:"🔮"},
+          {id:"l3_9",  title:"Switch — Types aur Wiring",         type:"article", icon:"🔲"},
+          {id:"l3_10", title:"Socket / Outlet — Types",           type:"article", icon:"🔌"},
+          {id:"l3_11", title:"MCB Sizing — Game",                 type:"game",    icon:"🎮"},
+          {id:"l3_12", title:"Earthing / Grounding Kya Hai?",     type:"article", icon:"🌍"},
+          {id:"l3_13", title:"Earthing System — Game",            type:"game",    icon:"🎮"},
+          {id:"l3_14", title:"Capacitor aur Inductor — Basics",   type:"article", icon:"⚙️"},
+          {id:"l3_15", title:"Components Quiz",                   type:"quiz",    icon:"✏️"},
+          {id:"l3_16", title:"Section 3 Final Test",              type:"quiz",    icon:"🏆"}
+        ]},
+      { id:"s4", title:"Ghar Ki Wiring", eyebrow:"Section 4 — Home Wiring",
+        levels:[
+          {id:"l4_1",  title:"Single Phase Supply — Ghar Tak",    type:"article", icon:"🏠"},
+          {id:"l4_2",  title:"Distribution Board (DB Box)",       type:"article", icon:"📦"},
+          {id:"l4_3",  title:"DB Box Wiring — Game",              type:"game",    icon:"🎮"},
+          {id:"l4_4",  title:"One-Way Switch Wiring",             type:"article", icon:"💡"},
+          {id:"l4_5",  title:"Two-Way Switch — Zina / Siri",      type:"article", icon:"🪜"},
+          {id:"l4_6",  title:"Switch Wiring — Game",              type:"game",    icon:"🎮"},
+          {id:"l4_7",  title:"Socket / Outlet Lagana",            type:"article", icon:"🔌"},
+          {id:"l4_8",  title:"Ghar Ki Wiring Plan Banana",        type:"article", icon:"📐"},
+          {id:"l4_9",  title:"Wiring Plan — Game",                type:"game",    icon:"🎮"},
+          {id:"l4_10", title:"Ceiling Fan Installation",          type:"article", icon:"💨"},
+          {id:"l4_11", title:"Fan Wiring — Game",                 type:"game",    icon:"🎮"},
+          {id:"l4_12", title:"Geyser / Water Heater Wiring",      type:"article", icon:"🚿"},
+          {id:"l4_13", title:"Short Circuit — Kyon Hota Hai?",    type:"article", icon:"💥"},
+          {id:"l4_14", title:"Fault Finding — Game",              type:"game",    icon:"🎮"},
+          {id:"l4_15", title:"Home Wiring Quiz",                  type:"quiz",    icon:"✏️"},
+          {id:"l4_16", title:"Section 4 Final Test",              type:"quiz",    icon:"🏆"}
+        ]},
+      { id:"s5", title:"AC, Motor aur Advanced", eyebrow:"Section 5 — Advanced",
+        levels:[
+          {id:"l5_1",  title:"AC Unit — Andar Kya Hai?",          type:"article", icon:"❄️"},
+          {id:"l5_2",  title:"AC Wiring — Step by Step",          type:"article", icon:"🔧"},
+          {id:"l5_3",  title:"AC Wiring — Game",                  type:"game",    icon:"🎮"},
+          {id:"l5_4",  title:"3-Phase Supply Kya Hai?",           type:"article", icon:"🔱"},
+          {id:"l5_5",  title:"3-Phase vs Single Phase",           type:"article", icon:"📊"},
+          {id:"l5_6",  title:"Electric Motor — Kaise Kaam Karta?",type:"article", icon:"⚙️"},
+          {id:"l5_7",  title:"Motor Starter Types",               type:"article", icon:"▶️"},
+          {id:"l5_8",  title:"Motor Wiring — Game",               type:"game",    icon:"🎮"},
+          {id:"l5_9",  title:"Industrial Panel Board",            type:"article", icon:"🏭"},
+          {id:"l5_10", title:"Transformer — Basics",              type:"article", icon:"🔄"},
+          {id:"l5_11", title:"UPS aur Inverter",                  type:"article", icon:"🔋"},
+          {id:"l5_12", title:"Solar Panel System Wiring",         type:"article", icon:"☀️"},
+          {id:"l5_13", title:"Solar Wiring — Game",               type:"game",    icon:"🎮"},
+          {id:"l5_14", title:"Advanced Systems Quiz",             type:"quiz",    icon:"✏️"},
+          {id:"l5_15", title:"Section 5 Final Test",              type:"quiz",    icon:"🏆"}
+        ]},
+      { id:"s6", title:"Professional Electrician", eyebrow:"Section 6 — Job Ready",
+        levels:[
+          {id:"l6_1",  title:"Electrical Codes — Pakistan + IEC", type:"article", icon:"📋"},
+          {id:"l6_2",  title:"Wiring Estimation — Material List", type:"article", icon:"🧮"},
+          {id:"l6_3",  title:"Estimation — Game",                 type:"game",    icon:"🎮"},
+          {id:"l6_4",  title:"Troubleshooting — Masla Dhundho",   type:"article", icon:"🔍"},
+          {id:"l6_5",  title:"Troubleshooting — Game",            type:"game",    icon:"🎮"},
+          {id:"l6_6",  title:"Client Se Baat Karna",              type:"article", icon:"🤝"},
+          {id:"l6_7",  title:"Rates aur Billing",                 type:"article", icon:"💰"},
+          {id:"l6_8",  title:"Interview Mein Kya Poochha Jata Hai",type:"article",icon:"💼"},
+          {id:"l6_9",  title:"Mock Interview — 30 Sawaal",        type:"quiz",    icon:"🎤"},
+          {id:"l6_10", title:"Real Scenario — House Fault — Game",type:"game",    icon:"🎮"},
+          {id:"l6_11", title:"Real Scenario — Industrial Fault — Game",type:"game",icon:"🏭"},
+          {id:"l6_12", title:"Grand Final Test — 50 Sawaal",      type:"quiz",    icon:"🏆"},
+          {id:"l6_13", title:"Certificate — Certified Electrician",type:"article",icon:"🎓"}
+        ]}
+    ]
+  }
+};
+
+// ── Prompt templates per level type ──
+function _buildPrompt(sec, lv) {
+  const sectionContext = sec.eyebrow + ' — ' + sec.title;
+
+  if (lv.type === 'article') {
+    return `You are a content writer for SpeakUp — a Pakistani learning app.
+Write an educational article for the following lesson:
+
+COURSE: Electrician (Beginner to Professional)
+SECTION: ${sectionContext}
+LESSON TITLE: ${lv.title}
+
+TARGET AUDIENCE: Pakistani users learning electricity from scratch. Language: Urdu/Roman Urdu mixed with English technical terms.
+
+REQUIREMENTS:
+- Return ONLY raw HTML — no markdown, no backticks, no explanation
+- Use this exact color scheme: headings in #F5C400 (yellow), highlights in rgba(245,196,0,.1) background
+- Structure: h3 heading → intro paragraph → key points with bold labels → Pakistan-specific tip box at end
+- Include real Pakistan examples (WAPDA, local brands, rupee prices where relevant)
+- Length: 250-400 words
+- Font family for headings: 'Fredoka One', sans-serif
+
+HTML TEMPLATE TO FOLLOW:
+<h3 style="color:#F5C400;font-family:'Fredoka One',sans-serif;margin-bottom:12px;">${lv.icon} ${lv.title}</h3>
+<p style="color:rgba(255,255,255,.8);line-height:1.8;margin-bottom:12px;">Intro paragraph here...</p>
+<p style="color:rgba(255,255,255,.8);line-height:1.8;margin-bottom:12px;"><strong style="color:#F5C400;">Key Term 1:</strong> explanation...</p>
+<p style="color:rgba(255,255,255,.8);line-height:1.8;margin-bottom:12px;"><strong style="color:#F5C400;">Key Term 2:</strong> explanation...</p>
+<div style="margin-top:14px;background:rgba(245,196,0,.1);border-radius:12px;padding:14px;border-left:3px solid #F5C400;">
+<strong style="color:#F5C400;">🇵🇰 Pakistan Tip:</strong> Pakistan-specific tip here...
+</div>
+
+Now write the full article for: "${lv.title}"`;
+  }
+
+  if (lv.type === 'quiz') {
+    const count = lv.title.includes('Final') ? 20 : lv.title.includes('50') ? 50 : lv.title.includes('30') ? 30 : 10;
+    return `You are a quiz creator for SpeakUp — a Pakistani electrician learning app.
+Create a quiz for the following:
+
+SECTION: ${sectionContext}
+QUIZ TITLE: ${lv.title}
+QUESTION COUNT: ${count}
+
+REQUIREMENTS:
+- Return ONLY a valid JSON array — no markdown, no backticks, no explanation
+- Each question must have: q (question text), o (array of exactly 4 options), a (correct answer index 0-3), explain (brief reason in Roman Urdu or English)
+- Questions should test practical knowledge, not just theory
+- Mix difficulty: 40% easy, 40% medium, 20% hard
+- Include Pakistan-relevant scenarios where possible
+
+EXACT FORMAT (return only this, nothing else):
+[
+  {
+    "q": "Question text yahan?",
+    "o": ["Option A", "Option B", "Option C", "Option D"],
+    "a": 0,
+    "explain": "Option A sahi hai kyunki..."
+  }
+]
+
+Topic context: ${sectionContext} — ${lv.title}`;
+  }
+
+  // game type
+  return `GAME LEVEL: ${lv.title}
+Section: ${sectionContext}
+
+Yeh ek interactive game level hai — is ka content app ke code mein built-in hoga.
+Admin panel se game content add nahi hota.
+
+Game ID: ${lv.id}
+Is level ka gameId already Firebase mein save hai.`;
+}
+
+function loadSkillsAdmin() {
+  renderCourseMap();
   loadSkillsFromFirebaseAdmin();
 }
 
-function setSkillsTopic(topic){
-  _saCurrentTopic = topic;
-  document.getElementById('skillsCurrentTopicLabel').textContent =
-    (topic==='electricity'?'⚡ ':topic==='electronician'?'🔌 ':'📚 ') +
-    topic.charAt(0).toUpperCase()+topic.slice(1);
-  // Update button styles
-  document.querySelectorAll('[id^="stBtn-"]').forEach(b=>{
-    b.className = b.id==='stBtn-'+topic ? 'btn btn-green' : 'btn';
-    if(b.id!=='stBtn-'+topic) b.style.cssText='font-size:12px;padding:8px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:10px;cursor:pointer;';
-    else b.style.cssText='font-size:12px;padding:8px 14px;';
+function renderCourseMap() {
+  const topic = _saCurrentTopic;
+  const course = SA_COURSE[topic];
+  if (!course) { document.getElementById('skillsCourseMap').innerHTML = '<span style="color:#888;">Course data nahi mila.</span>'; return; }
+
+  let html = '';
+  course.sections.forEach((sec, si) => {
+    html += `<div style="margin-bottom:14px;">
+      <div style="color:#F5C400;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;padding:6px 0;border-bottom:1px solid rgba(245,196,0,.2);">
+        ${sec.eyebrow} — ${sec.title}
+      </div>`;
+    sec.levels.forEach((lv, li) => {
+      const typeColor = lv.type==='game'?'#5B8DEF':lv.type==='quiz'?'#F5C400':'#22C55E';
+      const typeBg    = lv.type==='game'?'rgba(91,141,239,.15)':lv.type==='quiz'?'rgba(245,196,0,.12)':'rgba(34,197,94,.1)';
+      const typeIcon  = lv.type==='game'?'🎮':lv.type==='quiz'?'✏️':'📖';
+      const isSelected = _saSelectedLevel && _saSelectedLevel.id === lv.id;
+      html += `<div onclick="selectSkillLevel('${sec.id}','${lv.id}')"
+        style="display:flex;align-items:center;gap:8px;padding:8px 10px;margin:3px 0;
+               background:${isSelected?'rgba(245,196,0,.18)':typeBg};
+               border:1px solid ${isSelected?'#F5C400':'rgba(255,255,255,.07)'};
+               border-radius:10px;cursor:pointer;transition:all .15s;">
+        <span style="font-size:14px;">${lv.icon}</span>
+        <span style="flex:1;color:${isSelected?'#F5C400':'rgba(255,255,255,.85)'};font-size:12px;font-weight:${isSelected?700:400};">${lv.title}</span>
+        <span style="font-size:10px;color:${typeColor};background:${typeBg};padding:2px 7px;border-radius:6px;font-weight:700;">${typeIcon} ${lv.type}</span>
+        <span style="font-size:10px;color:#555;">${lv.id}</span>
+        <span id="lvStatus-${lv.id}" style="font-size:11px;"></span>
+      </div>`;
+    });
+    html += '</div>';
   });
+  document.getElementById('skillsCourseMap').innerHTML = html;
+}
+
+function selectSkillLevel(secId, lvId) {
+  const course = SA_COURSE[_saCurrentTopic];
+  if (!course) return;
+  const sec = course.sections.find(s => s.id === secId);
+  if (!sec) return;
+  const lv = sec.levels.find(l => l.id === lvId);
+  if (!lv) return;
+
+  _saSelectedLevel = { ...lv, secId };
+
+  // Build prompt
+  const prompt = _buildPrompt(sec, lv);
+  document.getElementById('skillsPromptBox').textContent = prompt;
+  document.getElementById('promptLevelTitle').textContent = lv.icon + ' ' + lv.title;
+  document.getElementById('skillsPromptCard').style.display = 'block';
+
+  // Show content input card
+  document.getElementById('contentLevelTitle').textContent = lv.icon + ' ' + lv.title;
+  document.getElementById('skillsContentCard').style.display = 'block';
+
+  // Show correct input based on type
+  document.getElementById('contentArticleWrap').style.display = lv.type==='article' ? 'block' : 'none';
+  document.getElementById('contentQuizWrap').style.display    = lv.type==='quiz'    ? 'block' : 'none';
+  document.getElementById('contentGameWrap').style.display    = lv.type==='game'    ? 'block' : 'none';
+  document.getElementById('previewBtn').style.display         = lv.type==='article' ? 'inline-flex' : 'none';
+
+  const typeHint = document.getElementById('contentTypeHint');
+  if (lv.type === 'article') {
+    typeHint.style.cssText = 'margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22C55E;';
+    typeHint.textContent = '📖 Article — Gemini se HTML copy karo, yahan paste karo';
+  } else if (lv.type === 'quiz') {
+    typeHint.style.cssText = 'margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(245,196,0,.12);border:1px solid rgba(245,196,0,.3);color:#F5C400;';
+    typeHint.textContent = '✏️ Quiz — Gemini se JSON array copy karo, yahan paste karo';
+  } else {
+    typeHint.style.cssText = 'margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.3);color:#5B8DEF;';
+    typeHint.textContent = '🎮 Game — Code mein built-in hai';
+  }
+
+  // Clear previous status + inputs
+  document.getElementById('slStatus').textContent = '';
+  document.getElementById('slArticle').value = '';
+  if (document.getElementById('slQuizJson')) document.getElementById('slQuizJson').value = '';
+
+  // Pre-fill if Firebase data exists
+  if (_saFirebaseData) {
+    const fbSec = (_saFirebaseData.sections||[]).find(s=>s.id===secId);
+    const fbLv  = fbSec && fbSec.levels && fbSec.levels.find(l=>l.id===lvId);
+    if (fbLv) {
+      if (fbLv.articleContent) document.getElementById('slArticle').value = fbLv.articleContent;
+      if (fbLv.quizQuestions)  document.getElementById('slQuizJson').value = JSON.stringify(fbLv.quizQuestions, null, 2);
+    }
+  }
+
+  // Re-render map to highlight selected
+  renderCourseMap();
+
+  // Scroll to prompt
+  document.getElementById('skillsPromptCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function copySkillsPrompt() {
+  const txt = document.getElementById('skillsPromptBox').textContent;
+  navigator.clipboard.writeText(txt).then(() => showAdminToast('✅ Prompt copy ho gaya! Gemini mein paste karo.'));
+}
+
+function previewArticleContent() {
+  const html = document.getElementById('slArticle').value.trim();
+  if (!html) { showAdminToast('⚠️ Pehle content paste karo!'); return; }
+  document.getElementById('articlePreviewContent').innerHTML = html;
+  document.getElementById('articlePreviewModal').style.display = 'block';
+}
+
+function saveSingleLevel() {
+  if (!_saSelectedLevel) { showAdminToast('⚠️ Pehle koi level select karo!'); return; }
+  const lv  = _saSelectedLevel;
+  const st  = document.getElementById('slStatus');
+
+  get(ref(db, 'skills/' + _saCurrentTopic)).then(snap => {
+    let data = snap.val();
+    if (!data || !data.sections) { st.style.color='#ef4444'; st.textContent='❌ Firebase mein base structure nahi! Pehle Advanced se full JSON save karo.'; return; }
+
+    const sec = data.sections.find(s => s.id === lv.secId);
+    if (!sec) { st.style.color='#ef4444'; st.textContent='❌ Section "'+lv.secId+'" nahi mila!'; return; }
+
+    if (!sec.levels) sec.levels = [];
+    let existing = sec.levels.find(l => l.id === lv.id);
+    if (!existing) { existing = {id:lv.id, title:lv.title, type:lv.type, icon:lv.icon, unlocked:false}; sec.levels.push(existing); }
+
+    // Update content based on type
+    if (lv.type === 'article') {
+      const content = document.getElementById('slArticle').value.trim();
+      if (!content) { st.style.color='#ef4444'; st.textContent='❌ Article content khali hai!'; return; }
+      existing.articleContent = content;
+    } else if (lv.type === 'quiz') {
+      const qTxt = document.getElementById('slQuizJson').value.trim();
+      if (!qTxt) { st.style.color='#ef4444'; st.textContent='❌ Quiz JSON khali hai!'; return; }
+      try {
+        existing.quizQuestions = JSON.parse(qTxt);
+      } catch(e) { st.style.color='#ef4444'; st.textContent='❌ Invalid JSON: '+e.message; return; }
+    } else if (lv.type === 'game') {
+      existing.gameId = lv.id.replace(/[^a-z0-9]/gi,'_');
+    }
+
+    set(ref(db, 'skills/' + _saCurrentTopic), data).then(() => {
+      st.style.color = '#22C55E';
+      st.textContent = '✅ "' + lv.title + '" save ho gaya! App mein live hai.';
+      showAdminToast('💾 Level saved: ' + lv.title);
+      // Mark level as done in map
+      const badge = document.getElementById('lvStatus-' + lv.id);
+      if (badge) badge.textContent = '✅';
+      loadSkillsFromFirebaseAdmin();
+    }).catch(e => { st.style.color='#ef4444'; st.textContent='❌ '+e.message; });
+  }).catch(e => { st.style.color='#ef4444'; st.textContent='❌ Firebase read error: '+e.message; });
+}
+
+function setSkillsTopic(topic) {
+  _saCurrentTopic = topic;
+  _saSelectedLevel = null;
+  document.getElementById('skillsCurrentTopicLabel').textContent =
+    (topic==='electricity'?'⚡ ':'📚 ') + topic.charAt(0).toUpperCase()+topic.slice(1);
+  document.querySelectorAll('[id^="stBtn-"]').forEach(b => {
+    b.className = b.id==='stBtn-'+topic ? 'btn btn-green' : 'btn';
+    if (b.id !== 'stBtn-'+topic) b.style.cssText='font-size:12px;padding:7px 13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:10px;cursor:pointer;';
+    else b.style.cssText='font-size:12px;padding:7px 13px;';
+  });
+  document.getElementById('skillsPromptCard').style.display='none';
+  document.getElementById('skillsContentCard').style.display='none';
+  renderCourseMap();
   loadSkillsFromFirebaseAdmin();
 }
 
-function addNewSkillTopic(){
+function addNewSkillTopic() {
   const name = prompt('Naya topic name (e.g. "electronics"):');
-  if(!name || !name.trim()) return;
+  if (!name||!name.trim()) return;
   const id = name.trim().toLowerCase().replace(/\s+/g,'_');
   _saCurrentTopic = id;
-  showAdminToast('Topic "'+id+'" selected. JSON paste karo aur save karo.');
+  showAdminToast('Topic "'+id+'" selected. Advanced se JSON paste karke save karo.');
 }
 
-function copySkillsPrompt(){
-  const prompt = document.getElementById('skillsPromptBox').textContent;
-  navigator.clipboard.writeText(prompt).then(()=>showAdminToast('✅ Prompt copy ho gaya! Gemini mein paste karo.'));
+function toggleAdvanced() {
+  const el = document.getElementById('advancedSection');
+  const ic = document.getElementById('advToggleIcon');
+  const shown = el.style.display !== 'none';
+  el.style.display = shown ? 'none' : 'block';
+  ic.textContent = shown ? '▼ Show' : '▲ Hide';
 }
 
-function validateSkillsJson(){
+function validateSkillsJson() {
   const txt = document.getElementById('skillsJsonInput').value.trim();
-  const st = document.getElementById('skillsJsonStatus');
-  if(!txt){ st.style.color='#ef4444'; st.textContent='❌ JSON khali hai!'; return false; }
+  const st  = document.getElementById('skillsJsonStatus');
+  if (!txt) { st.style.color='#ef4444'; st.textContent='❌ JSON khali hai!'; return false; }
   try {
     const data = JSON.parse(txt);
-    if(!data.sections||!Array.isArray(data.sections)){ st.style.color='#ef4444'; st.textContent='❌ "sections" array nahi mila!'; return false; }
+    if (!data.sections||!Array.isArray(data.sections)) { st.style.color='#ef4444'; st.textContent='❌ "sections" array nahi mila!'; return false; }
     const lvCount = data.sections.reduce((a,s)=>a+(s.levels?s.levels.length:0),0);
     st.style.color='#22C55E';
-    st.textContent=`✅ Valid JSON! ${data.sections.length} sections, ${lvCount} levels found.`;
+    st.textContent=`✅ Valid! ${data.sections.length} sections, ${lvCount} levels.`;
     return true;
-  } catch(e){
-    st.style.color='#ef4444'; st.textContent='❌ Invalid JSON: '+e.message; return false;
-  }
+  } catch(e) { st.style.color='#ef4444'; st.textContent='❌ Invalid JSON: '+e.message; return false; }
 }
 
-function saveSkillsToFirebase(){
-  if(!validateSkillsJson()) return;
-  const txt = document.getElementById('skillsJsonInput').value.trim();
-  const data = JSON.parse(txt);
-  const st = document.getElementById('skillsJsonStatus');
-  const dbRef = ref(db, 'skills/'+_saCurrentTopic);
-  set(dbRef, data).then(()=>{
-    st.style.color='#22C55E';
-    st.textContent='✅ Firebase pe save ho gaya! App mein live hai.';
-    showAdminToast('⚡ Skills data saved to Firebase!');
+function saveSkillsToFirebase() {
+  if (!validateSkillsJson()) return;
+  const data = JSON.parse(document.getElementById('skillsJsonInput').value.trim());
+  const st   = document.getElementById('skillsJsonStatus');
+  set(ref(db, 'skills/'+_saCurrentTopic), data).then(()=>{
+    st.style.color='#22C55E'; st.textContent='✅ Firebase pe save ho gaya!';
+    showAdminToast('⚡ Skills data saved!');
     loadSkillsFromFirebaseAdmin();
-  }).catch(e=>{
-    st.style.color='#ef4444'; st.textContent='❌ Save error: '+e.message;
-  });
+  }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ '+e.message; });
 }
 
-function loadSkillsFromFirebaseAdmin(){
+function loadSkillsFromFirebaseAdmin() {
   const preview = document.getElementById('skillsPreview');
-  preview.textContent = '⏳ Loading...';
   get(ref(db, 'skills/'+_saCurrentTopic)).then(snap=>{
     const data = snap.val();
-    if(!data){ preview.innerHTML='<span style="color:#888;">Firebase mein abhi koi data nahi. JSON paste karke save karo.</span>'; return; }
-    // Show summary
-    const lvCount = (data.sections||[]).reduce((a,s)=>a+(s.levels?s.levels.length:0),0);
-    let html = `<div style="color:#22C55E;font-weight:700;margin-bottom:12px;">✅ Firebase Data Loaded — ${(data.sections||[]).length} Sections, ${lvCount} Levels</div>`;
-    (data.sections||[]).forEach((sec,si)=>{
-      html += `<div style="margin-bottom:8px;"><div style="color:#F5C400;font-weight:700;font-size:12px;">${sec.eyebrow||'Section '+(si+1)}: ${sec.title}</div>`;
+    _saFirebaseData = data;
+    if (!data) {
+      if(preview) preview.innerHTML='<span style="color:#888;">Firebase mein abhi data nahi.</span>';
+      return;
+    }
+    // Update ✅ badges on map
+    (data.sections||[]).forEach(sec=>{
       (sec.levels||[]).forEach(lv=>{
-        const typeIcon = lv.type==='game'?'🎮':'📖';
-        html += `<div style="padding:4px 8px;margin:2px 0;background:rgba(255,255,255,.04);border-radius:6px;font-size:11px;display:flex;align-items:center;gap:6px;">
-          <span>${lv.icon||'•'}</span><span style="color:#dde;flex:1;">${lv.title}</span>
-          <span style="color:#888;">${typeIcon} ${lv.type}</span>
-          <span style="color:#888;font-size:10px;">${lv.id}</span>
-          <button onclick="deleteSkillLevel('${sec.id}','${lv.id}')" style="background:rgba(255,75,75,.15);border:1px solid rgba(255,75,75,.3);border-radius:6px;padding:2px 7px;color:#ff6b6b;font-size:10px;cursor:pointer;">🗑️</button>
-        </div>`;
+        const badge = document.getElementById('lvStatus-'+lv.id);
+        if (!badge) return;
+        const hasContent = lv.articleContent || lv.quizQuestions || lv.gameId;
+        badge.textContent = hasContent ? '✅' : '';
       });
-      html += '</div>';
     });
-    // Also populate JSON input
-    document.getElementById('skillsJsonInput').value = JSON.stringify(data, null, 2);
-    preview.innerHTML = html;
-  }).catch(e=>{ preview.innerHTML='<span style="color:#ef4444;">Error: '+e.message+'</span>'; });
-}
-
-function saveSingleLevel(){
-  const secId = document.getElementById('slSecId').value.trim();
-  const lvId = document.getElementById('slLvId').value.trim();
-  const title = document.getElementById('slTitle').value.trim();
-  const type = document.getElementById('slType').value;
-  const icon = document.getElementById('slIcon').value.trim()||'⚡';
-  const img = document.getElementById('slImg').value.trim();
-  const article = document.getElementById('slArticle').value.trim();
-  const st = document.getElementById('slStatus');
-
-  if(!secId||!lvId||!title){ st.style.color='#ef4444'; st.textContent='❌ Section ID, Level ID aur Title zaroori hain!'; return; }
-
-  // Load current data first, then update
-  get(ref(db,'skills/'+_saCurrentTopic)).then(snap=>{
-    let data = snap.val();
-    if(!data||!data.sections){ st.style.color='#ef4444'; st.textContent='❌ Pehle full JSON save karo!'; return; }
-    const sec = data.sections.find(s=>s.id===secId);
-    if(!sec){ st.style.color='#ef4444'; st.textContent='❌ Section "'+secId+'" nahi mila!'; return; }
-    let lv = sec.levels&&sec.levels.find(l=>l.id===lvId);
-    const lvData = {id:lvId,title,type,icon,unlocked:false};
-    if(img) lvData.img=img;
-    if(type==='article'&&article) lvData.articleContent=article;
-    if(type==='game') lvData.gameId=lvId.replace(/[^a-z0-9]/g,'_');
-    if(lv){ Object.assign(lv,lvData); }
-    else { if(!sec.levels) sec.levels=[]; sec.levels.push(lvData); }
-    set(ref(db,'skills/'+_saCurrentTopic),data).then(()=>{
-      st.style.color='#22C55E'; st.textContent='✅ Level save ho gaya!';
-      showAdminToast('Level "'+title+'" saved!');
-      loadSkillsFromFirebaseAdmin();
-    }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ '+e.message; });
-  });
+    // Update JSON textarea
+    const ta = document.getElementById('skillsJsonInput');
+    if (ta) ta.value = JSON.stringify(data, null, 2);
+    if (preview) {
+      const lvCount = (data.sections||[]).reduce((a,s)=>a+(s.levels?s.levels.length:0),0);
+      const doneCount = (data.sections||[]).reduce((a,s)=>a+(s.levels||[]).filter(l=>l.articleContent||l.quizQuestions||l.gameId).length,0);
+      preview.innerHTML = `<div style="color:#22C55E;font-weight:700;">✅ Firebase: ${(data.sections||[]).length} sections, ${lvCount} levels — ${doneCount} content added</div>`;
+    }
+  }).catch(e=>{ if(preview) preview.innerHTML='<span style="color:#ef4444;">Error: '+e.message+'</span>'; });
 }
 
 function deleteSkillLevel(secId,lvId){
   if(!confirm('Is level ko delete karo?')) return;
   get(ref(db,'skills/'+_saCurrentTopic)).then(snap=>{
-    let data = snap.val();
-    if(!data) return;
-    const sec = data.sections&&data.sections.find(s=>s.id===secId);
+    let data=snap.val(); if(!data) return;
+    const sec=data.sections&&data.sections.find(s=>s.id===secId);
     if(!sec||!sec.levels) return;
-    sec.levels = sec.levels.filter(l=>l.id!==lvId);
+    sec.levels=sec.levels.filter(l=>l.id!==lvId);
     set(ref(db,'skills/'+_saCurrentTopic),data).then(()=>{
-      showAdminToast('🗑️ Level deleted!');
-      loadSkillsFromFirebaseAdmin();
+      showAdminToast('🗑️ Level deleted!'); loadSkillsFromFirebaseAdmin();
     });
   });
 }
@@ -13930,6 +14198,7 @@ function showAdminToast(msg){
   if(typeof showToast==='function') showToast(msg);
   else console.log(msg);
 }
+
 
 </script>
 
