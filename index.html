@@ -807,8 +807,8 @@ body { padding-top: 48px; }
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SpeakUp">
 <meta name="description" content="SpeakUp — Game-style language learning app">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F0E17'/><text y='.9em' font-size='80'>🦉</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F0E17'/><text y='.9em' font-size='80'>🦉</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F0E17'/><text y='.9em' font-size='80'>🐰</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F0E17'/><text y='.9em' font-size='80'>🐰</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
@@ -2795,7 +2795,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 <!-- ══ SIMPLE TOP BAR ══ -->
 <div id="simpleTopBar">
   <div class="stb-brand">
-    <div class="stb-logo">🦉</div>
+    <div class="stb-logo">🐰</div>
     <div class="stb-name">SpeakUp</div>
   </div>
   <div class="stb-right" id="notifBellWrap" style="display:none;">
@@ -2829,7 +2829,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 <div class="screen" id="guestPromptScreen">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;min-height:100vh;padding:32px 24px;background:var(--bg,#0F0E17);text-align:center;">
     <!-- Owl icon -->
-    <div style="font-size:72px;margin-bottom:16px;animation:bounceBig 2.5s ease infinite;">🦉</div>
+    <div style="font-size:72px;margin-bottom:16px;animation:bounceBig 2.5s ease infinite;">🐰</div>
     <!-- Title -->
     <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:var(--p);margin-bottom:8px;">You're a Guest!</div>
     <div style="font-size:14px;color:var(--mut);margin-bottom:32px;line-height:1.6;max-width:280px;">
@@ -2920,7 +2920,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
   <div class="auth-header" style="position:relative;">
     <!-- Skip button top-right -->
     <button class="auth-skip-top" onclick="skipAuth()" style="top: 14px; right: 14px; position: fixed; overflow: hidden;">Skip →</button>
-    <div class="auth-logo">🦉</div>
+    <div class="auth-logo">🐰</div>
     <div class="auth-title">SpeakUp</div>
     <div class="auth-sub">Create your account or login</div>
   </div>
@@ -3045,7 +3045,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 <div class="screen" id="profileSelect" style="">
   <div class="ps-header" style="position:relative;">
     <button onclick="showScreen('dashboard');renderDash();" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;">← Back</button>
-    <div class="ps-owl">🦉</div>
+    <div class="ps-owl">🐰</div>
     <div class="ps-title">SpeakUp</div>
     <div class="ps-sub">Who wants to learn today? 👇</div>
   </div>
@@ -3078,7 +3078,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 <div class="modal-overlay" id="addProfileModal" style="display: none;">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">Naya Profile 🦉</div>
+    <div class="modal-title">Naya Profile 🐰</div>
     <div class="modal-sub">Apna naam aur avatar chuno</div>
     <div class="avatar-grid" id="avatarGrid">
     <div class="avatar-opt av-sel" onclick="pickAvatar('😊',this)">😊</div>
@@ -3125,7 +3125,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 
 <!-- ▼ INCLUDE: screens/04-splash.html ▼ -->
 <!-- ═══ Splash Screen ═══ -->
-<div class="screen" id="splash" style="">
+<div class="screen active" id="splash" style="">
   <!-- Animated background particles -->
   <div id="splashParticles" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
   <!-- Floating language orbs ring -->
@@ -3270,13 +3270,21 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
         <span class="splash-orb-lbl" style="color:#5B9BD588;">Ger</span>
       </div>
     </div>
-  <div class="sl" style="z-index:2;position:relative;">🦉</div>
+  <div class="sl" style="z-index:2;position:relative;">🐰</div>
   <div class="st" style="z-index:2;position:relative;">SpeakUp</div>
   <div class="sg" id="splashTagline" style="z-index:2;position:relative;">
     <span id="splashLine1" style="display: block; transition: opacity 0.5s; opacity: 1;">French — Learn the Language of Paris</span>
     <span id="splashFlags" style="display: block; font-size: 13px; letter-spacing: 1px; margin-top: 8px; color: var(--g); font-weight: 800; text-transform: uppercase; opacity: 1;">300 Million Speakers Worldwide</span>
   </div>
   <div class="sb" style="z-index:2;position:relative;"><div class="sf"></div></div>
+  <!-- Success Quote Box -->
+  <div id="splashQuoteBox" style="position:absolute;bottom:48px;left:0;right:0;display:flex;justify-content:center;align-items:center;z-index:3;padding:0 24px;">
+    <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:14px 20px;max-width:340px;text-align:center;backdrop-filter:blur(10px);">
+      <div style="font-size:18px;margin-bottom:6px;">🐰</div>
+      <div id="splashQuoteText" style="font-family:'Fredoka One',sans-serif;font-size:13px;color:#2EE59D;line-height:1.6;transition:opacity 0.5s;opacity:1;letter-spacing:0.2px;"></div>
+      <div id="splashQuoteAuthor" style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:5px;transition:opacity 0.5s;opacity:1;font-style:italic;"></div>
+    </div>
+  </div>
 </div>
 
 <!-- WELCOME -->
@@ -3410,7 +3418,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 <div class="screen" id="langSelect" style="">
   <div class="lang-header" style="padding:44px 20px 24px;position:relative;">
     <button onclick="showScreen('dashboard');renderDash();" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;color:var(--mut);font-family:'Fredoka One',sans-serif;font-size:13px;cursor:pointer;">← Back</button>
-    <div class="lang-owl" style="font-size:44px;margin-bottom:6px;">🦉</div>
+    <div class="lang-owl" style="font-size:44px;margin-bottom:6px;">🐰</div>
     <div class="lang-title" style="font-size:22px;margin-bottom:3px;">What to Learn? 📚</div>
     <div class="lang-sub">Apni category chuno — language, chess, ya kuch aur!</div>
   </div>
@@ -3937,7 +3945,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       </div><div class="owl-pos" style="margin:10px 0;">
         <div class="owl-pos-inner">
           <div class="owl-bubble" style="font-size:13px;padding:8px 18px;border-radius:22px;">📍 Tum yahaan ho!</div>
-          <div style="font-size:36px;filter:drop-shadow(0 6px 14px rgba(255,154,60,.6));animation:owlFloat 2s ease infinite;margin-top:2px;">🦉</div>
+          <div style="font-size:36px;filter:drop-shadow(0 6px 14px rgba(255,154,60,.6));animation:owlFloat 2s ease infinite;margin-top:2px;">🐰</div>
         </div>
       </div><div class="path-row" style="justify-content:flex-start;">
       <div class="pnode pnode-entrance today anim-done" onclick="goLesson()" style="width: 58px; height: 58px; margin: 0px 24px; background: linear-gradient(135deg, rgb(255, 154, 60), rgb(255, 209, 102)); border: 3px solid rgba(255, 255, 255, 0.9); box-shadow: rgb(212, 112, 10) 0px 5px 0px, rgba(255, 154, 60, 0.5) 0px 0px 22px, rgba(255, 154, 60, 0.2) 0px 0px 0px 8px; animation-delay: 0.2s; cursor: pointer; opacity: 1; transform: scale(1) rotate(0deg);">
@@ -4737,7 +4745,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
       <div class="cdn">successfully completed</div>
       <div class="cco" id="cCo">90 Day English Journey</div>
       <div class="cln"></div>
-      <div style="font-size:36px">🦉</div>
+      <div style="font-size:36px">🐰</div>
       <div style="font-family:'Fredoka One',sans-serif;font-size:22px;color:var(--g)">SpeakUp</div>
       <div class="cdt" id="cDt">April 2026</div>
       <div style="margin-top:12px;display:flex;justify-content:center;gap:6px;font-size:20px;">🎉🏆🎓✨🌟</div>
@@ -5385,7 +5393,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 
       <!-- Right navy branding -->
       <div class="cert-right-brand">
-        <div class="cert-brand-owl">🦉</div>
+        <div class="cert-brand-owl">🐰</div>
         <div class="cert-brand-name">SpeakUp</div>
         <div class="cert-brand-divider"></div>
       </div>
@@ -6592,7 +6600,7 @@ function openProUpgradeScreen(dayNum) {
 
 <!-- ▼ INCLUDE: screens/15-settings.html ▼ -->
 <!-- ═══ Settings Screen ═══ -->
-<div class="screen pb80 active" id="settings" style="">
+<div class="screen pb80" id="settings" style="">
   <div style="background:linear-gradient(160deg,#1a0a2e,#131F24);padding:50px 20px 28px;text-align:center;">
     <div style="font-size:44px;margin-bottom:8px">⚙️</div>
     <div style="font-family:'Fredoka One',sans-serif;font-size:24px;margin-bottom:4px">Settings</div>
@@ -11440,7 +11448,7 @@ function renderPythonPath(lang, cs, LEVELS, pl){
         html += `<div class="owl-pos" style="margin:10px 0;">
           <div class="owl-pos-inner">
             <div class="owl-bubble" style="font-size:13px;padding:8px 18px;border-radius:22px;">📍 Tum yahaan ho!</div>
-            <div style="font-size:36px;filter:drop-shadow(0 6px 14px rgba(255,154,60,.6));animation:owlFloat 2s ease infinite;margin-top:2px;">🦉</div>
+            <div style="font-size:36px;filter:drop-shadow(0 6px 14px rgba(255,154,60,.6));animation:owlFloat 2s ease infinite;margin-top:2px;">🐰</div>
           </div>
         </div>`;
       }
@@ -17123,7 +17131,7 @@ function renderPath(totalDays, cs){
       html+=`<div class="owl-pos" style="margin:10px 0;">
         <div class="owl-pos-inner">
           <div class="owl-bubble" style="font-size:13px;padding:8px 18px;border-radius:22px;">📍 Tum yahaan ho!</div>
-          <div style="font-size:36px;filter:drop-shadow(0 6px 14px rgba(255,154,60,.6));animation:owlFloat 2s ease infinite;margin-top:2px;">🦉</div>
+          <div style="font-size:36px;filter:drop-shadow(0 6px 14px rgba(255,154,60,.6));animation:owlFloat 2s ease infinite;margin-top:2px;">🐰</div>
         </div>
       </div>`;
     }
@@ -19877,9 +19885,47 @@ window.addEventListener('load',()=>{
   }
   const tagTimer=setInterval(cycleTagline,1800);
 
+  // ── SUCCESS QUOTES cycling on splash screen ──
+  const _successQuotes = [
+    { q: 'Ek naya safar shuru karo — kamiyabi ka raasta yahan se guzarta hai!', a: '🌟 SpeakUp' },
+    { q: 'Har din ek naya lafz seekhna, ek naya darwaza kholta hai.', a: '📖 Knowledge' },
+    { q: 'Mehnat kabhi zaya nahi hoti — nateeja zaroor milta hai.', a: '💪 Persistence' },
+    { q: 'Nayi zubaan seekhna ek naya dil paana hai.', a: '❤️ Frank Smith' },
+    { q: 'Chote chote qadam hi bade safar ka aghaz hote hain.', a: '🐰 SpeakUp Rabbit' },
+    { q: 'Tumhara kal ka effort, aaj ka fark banayega.', a: '🔥 Keep Going' },
+    { q: 'Seekhne ka koi waqt aur umar nahi hoti.', a: '🎓 Success' },
+    { q: 'Consistency hi kamiyabi ki chaabi hai — roz seekhte raho!', a: '🗝️ SpeakUp' },
+    { q: 'The limits of my language are the limits of my world.', a: '✨ Wittgenstein' },
+    { q: 'Himmat karo, shuru karo — baaki sab khud ho jaata hai.', a: '🚀 SpeakUp' },
+    { q: 'Ek zubaan ki roshni, poori duniya roshan kar sakti hai.', a: '🌍 Language Power' },
+    { q: 'Mushkilaat teri tarbiyat hain — haar mat maano!', a: '💎 Resilience' },
+  ];
+  let _qi = Math.floor(Math.random() * _successQuotes.length);
+  const _qt = document.getElementById('splashQuoteText');
+  const _qa = document.getElementById('splashQuoteAuthor');
+  function _setQuote(idx){
+    if(!_qt||!_qa) return;
+    _qt.style.opacity='0'; _qa.style.opacity='0';
+    setTimeout(()=>{
+      _qt.textContent = _successQuotes[idx].q;
+      _qa.textContent = '— ' + _successQuotes[idx].a;
+      _qt.style.opacity='1'; _qa.style.opacity='1';
+    }, 400);
+  }
+  // Show first quote immediately
+  if(_qt&&_qa){
+    _qt.textContent = _successQuotes[_qi].q;
+    _qa.textContent = '— ' + _successQuotes[_qi].a;
+  }
+  const _quoteTimer = setInterval(()=>{
+    _qi = (_qi+1) % _successQuotes.length;
+    _setQuote(_qi);
+  }, 2200);
+
   setTimeout(()=>{
     clearInterval(tagTimer);
     clearInterval(partTimer);
+    clearInterval(_quoteTimer);
     const loggedIn=getLoggedInUser();
     // If already logged in, skip auth
     if(loggedIn){
@@ -22023,8 +22069,8 @@ if(!navigator.onLine){
     start_url:location.href,display:"standalone",
     background_color:"#0F0E17",theme_color:"#2EE59D",orientation:"portrait",
     icons:[
-      {src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='%230F0E17'/><text y='.9em' font-size='160'>🦉</text></svg>",sizes:"192x192",type:"image/svg+xml"},
-      {src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%230F0E17'/><text y='.9em' font-size='430'>🦉</text></svg>",sizes:"512x512",type:"image/svg+xml"}
+      {src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='%230F0E17'/><text y='.9em' font-size='160'>🐰</text></svg>",sizes:"192x192",type:"image/svg+xml"},
+      {src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%230F0E17'/><text y='.9em' font-size='430'>🐰</text></svg>",sizes:"512x512",type:"image/svg+xml"}
     ]
   };
   const blob = new Blob([JSON.stringify(m)],{type:'application/json'});
@@ -22516,7 +22562,7 @@ setInterval(lbUpdateTimer, 60000);
 
 // ── Invite friends ──
 function lbShareInvite(){
-  const txt = '🦉 SpeakUp pe mujhse compete karo! Daily ek language lesson karo aur leaderboard pe race karo. 🔥\nhttps://speakup.app';
+  const txt = '🐰 SpeakUp pe mujhse compete karo! Daily ek language lesson karo aur leaderboard pe race karo. 🔥\nhttps://speakup.app';
   if(navigator.share){
     navigator.share({title:'SpeakUp League Challenge!', text:txt}).catch(()=>{});
   } else {
@@ -22928,7 +22974,7 @@ function _buildCertShareText(){
     (date ? '📅 ' + date + '\n' : '') +
     '\n' +
     '━━━━━━━━━━━━━━━━━━━━\n' +
-    '🦉 SpeakUp — Daily Seekho, Daily Badho!\n' +
+    '🐰 SpeakUp — Daily Seekho, Daily Badho!\n' +
     '\n' +
     '📚 Aik hi jagah par multiple languages seekho — English, Arabic, French, Spanish, Chinese aur bahut kuch!\n' +
     '\n' +
@@ -23061,7 +23107,7 @@ Firebase Realtime Database Rules (add to existing):
       <div style="position:absolute;top:60%;left:2%;font-size:22px;animation:obFloat 3.3s ease infinite 1s;">🇯🇵</div>
 
       <!-- Owl mascot -->
-      <div style="font-size:90px;margin-bottom:8px;filter:drop-shadow(0 0 30px rgba(46,229,157,.5));animation:obOwlBounce 2.5s ease infinite;">🦉</div>
+      <div style="font-size:90px;margin-bottom:8px;filter:drop-shadow(0 0 30px rgba(46,229,157,.5));animation:obOwlBounce 2.5s ease infinite;">🐰</div>
       <div style="font-family:'Fredoka One',sans-serif;font-size:38px;background:linear-gradient(135deg,#2EE59D,#5B8DEF,#CE82FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;line-height:1.1;">SpeakUp!</div>
       <div style="font-family:'Fredoka One',sans-serif;font-size:17px;color:rgba(255,255,255,.7);margin-bottom:6px;">Learn Languages, Skills & Ace Your Exams</div>
       <div style="font-size:13px;color:rgba(255,255,255,.35);margin-bottom:36px;">11 Languages • Board Papers • Chess • Skills — All in One App</div>
@@ -25939,7 +25985,7 @@ function closeGoalModal() {
     // ── Top-left: SpeakUp brand ──
     ctx.font = 'bold 22px Nunito, sans-serif';
     ctx.fillStyle = data.color;
-    ctx.fillText('🦉 SpeakUp', 44, 54);
+    ctx.fillText('🐰 SpeakUp', 44, 54);
 
     // ── Top-right: language flag + name ──
     ctx.font = 'bold 18px Nunito, sans-serif';
@@ -26124,7 +26170,7 @@ function closeGoalModal() {
     canvas.toBlob(function(blob){
       if(!blob) return;
       var data = getUserCardData();
-      var shareText = '🦉 Main SpeakUp pe language seekh raha/rahi hoon!\n'
+      var shareText = '🐰 Main SpeakUp pe language seekh raha/rahi hoon!\n'
         + '🔥 ' + data.streak + ' din ki streak\n'
         + '⭐ ' + data.xp + ' XP\n'
         + '✅ ' + data.daysCompleted + ' lessons complete\n'
@@ -26133,7 +26179,7 @@ function closeGoalModal() {
 
       if(navigator.share && navigator.canShare){
         var file = new File([blob], 'speakup-progress.png', {type:'image/png'});
-        var shareData = {title:'Meri SpeakUp Progress! 🦉', text: shareText, files:[file]};
+        var shareData = {title:'Meri SpeakUp Progress! 🐰', text: shareText, files:[file]};
         if(navigator.canShare(shareData)){
           navigator.share(shareData)
             .then(function(){ if(typeof showToast==='function') showToast('✅ Share ho gaya!','var(--g)'); })
@@ -26141,7 +26187,7 @@ function closeGoalModal() {
           return;
         }
         // Fallback: share without file
-        navigator.share({title:'Meri SpeakUp Progress! 🦉', text: shareText, url:'https://speakup.app'})
+        navigator.share({title:'Meri SpeakUp Progress! 🐰', text: shareText, url:'https://speakup.app'})
           .then(function(){ if(typeof showToast==='function') showToast('✅ Share ho gaya!','var(--g)'); })
           .catch(function(){});
       } else {
@@ -26167,7 +26213,7 @@ function closeGoalModal() {
   // ── Copy share text ──
   window.doCopyShareText = function(){
     var data = getUserCardData();
-    var text = '🦉 Main SpeakUp pe language seekh raha/rahi hoon!\n'
+    var text = '🐰 Main SpeakUp pe language seekh raha/rahi hoon!\n'
       + '🔥 ' + data.streak + ' din ki streak\n'
       + '⭐ ' + data.xp + ' XP\n'
       + '✅ ' + data.daysCompleted + ' lessons complete\n'
