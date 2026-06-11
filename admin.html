@@ -1486,22 +1486,7 @@ ZAROORI RULES:
     </div>
   </div>
 
-  <!-- ── Full JSON (Advanced) — Only for initial setup or bulk update ── -->
-  <div class="card" style="border-color:rgba(255,255,255,.08);opacity:.7;">
-    <div class="card-title" onclick="toggleAdvanced()" style="cursor:pointer;user-select:none;font-size:13px;color:var(--mut);">
-      ⚙️ Advanced — Full JSON <span style="font-size:11px;color:var(--mut);font-weight:400;">(zaroorat nahi normally)</span> <span id="advToggleIcon" style="float:right;color:#888;">▼ Show</span>
-    </div>
-    <div id="advancedSection" style="display:none;margin-top:10px;">
-      <div class="card-sub">⚠️ Yeh sirf ek baar initial setup ke liye tha. Ab system auto-initialize karta hai — normal workflow mein yeh use karna zaroori nahi.</div>
-      <textarea id="skillsJsonInput" placeholder='{"title":"Electricity","icon":"⚡","sections":[...]}' style="width:100%;min-height:160px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:12px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:10px 0;"></textarea>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button onclick="validateSkillsJson()" class="btn" style="background:rgba(91,141,239,.2);border:1px solid rgba(91,141,239,.4);color:#5B8DEF;border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;">🔍 Validate</button>
-        <button onclick="saveSkillsToFirebase()" class="btn btn-green">💾 Firebase Pe Save</button>
-        <button onclick="loadSkillsFromFirebaseAdmin()" class="btn" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;">🔄 Load</button>
-      </div>
-      <div id="skillsJsonStatus" style="margin-top:10px;font-size:12px;font-weight:600;"></div>
-    </div>
-  </div>
+
 
 </div>
 
@@ -14037,6 +14022,39 @@ Now generate for: "${lv.title}"`;
   }
 
   if(mcqGames.includes(gid)){
+    // Special prompt for Real Scenario fault games
+    const isFaultGame = ['l6_10','l6_11','house_fault','industrial_fault'].includes(gid);
+    if(isFaultGame){
+      return `You are a game data generator for SpeakUp — a Pakistani electrician learning app.
+Generate a Real Scenario Fault Finding MCQ game for: "${lv.title}"
+
+SECTION: ${sectionContext}
+GAME ID: ${gid}
+
+Return ONLY valid JSON — no markdown, no backticks, no explanation:
+{
+  "scenario": "Ek ghar/factory mein kya masla aa gaya — realistic 2-3 line description Roman Urdu mein",
+  "questions": [
+    {
+      "q": "Sawaal Roman Urdu mein — kya galat hai / kya karna chahiye?",
+      "options": ["Option A","Option B","Option C","Option D"],
+      "correct": 0,
+      "explain": "Sahi jawab A hai kyunki... (technical explanation)"
+    }
+  ],
+  "successMsg": "Masla solve ho gaya! +75 XP ⭐"
+}
+
+RULES:
+- 1 realistic scenario (ghar ya industrial — level ke hisaab se)
+- 5-8 fault-finding questions us scenario ke baare mein
+- Pakistan context: WAPDA, local brands, 220V, Karachi/Lahore setting
+- Roman Urdu + English technical terms
+- correct: 0-3 index
+- Questions: fault identify karo, kya check karein, kya replace karein, safety steps
+
+Now generate for: "${lv.title}"`;
+    }
     return `You are a game data generator for SpeakUp — a Pakistani electrician learning app.
 Generate a Scenario MCQ game for this level:
 
@@ -14489,6 +14507,8 @@ function loadSkillsFromFirebaseAdmin() {
     _saFirebaseData = data;
     if (!data) {
       if(preview) preview.innerHTML='<span style="color:#888;">Firebase mein abhi data nahi.</span>';
+      _saFirebaseData = null;
+      renderSkillsSavedList(); // ← Loading... clear karo
       return;
     }
     // Update ✅ badges on map
