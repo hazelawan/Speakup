@@ -14254,38 +14254,31 @@ function saInitFirebase(){
   const topic = document.getElementById('sa_topic').value || 'electricity';
   const course = SA_COURSE[topic];
   if(!course){ st.style.color='#ef4444'; st.textContent='❌ SA_COURSE nahi mila'; return; }
-  st.style.color='#F5C400'; st.textContent='⏳ Firebase pe bhej raha hai...';
+  st.style.color='#F5C400'; st.textContent='⏳ Sirf structure bana raha hai...';
 
-  // Deep clone — content fields hata do, sirf structure rakho
-  const data = JSON.parse(JSON.stringify(course));
-  // Preserve existing content if any
-  get(ref(db,'skills/'+topic)).then(snap=>{
-    const existing = snap.val();
-    if(existing && existing.sections){
-      // Merge — existing content preserve karo
-      data.sections.forEach(sec=>{
-        const exSec = existing.sections.find(s=>s.id===sec.id);
-        if(exSec && exSec.levels && sec.levels){
-          sec.levels.forEach(lv=>{
-            const exLv = exSec.levels.find(l=>l.id===lv.id);
-            if(exLv){
-              if(exLv.articleContent)   lv.articleContent   = exLv.articleContent;
-              if(exLv.articleBilingual) lv.articleBilingual = exLv.articleBilingual;
-              if(exLv.quizQuestions)    lv.quizQuestions    = exLv.quizQuestions;
-              if(exLv.gameData)         lv.gameData         = exLv.gameData;
-              if(exLv.hint)             lv.hint             = exLv.hint;
-            }
-          });
-        }
-      });
-    }
-    set(ref(db,'skills/'+topic), data).then(()=>{
-      st.style.color='#22C55E';
-      st.textContent='✅ Structure Firebase pe save ho gaya! Ab content add kar sakte ho.';
-      showAdminToast('🚀 Firebase initialized!');
-      saLoadFirebase();
-    }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Error: '+e.message; });
-  }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Read error: '+e.message; });
+  // LIGHTWEIGHT: sirf skeleton — koi content nahi, sirf id/title/type/icon
+  const skeleton = {
+    title: course.title,
+    icon: course.icon,
+    sections: course.sections.map(sec=>({
+      id: sec.id,
+      eyebrow: sec.eyebrow,
+      title: sec.title,
+      levels: (sec.levels||[]).map(lv=>({
+        id: lv.id,
+        title: lv.title,
+        type: lv.type,
+        icon: lv.icon || (lv.type==='game'?'🎮':lv.type==='quiz'?'✏️':'📖')
+      }))
+    }))
+  };
+
+  set(ref(db,'skills/'+topic), skeleton).then(()=>{
+    st.style.color='#22C55E';
+    st.textContent='✅ Structure save ho gaya! Ab content add kar sakte ho.';
+    showAdminToast('🚀 Firebase ready!');
+    saLoadFirebase();
+  }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Error: '+e.message; });
 }
 
 function saLoadFirebase(){
