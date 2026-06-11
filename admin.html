@@ -1369,6 +1369,16 @@ ZAROORI RULES:
 ════════════════════════════ -->
 <div class="page" id="page-skills-admin">
 
+  <!-- ── Init Card ── -->
+  <div class="card" style="border:1.5px solid rgba(245,196,0,.3);background:rgba(245,196,0,.05);">
+    <div class="card-title" style="color:#F5C400;">🔧 Firebase Setup</div>
+    <div class="card-sub">Pehli baar ya reset ke liye — SA_COURSE ka pura structure Firebase pe bhejo</div>
+    <button onclick="saInitFirebase()" class="btn" style="width:100%;background:linear-gradient(135deg,#F5C400,#ff9500);color:#000;font-weight:800;border:none;border-radius:12px;padding:12px;font-size:14px;margin-top:8px;cursor:pointer;">
+      🚀 Firebase Structure Initialize Karo
+    </button>
+    <div id="sa_initStatus" style="margin-top:8px;font-size:12px;font-weight:600;text-align:center;"></div>
+  </div>
+
   <!-- ── Step 1: Select ── -->
   <div class="card">
     <div class="card-title">⚡ Skills Admin — Content Add Karo</div>
@@ -14237,6 +14247,45 @@ function saSaveLevel(){
       renderSkillsSavedList();
     }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Save error: '+e.message; });
   }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Firebase read error: '+e.message; });
+}
+
+function saInitFirebase(){
+  const st = document.getElementById('sa_initStatus');
+  const topic = document.getElementById('sa_topic').value || 'electricity';
+  const course = SA_COURSE[topic];
+  if(!course){ st.style.color='#ef4444'; st.textContent='❌ SA_COURSE nahi mila'; return; }
+  st.style.color='#F5C400'; st.textContent='⏳ Firebase pe bhej raha hai...';
+
+  // Deep clone — content fields hata do, sirf structure rakho
+  const data = JSON.parse(JSON.stringify(course));
+  // Preserve existing content if any
+  get(ref(db,'skills/'+topic)).then(snap=>{
+    const existing = snap.val();
+    if(existing && existing.sections){
+      // Merge — existing content preserve karo
+      data.sections.forEach(sec=>{
+        const exSec = existing.sections.find(s=>s.id===sec.id);
+        if(exSec && exSec.levels && sec.levels){
+          sec.levels.forEach(lv=>{
+            const exLv = exSec.levels.find(l=>l.id===lv.id);
+            if(exLv){
+              if(exLv.articleContent)   lv.articleContent   = exLv.articleContent;
+              if(exLv.articleBilingual) lv.articleBilingual = exLv.articleBilingual;
+              if(exLv.quizQuestions)    lv.quizQuestions    = exLv.quizQuestions;
+              if(exLv.gameData)         lv.gameData         = exLv.gameData;
+              if(exLv.hint)             lv.hint             = exLv.hint;
+            }
+          });
+        }
+      });
+    }
+    set(ref(db,'skills/'+topic), data).then(()=>{
+      st.style.color='#22C55E';
+      st.textContent='✅ Structure Firebase pe save ho gaya! Ab content add kar sakte ho.';
+      showAdminToast('🚀 Firebase initialized!');
+      saLoadFirebase();
+    }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Error: '+e.message; });
+  }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Read error: '+e.message; });
 }
 
 function saLoadFirebase(){
