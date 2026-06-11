@@ -14046,7 +14046,11 @@ Generate now for: "${lv.title}"`;
 
 function loadSkillsAdmin() {
   const topicSel = document.getElementById('sa_topic');
-  if(topicSel){ topicSel.value='electricity'; saOnTopicChange(); }
+  if(topicSel){
+    topicSel.value = 'electricity';
+    // Manually trigger since value set programmatically doesn't fire onchange
+    saOnTopicChange();
+  }
   saLoadFirebase();
 }
 
@@ -14069,10 +14073,11 @@ function saOnTopicChange(){
   document.getElementById('sa_pasteCard').style.display='none';
   if(!topic) return;
   const course = SA_COURSE[topic];
-  if(!course) return;
+  if(!course){ console.warn('SA_COURSE not found for:', topic); return; }
   course.sections.forEach(sec=>{
     const o = document.createElement('option');
-    o.value = sec.id; o.textContent = sec.eyebrow+' — '+sec.title;
+    o.value = sec.id;
+    o.textContent = (sec.eyebrow||'') + ' — ' + (sec.title||sec.id);
     secSel.appendChild(o);
   });
   secSel.disabled = false;
@@ -14237,6 +14242,8 @@ function saSaveLevel(){
 function saLoadFirebase(){
   const el = document.getElementById('sa_savedList');
   if(el) el.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">⏳ Loading...</div>';
+  // Make sure topic is set
+  if(!_saCurrentTopic) _saCurrentTopic = 'electricity';
   loadSkillsFromFirebaseAdmin();
 }
 
@@ -14578,7 +14585,9 @@ function loadSkillsFromFirebaseAdmin() {
     if (!data) {
       if(preview) preview.innerHTML='<span style="color:#888;">Firebase mein abhi data nahi.</span>';
       _saFirebaseData = null;
-      renderSkillsSavedList(); // ← Loading... clear karo
+      const saElNull = document.getElementById('sa_savedList');
+      if(saElNull) saElNull.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Firebase mein abhi koi saved data nahi — pehle koi level save karo</div>';
+      renderSkillsSavedList();
       return;
     }
     // Update ✅ badges on map
@@ -14616,10 +14625,12 @@ function deleteSkillLevel(secId,lvId){
 }
 
 function renderSkillsSavedList(){
-  const el = document.getElementById('skillsSavedList');
-  if(!el) return;
+  const el  = document.getElementById('skillsSavedList');   // hidden — ignore
+  const saEl = document.getElementById('sa_savedList');     // visible one
+  const noData = '<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Firebase mein abhi koi content save nahi</div>';
   if(!_saFirebaseData || !_saFirebaseData.sections){
-    el.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Firebase mein abhi koi level save nahi — pehle koi article/quiz save karo</div>';
+    if(saEl) saEl.innerHTML = noData;
+    if(el)   el.innerHTML   = noData;
     return;
   }
   let html='';
@@ -14654,15 +14665,13 @@ function renderSkillsSavedList(){
       </div>`;
     });
   });
-  // Sync to new sa_savedList
-  const saEl = document.getElementById('sa_savedList');
-  if(saEl) saEl.innerHTML = html || '<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Abhi koi content save nahi — pehle koi level save karo</div>';
-
   if(!totalSaved){
-    el.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Abhi koi content save nahi hai Firebase mein</div>';
+    if(el)   el.innerHTML = noData;
+    if(saEl) saEl.innerHTML = noData;
     return;
   }
-  el.innerHTML=html;
+  if(el)   el.innerHTML = html;
+  if(saEl) saEl.innerHTML = html;
 }
 
 function openEditLevel(secId, lvId){
