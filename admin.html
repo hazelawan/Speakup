@@ -1369,120 +1369,115 @@ ZAROORI RULES:
 ════════════════════════════ -->
 <div class="page" id="page-skills-admin">
 
-  <!-- ── Course Map (levels list) ── -->
+  <!-- ── Step 1: Select ── -->
   <div class="card">
-    <div class="card-title">🗺️ Course Map — Level Select Karo</div>
-    <div class="card-sub">Kisi bhi level pe tap karo → us ka prompt neeche aa jayega → copy karo → Gemini mein paste karo</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px;">
-      <button onclick="setSkillsTopic('electricity')" id="stBtn-electricity" class="btn btn-green" style="font-size:12px;padding:7px 13px;">⚡ Electricity</button>
-      <button onclick="addNewSkillTopic()" class="btn" style="font-size:12px;padding:7px 13px;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.3);color:rgba(255,255,255,.5);border-radius:10px;cursor:pointer;">+ New Topic</button>
-    </div>
-    <div style="font-size:11px;color:var(--mut);margin-bottom:10px;">Selected: <strong id="skillsCurrentTopicLabel" style="color:#F5C400;">⚡ Electricity</strong></div>
-    <div id="skillsCourseMap" style="font-size:12px;color:var(--mut);">
-      <span style="color:#888;">⏳ Firebase se load ho raha hai...</span>
-    </div>
+    <div class="card-title">⚡ Skills Admin — Content Add Karo</div>
+    <div class="card-sub">Topic → Section → Level select karo → Prompt copy karo → Gemini → Paste karo → Save</div>
+
+    <!-- TOPIC -->
+    <div class="inp-label" style="margin-top:12px;">📚 SKILL / TOPIC</div>
+    <select id="sa_topic" onchange="saOnTopicChange()" style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:#fff;font-size:13px;margin-bottom:10px;outline:none;">
+      <option value="">-- Topic choose karo --</option>
+      <option value="electricity">⚡ Electricity</option>
+    </select>
+
+    <!-- SECTION -->
+    <div class="inp-label">📂 SECTION</div>
+    <select id="sa_section" onchange="saOnSectionChange()" style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:#fff;font-size:13px;margin-bottom:10px;outline:none;" disabled>
+      <option value="">-- Pehle topic choose karo --</option>
+    </select>
+
+    <!-- LEVEL -->
+    <div class="inp-label">📄 LEVEL</div>
+    <select id="sa_level" onchange="saOnLevelChange()" style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:#fff;font-size:13px;margin-bottom:10px;outline:none;" disabled>
+      <option value="">-- Pehle section choose karo --</option>
+    </select>
+
+    <!-- Level type badge -->
+    <div id="sa_typebadge" style="display:none;margin-bottom:10px;"></div>
   </div>
 
-  <!-- ── Selected Level Prompt ── -->
-  <div class="card" id="skillsPromptCard" style="display:none;">
-    <div class="card-title">🤖 Gemini Prompt — <span id="promptLevelTitle" style="color:#F5C400;"></span></div>
-    <div class="card-sub">Yeh prompt copy karo → Gemini mein paste karo → milne wala HTML content wapas neeche paste karo → Save karo</div>
-    <div style="background:#0d1117;border-radius:12px;padding:14px;font-family:monospace;font-size:11px;color:#7ee787;line-height:1.7;white-space:pre-wrap;margin:12px 0;max-height:260px;overflow-y:auto;border:1px solid rgba(255,255,255,.1);" id="skillsPromptBox"></div>
-    <button class="btn btn-blue" onclick="copySkillsPrompt()">📋 Prompt Copy Karo</button>
+  <!-- ── Step 2: Prompt ── -->
+  <div class="card" id="sa_promptCard" style="display:none;">
+    <div class="card-title">🤖 Gemini Prompt — <span id="sa_promptTitle" style="color:#F5C400;"></span></div>
+    <div class="card-sub">Copy karo → Gemini mein paste karo → response wapas neeche paste karo</div>
+    <div id="sa_promptBox" style="background:#0d1117;border-radius:12px;padding:14px;font-family:monospace;font-size:11px;color:#7ee787;line-height:1.7;white-space:pre-wrap;margin:12px 0;max-height:240px;overflow-y:auto;border:1px solid rgba(255,255,255,.1);"></div>
+    <button class="btn btn-blue" onclick="saCopyPrompt()">📋 Prompt Copy Karo</button>
   </div>
 
-  <!-- ── Content Paste & Save ── -->
-  <div class="card" id="skillsContentCard" style="display:none;">
-    <div class="card-title">📥 Content Paste Karo — <span id="contentLevelTitle" style="color:#F5C400;"></span></div>
-    <div class="card-sub">Gemini se mila HTML content yahan paste karo. Quiz ke liye JSON array paste karo.</div>
+  <!-- ── Step 3: Paste & Auto-detect ── -->
+  <div class="card" id="sa_pasteCard" style="display:none;">
+    <div class="card-title">📥 Gemini Response Paste Karo</div>
+    <div class="card-sub">Gemini se jo mila woh yahan paste karo — system automatically detect karega kya hai</div>
 
-    <!-- Type indicator -->
-    <div id="contentTypeHint" style="margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;"></div>
+    <textarea id="sa_pasteBox" oninput="saAutoDetect()" placeholder="Gemini ka response yahan paste karo..." style="width:100%;min-height:180px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:12px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:10px 0;box-sizing:border-box;"></textarea>
 
-    <!-- Article HTML input -->
-    <div id="contentArticleWrap">
-      <div class="inp-label">📄 Article Content (Bilingual JSON)</div>
-      <textarea id="slArticle" placeholder='{"ur":"<h3>Roman Urdu content...</h3>","en":"<h3>English content...</h3>"}' style="width:100%;min-height:160px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0;"></textarea>
-      <div style="font-size:10px;color:#888;margin-bottom:4px;">Format: <code style="color:#F5C400;">{"ur":"...Roman Urdu HTML...","en":"...English HTML..."}</code></div>
-      <div style="font-size:10px;color:#888;">Sirf Urdu chahiye to: <code style="color:#F5C400;">{"ur":"...HTML..."}</code> — English toggle sirf tab dikhega jab "en" key ho</div>
-    </div>
+    <!-- Auto detect result -->
+    <div id="sa_detectResult" style="display:none;margin-bottom:10px;padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;"></div>
 
-    <!-- Quiz JSON input -->
-    <div id="contentQuizWrap" style="display:none;">
-      <div class="inp-label">Quiz Questions (JSON Array)</div>
-      <textarea id="slQuizJson" placeholder='[{"q":"Sawaal?","o":["A","B","C","D"],"a":0,"explain":"Wajah..."}]' style="width:100%;min-height:140px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0;"></textarea>
-      <div style="font-size:10px;color:#888;margin-bottom:6px;">Format: q=sawaal, o=4 options array, a=sahi answer index (0-3), explain=wajah</div>
-    </div>
-
-    <!-- Game type — JSON input -->
-    <div id="contentGameWrap" style="display:none;">
-      <div style="background:rgba(91,141,239,.1);border:1px solid rgba(91,141,239,.3);border-radius:10px;padding:10px 12px;font-size:12px;color:#5B8DEF;margin-bottom:10px;">
-        🎮 <strong>Game Data</strong> — Gemini se JSON banwao aur yahan paste karo. App Firebase se load karega.
-      </div>
-      <select id="slGameType" style="display:none;"><option value="mcq">mcq</option></select>
+    <!-- Game hint — only for games -->
+    <div id="sa_hintWrap" style="display:none;">
       <div class="inp-label">💡 Game Hint (optional)</div>
-      <input id="slGameHint" type="text" placeholder="e.g. Battery ko snap zone mein drag karo!" style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:9px 10px;color:#fff;font-size:12px;margin-bottom:8px;outline:none;">
-      <div class="inp-label">📋 Game Data JSON</div>
-      <textarea id="slGameJson" placeholder="Gemini se generate karo → yahan paste karo" style="width:100%;min-height:160px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0;"></textarea>
-      <div id="gameJsonError" style="font-size:11px;color:#ef4444;margin-bottom:4px;display:none;"></div>
-      <div style="font-size:10px;color:#888;margin-bottom:6px;">Gemini se generate karo → JSON validate hoga → Firebase pe save hoga</div>
+      <input id="sa_hint" type="text" placeholder="e.g. Wire ko sahi jagah drag karo!" style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:9px 10px;color:#fff;font-size:12px;margin-bottom:10px;outline:none;">
     </div>
 
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
-      <button onclick="saveSingleLevel()" class="btn btn-green">💾 Save Karo — Firebase Pe</button>
-      <button onclick="previewArticleContent()" id="previewBtn" class="btn" style="background:rgba(255,165,0,.15);border:1px solid rgba(255,165,0,.4);color:#F5C400;border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;">👁️ Preview</button>
-    </div>
-    <div id="slStatus" style="margin-top:8px;font-size:12px;font-weight:600;"></div>
+    <button onclick="saSaveLevel()" class="btn btn-green" style="width:100%;">💾 Save Karo — Firebase Pe</button>
+    <div id="sa_status" style="margin-top:8px;font-size:12px;font-weight:600;text-align:center;"></div>
   </div>
 
-  <!-- Article Preview Modal -->
-  <div id="articlePreviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;overflow-y:auto;padding:20px;">
-    <div style="background:#111827;border-radius:20px;padding:20px;max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.1);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#F5C400;">👁️ Preview</div>
-        <button onclick="document.getElementById('articlePreviewModal').style.display='none'" style="background:rgba(255,75,75,.2);border:none;color:#ff6b6b;border-radius:8px;padding:4px 10px;cursor:pointer;">✕ Close</button>
-      </div>
-      <div id="articlePreviewContent" style="color:rgba(255,255,255,.85);font-size:13px;line-height:1.8;"></div>
-    </div>
-  </div>
-
-  <!-- ── Firebase Saved Levels List ── -->
+  <!-- ── Firebase Saved ── -->
   <div class="card" style="margin-top:4px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
       <div class="card-title" style="margin:0;">🔥 Firebase Saved Levels</div>
-      <button onclick="loadSkillsFromFirebaseAdmin()" style="background:rgba(46,229,157,.12);border:1px solid rgba(46,229,157,.3);border-radius:8px;padding:5px 10px;font-size:11px;color:#2EE59D;cursor:pointer;">🔄 Refresh</button>
+      <button onclick="saLoadFirebase()" style="background:rgba(46,229,157,.12);border:1px solid rgba(46,229,157,.3);border-radius:8px;padding:5px 10px;font-size:11px;color:#2EE59D;cursor:pointer;">🔄 Refresh</button>
     </div>
-    <div class="card-sub">Yeh levels Firebase mein save hain — edit ya delete kar sakte ho</div>
-    <div id="skillsSavedList" style="margin-top:10px;">
+    <div id="sa_savedList" style="margin-top:8px;">
       <div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">⏳ Loading...</div>
     </div>
   </div>
 
-  <!-- Edit Level Modal -->
+  <!-- Hidden fields for old compatibility -->
+  <select id="slGameType" style="display:none;"><option value="mcq">mcq</option></select>
+  <div id="skillsSavedList" style="display:none;"></div>
+  <div id="skillsCourseMap" style="display:none;"></div>
+  <div id="skillsPromptCard" style="display:none;"></div>
+  <div id="skillsContentCard" style="display:none;"></div>
+  <div id="skillsPromptBox" style="display:none;"></div>
+  <div id="contentLevelTitle" style="display:none;"></div>
+  <div id="promptLevelTitle" style="display:none;"></div>
+  <div id="contentTypeHint" style="display:none;"></div>
+  <div id="contentArticleWrap" style="display:none;"></div>
+  <div id="contentQuizWrap" style="display:none;"></div>
+  <div id="contentGameWrap" style="display:none;"></div>
+  <textarea id="slArticle" style="display:none;"></textarea>
+  <textarea id="slQuizJson" style="display:none;"></textarea>
+  <textarea id="slGameJson" style="display:none;"></textarea>
+  <input id="slGameHint" style="display:none;">
+  <div id="gameJsonError" style="display:none;"></div>
+  <button id="previewBtn" style="display:none;"></button>
+  <div id="slStatus" style="display:none;"></div>
+  <div id="skillsPreview" style="display:none;"></div>
+  <div id="skillsCurrentTopicLabel" style="display:none;"></div>
+
+  <!-- Edit Modal (kept for compatibility) -->
   <div id="skillsEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;overflow-y:auto;padding:20px;">
     <div style="background:#111827;border-radius:20px;padding:20px;max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.1);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
         <div style="font-family:'Fredoka One',sans-serif;font-size:16px;color:#F5C400;">✏️ Level Edit Karo — <span id="editModalTitle"></span></div>
         <button onclick="document.getElementById('skillsEditModal').style.display='none'" style="background:rgba(255,75,75,.2);border:none;color:#ff6b6b;border-radius:8px;padding:4px 10px;cursor:pointer;">✕</button>
       </div>
-      <div class="inp-label">📄 Bilingual JSON Content</div>
+      <div class="inp-label">📄 Content</div>
       <textarea id="editModalContent" style="width:100%;min-height:200px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:6px 0 12px;box-sizing:border-box;"></textarea>
       <input type="hidden" id="editModalSecId">
       <input type="hidden" id="editModalLvId">
       <input type="hidden" id="editModalType">
-      <div style="display:flex;gap:10px;">
-        <button onclick="saveEditedLevel()" style="flex:1;padding:12px;background:linear-gradient(135deg,#22C55E,#1aad54);border:none;border-radius:12px;color:#fff;font-family:'Fredoka One',sans-serif;font-size:14px;cursor:pointer;">💾 Save Karo</button>
-        <button onclick="document.getElementById('skillsEditModal').style.display='none'" style="padding:12px 16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:var(--txt);cursor:pointer;font-size:13px;">Cancel</button>
-      </div>
-      <div id="editModalStatus" style="margin-top:8px;font-size:12px;font-weight:600;"></div>
+      <button onclick="saveEditModal()" class="btn btn-green" style="width:100%;">💾 Save Changes</button>
+      <div id="editModalStatus" style="margin-top:8px;font-size:12px;font-weight:600;text-align:center;"></div>
     </div>
   </div>
 
-
-
 </div>
 
-</div>
 
 <!-- ════════════════════════════
      PAGE: USERS
@@ -14050,7 +14045,155 @@ Generate now for: "${lv.title}"`;
 }
 
 function loadSkillsAdmin() {
-  renderCourseMap();
+  const topicSel = document.getElementById('sa_topic');
+  if(topicSel){ topicSel.value='electricity'; saOnTopicChange(); }
+  saLoadFirebase();
+}
+
+// ════════════════════════════
+// NEW SKILLS ADMIN — SA FUNCTIONS
+// ════════════════════════════
+
+let _saNewSelected = { topic:'', secId:'', lvId:'' };
+
+function saOnTopicChange(){
+  const topic = document.getElementById('sa_topic').value;
+  _saCurrentTopic = topic || 'electricity';
+  _saNewSelected = {topic, secId:'', lvId:''};
+  const secSel = document.getElementById('sa_section');
+  const lvSel  = document.getElementById('sa_level');
+  secSel.innerHTML = '<option value="">-- Section choose karo --</option>';
+  lvSel.innerHTML  = '<option value="">-- Pehle section choose karo --</option>';
+  secSel.disabled = true; lvSel.disabled = true;
+  document.getElementById('sa_promptCard').style.display='none';
+  document.getElementById('sa_pasteCard').style.display='none';
+  if(!topic) return;
+  const course = SA_COURSE[topic];
+  if(!course) return;
+  course.sections.forEach(sec=>{
+    const o = document.createElement('option');
+    o.value = sec.id; o.textContent = sec.eyebrow+' — '+sec.title;
+    secSel.appendChild(o);
+  });
+  secSel.disabled = false;
+}
+
+function saOnSectionChange(){
+  const topic = document.getElementById('sa_topic').value;
+  const secId = document.getElementById('sa_section').value;
+  _saNewSelected.secId = secId; _saNewSelected.lvId = '';
+  const lvSel = document.getElementById('sa_level');
+  lvSel.innerHTML = '<option value="">-- Level choose karo --</option>';
+  lvSel.disabled = true;
+  document.getElementById('sa_promptCard').style.display='none';
+  document.getElementById('sa_pasteCard').style.display='none';
+  if(!secId) return;
+  const course = SA_COURSE[topic];
+  const sec = course && course.sections.find(s=>s.id===secId);
+  if(!sec) return;
+  sec.levels.forEach(lv=>{
+    const o = document.createElement('option');
+    o.value = lv.id;
+    const icon = lv.type==='game'?'🎮':lv.type==='quiz'?'✏️':'📖';
+    o.textContent = icon+' '+lv.title+' ('+lv.id+')';
+    lvSel.appendChild(o);
+  });
+  lvSel.disabled = false;
+}
+
+function saOnLevelChange(){
+  const topic = document.getElementById('sa_topic').value;
+  const secId = document.getElementById('sa_section').value;
+  const lvId  = document.getElementById('sa_level').value;
+  _saNewSelected = {topic, secId, lvId};
+  if(!lvId) return;
+  const course = SA_COURSE[topic];
+  const sec = course && course.sections.find(s=>s.id===secId);
+  const lv  = sec && sec.levels.find(l=>l.id===lvId);
+  if(!lv) return;
+  _saSelectedLevel = {...lv, secId};
+  _saCurrentTopic  = topic;
+
+  const badge = document.getElementById('sa_typebadge');
+  const colors = {article:'#22C55E', quiz:'#F5C400', game:'#5B8DEF'};
+  badge.style.cssText='display:inline-block;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:800;background:rgba(255,255,255,.06);color:'+colors[lv.type]+';border:1px solid '+colors[lv.type]+'33;margin-bottom:4px;';
+  badge.textContent = lv.type==='game'?'🎮 Game':lv.type==='quiz'?'✏️ Quiz':'📖 Article';
+
+  const prompt = _buildPrompt(sec, lv);
+  document.getElementById('sa_promptBox').textContent = prompt;
+  document.getElementById('sa_promptTitle').textContent = (lv.icon||'')+' '+lv.title;
+  document.getElementById('sa_promptCard').style.display='block';
+
+  document.getElementById('sa_pasteBox').value='';
+  document.getElementById('sa_detectResult').style.display='none';
+  document.getElementById('sa_hintWrap').style.display = lv.type==='game'?'block':'none';
+  document.getElementById('sa_pasteCard').style.display='block';
+  document.getElementById('sa_status').textContent='';
+}
+
+function saCopyPrompt(){
+  const txt = document.getElementById('sa_promptBox').textContent;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(()=>showAdminToast('✅ Prompt copied!'));
+  } else {
+    const ta=document.createElement('textarea'); ta.value=txt;
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showAdminToast('✅ Prompt copied!');
+  }
+}
+
+function saAutoDetect(){
+  const raw = document.getElementById('sa_pasteBox').value.trim();
+  const result = document.getElementById('sa_detectResult');
+  if(!raw){ result.style.display='none'; return; }
+  let parsed = null;
+  try { parsed = JSON.parse(raw.replace(/```json|```/g,'').trim()); } catch(e){}
+  const lv = _saSelectedLevel;
+  if(!lv){ result.style.display='none'; return; }
+
+  let msg='', color='#22C55E', bg='rgba(34,197,94,.12)', border='rgba(34,197,94,.3)';
+
+  if(lv.type==='article'){
+    if(parsed && (parsed.ur||parsed.en)){ msg='✅ Bilingual JSON detect hua — save karo!'; }
+    else if(raw.includes('<h')||raw.includes('<p')){ color='#F5C400'; bg='rgba(245,196,0,.12)'; border='rgba(245,196,0,.3)'; msg='⚠️ Plain HTML — {"ur":"...HTML..."} mein wrap karo'; }
+    else { color='#ef4444'; bg='rgba(255,107,107,.12)'; border='rgba(255,107,107,.3)'; msg='❌ Format sahi nahi'; }
+  } else if(lv.type==='quiz'){
+    if(parsed && Array.isArray(parsed) && parsed[0] && parsed[0].q){ msg='✅ Quiz JSON — '+parsed.length+' sawaal detect hue — save karo!'; }
+    else if(parsed && parsed.questions){ msg='✅ Quiz detect hua — '+parsed.questions.length+' sawaal — save karo!'; }
+    else { color='#ef4444'; bg='rgba(255,107,107,.12)'; border='rgba(255,107,107,.3)'; msg='❌ Quiz JSON format sahi nahi'; }
+  } else {
+    if(parsed && (parsed.questions||parsed.pairs||parsed.hazards||parsed.components||parsed.scenario||parsed.steps)){
+      const type=parsed.questions?'MCQ/Scenario':parsed.pairs?'Drag & Match':parsed.hazards?'Hazard Spotter':parsed.components?'Circuit':'Game';
+      msg='✅ '+type+' data detect hua — save karo!';
+    } else if(parsed){ color='#F5C400'; bg='rgba(245,196,0,.12)'; border='rgba(245,196,0,.3)'; msg='⚠️ JSON valid — save kar sakte ho'; }
+    else { color='#ef4444'; bg='rgba(255,107,107,.12)'; border='rgba(255,107,107,.3)'; msg='❌ Valid JSON nahi — dobara generate karo'; }
+  }
+  result.style.cssText='display:block;padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;background:'+bg+';border:1px solid '+border+';color:'+color+';';
+  result.textContent=msg;
+}
+
+function saSaveLevel(){
+  const raw = document.getElementById('sa_pasteBox').value.trim();
+  const st  = document.getElementById('sa_status');
+  const lv  = _saSelectedLevel;
+  if(!lv){ st.style.color='#ef4444'; st.textContent='❌ Pehle level select karo'; return; }
+  if(!raw){ st.style.color='#ef4444'; st.textContent='❌ Content paste karo pehle'; return; }
+  if(lv.type==='article'){ document.getElementById('slArticle').value=raw; }
+  else if(lv.type==='quiz'){ document.getElementById('slQuizJson').value=raw; }
+  else { document.getElementById('slGameJson').value=raw; document.getElementById('slGameHint').value=document.getElementById('sa_hint').value||''; }
+  st.style.color='#F5C400'; st.textContent='⏳ Saving...';
+  saveSingleLevel();
+  setTimeout(()=>{
+    const oldSt = document.getElementById('slStatus').textContent;
+    if(oldSt) st.textContent=oldSt;
+    saLoadFirebase();
+  }, 2500);
+}
+
+function saLoadFirebase(){
+  const el = document.getElementById('sa_savedList');
+  if(el) el.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">⏳ Loading...</div>';
   loadSkillsFromFirebaseAdmin();
 }
 
@@ -14468,6 +14611,10 @@ function renderSkillsSavedList(){
       </div>`;
     });
   });
+  // Sync to new sa_savedList
+  const saEl = document.getElementById('sa_savedList');
+  if(saEl) saEl.innerHTML = html || '<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Abhi koi content save nahi — pehle koi level save karo</div>';
+
   if(!totalSaved){
     el.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Abhi koi content save nahi hai Firebase mein</div>';
     return;
