@@ -1486,13 +1486,13 @@ ZAROORI RULES:
     </div>
   </div>
 
-  <!-- ── Full JSON (Advanced) ── -->
-  <div class="card">
-    <div class="card-title" onclick="toggleAdvanced()" style="cursor:pointer;user-select:none;">
-      ⚙️ Advanced — Full JSON <span id="advToggleIcon" style="float:right;color:#888;">▼ Show</span>
+  <!-- ── Full JSON (Advanced) — Only for initial setup or bulk update ── -->
+  <div class="card" style="border-color:rgba(255,255,255,.08);opacity:.7;">
+    <div class="card-title" onclick="toggleAdvanced()" style="cursor:pointer;user-select:none;font-size:13px;color:var(--mut);">
+      ⚙️ Advanced — Full JSON <span style="font-size:11px;color:var(--mut);font-weight:400;">(zaroorat nahi normally)</span> <span id="advToggleIcon" style="float:right;color:#888;">▼ Show</span>
     </div>
     <div id="advancedSection" style="display:none;margin-top:10px;">
-      <div class="card-sub">Pura structure ek saath update karna ho to yahan karo</div>
+      <div class="card-sub">⚠️ Yeh sirf ek baar initial setup ke liye tha. Ab system auto-initialize karta hai — normal workflow mein yeh use karna zaroori nahi.</div>
       <textarea id="skillsJsonInput" placeholder='{"title":"Electricity","icon":"⚡","sections":[...]}' style="width:100%;min-height:160px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:12px;color:#fff;font-family:monospace;font-size:11px;resize:vertical;outline:none;line-height:1.6;margin:10px 0;"></textarea>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button onclick="validateSkillsJson()" class="btn" style="background:rgba(91,141,239,.2);border:1px solid rgba(91,141,239,.4);color:#5B8DEF;border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;">🔍 Validate</button>
@@ -13984,9 +13984,14 @@ Topic context: ${sectionContext} — ${lv.title}`;
 
   // ── GAME PROMPTS — engine ke mutabiq ──
   const circuitGames = ['basic_circuit','open_closed','series_circuit','parallel_circuit',
-    'db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring','earthing_game'];
-  const mcqGames = ['mcb_sizing','estimation_game','troubleshoot_game','house_fault','industrial_fault','fault_finding'];
-  const matchGames = ['wire_color_match','tool_matcher','ppe_dresser','component_id','socket_wiring','step_sequence','wiring_plan'];
+    'db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring','earthing_game',
+    'l1_10','l1_11','l1_12','l1_13','l4_3','l4_6','l4_9','l4_11','l5_3','l5_8','l5_13'];
+  const mcqGames = ['mcb_sizing','estimation_game','troubleshoot_game','house_fault','industrial_fault','fault_finding',
+    'l3_11','l6_3','l6_5','l6_10','l6_11','l4_14'];
+  const matchGames = ['wire_color_match','tool_matcher','ppe_dresser','component_id','socket_wiring','step_sequence','wiring_plan',
+    'l3_5','l2_11'];
+  const hazardGames = ['hazard_spot','l2_10'];
+  const multimeterGames = ['multimeter_game','l2_3'];
   const gid = lv.gameId || '';
 
   if(circuitGames.includes(gid)){
@@ -14091,7 +14096,7 @@ RULES:
 Now generate for: "${lv.title}"`;
   }
 
-  if(gid === 'hazard_spot'){
+  if(hazardGames.includes(gid)||gid==='hazard_spot'){
     return `You are a game data generator for SpeakUp — a Pakistani electrician learning app.
 Generate a Hazard Spotter game for this level:
 
@@ -14119,7 +14124,7 @@ RULES:
 Now generate for: "${lv.title}"`;
   }
 
-  if(gid === 'multimeter_game'){
+  if(multimeterGames.includes(gid)||gid==='multimeter_game'){
     return `You are a game data generator for SpeakUp — a Pakistani electrician learning app.
 Generate a Multimeter Simulator game for this level:
 
@@ -14150,8 +14155,14 @@ RULES:
 Now generate for: "${lv.title}"`;
   }
 
-  return `GAME: ${lv.title} — Game ID: ${gid}
-Upar se game type select karo toh sahi prompt milega.`;
+  // ── Fallback: game type dropdown se jo select kiya ──
+  const selType = (typeof document !== 'undefined') ? (document.getElementById('slGameType')?.value || '') : '';
+  if(selType === 'circuit' || circuitGames.includes(gid)){
+    // Use MCQ as safe default for unknown circuit games
+    return _buildPrompt(sec, {...lv, gameId:'basic_circuit'});
+  }
+  return `GAME: ${lv.title} — Game ID: ${gid || lv.id}
+Upar dropdown se game type choose karo toh sahi prompt aa jayega.`;
 }
 
 function loadSkillsAdmin() {
@@ -14227,7 +14238,7 @@ function selectSkillLevel(secId, lvId) {
     typeHint.textContent = '✏️ Quiz — Gemini se JSON array copy karo, yahan paste karo';
   } else {
     typeHint.style.cssText = 'margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.3);color:#5B8DEF;';
-    typeHint.textContent = '🎮 Game — Firebase se gameData add karo';
+    typeHint.textContent = '🎮 Game — Neeche game type choose karo → Prompt copy karo → Gemini mein paste karo → JSON wapas paste karo → Save!';
   }
 
   // Clear previous status + inputs
@@ -14257,14 +14268,18 @@ function selectSkillLevel(secId, lvId) {
       if(fbLv.hint && document.getElementById('slGameHint')){
         document.getElementById('slGameHint').value = fbLv.hint;
       }
-      // Auto-detect game type from gameId
+      // Auto-detect game type from gameId OR level id
       if(lv.type==='game' && document.getElementById('slGameType')){
-        const gid = fbLv.gameId || lv.gameId || '';
-        const circuitIds=['basic_circuit','open_closed','series_circuit','parallel_circuit','db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring','earthing_game'];
-        const mcqIds=['mcb_sizing','estimation_game','troubleshoot_game','house_fault','industrial_fault','fault_finding'];
-        const matchIds=['wire_color_match','tool_matcher','ppe_dresser','component_id','socket_wiring','step_sequence','wiring_plan'];
-        const sel = circuitIds.includes(gid)?'circuit':mcqIds.includes(gid)?'mcq':matchIds.includes(gid)?'match':gid==='hazard_spot'?'hazard':gid==='multimeter_game'?'multimeter':'';
+        const gid = fbLv.gameId || lv.gameId || lv.id || '';
+        const circuitIds=['basic_circuit','open_closed','series_circuit','parallel_circuit','db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring','earthing_game','l1_10','l1_11','l1_12','l1_13','l4_3','l4_6','l4_9','l4_11','l5_3','l5_8','l5_13'];
+        const mcqIds=['mcb_sizing','estimation_game','troubleshoot_game','house_fault','industrial_fault','fault_finding','l3_11','l6_3','l6_5','l6_10','l6_11','l4_14'];
+        const matchIds=['wire_color_match','tool_matcher','ppe_dresser','component_id','socket_wiring','step_sequence','wiring_plan','l3_5','l2_11'];
+        const hazardIds=['hazard_spot','l2_10'];
+        const multimeterIds=['multimeter_game','l2_3'];
+        const sel = circuitIds.includes(gid)?'circuit':mcqIds.includes(gid)?'mcq':matchIds.includes(gid)?'match':hazardIds.includes(gid)?'hazard':multimeterIds.includes(gid)?'multimeter':'';
         document.getElementById('slGameType').value = sel;
+        // Auto-update prompt if game type detected
+        if(sel) setTimeout(updateGamePrompt, 100);
       }
     }
   }
@@ -14281,18 +14296,23 @@ function updateGamePrompt(){
   if(!_saSelectedLevel || _saSelectedLevel.type !== 'game') return;
   const gameType = document.getElementById('slGameType').value;
   if(!gameType) return;
-  // Temporarily override gameId for prompt generation
   const course = SA_COURSE[_saCurrentTopic];
   if(!course) return;
   const sec = course.sections.find(s=>s.id===_saSelectedLevel.secId);
   if(!sec) return;
-  const lv = {..._saSelectedLevel, gameId: gameType === 'circuit' ? (_saSelectedLevel.gameId||'basic_circuit')
-    : gameType === 'mcq' ? 'mcb_sizing'
-    : gameType === 'match' ? 'wire_color_match'
-    : gameType === 'hazard' ? 'hazard_spot'
-    : 'multimeter_game'};
+  // Map dropdown value → known gameId for prompt
+  const gameIdMap = {
+    circuit: _saSelectedLevel.id || 'basic_circuit',
+    mcq: _saSelectedLevel.id || 'mcb_sizing',
+    match: _saSelectedLevel.id || 'wire_color_match',
+    hazard: 'hazard_spot',
+    multimeter: 'multimeter_game'
+  };
+  const lv = {..._saSelectedLevel, gameId: gameIdMap[gameType] || _saSelectedLevel.id};
   const prompt = _buildPrompt(sec, lv);
   document.getElementById('skillsPromptBox').textContent = prompt;
+  // Also store selected game type for save
+  _saSelectedLevel._gameType = gameType;
 }
 
 function copySkillsPrompt() {
@@ -14324,7 +14344,21 @@ function saveSingleLevel() {
 
   get(ref(db, 'skills/' + _saCurrentTopic)).then(snap => {
     let data = snap.val();
-    if (!data || !data.sections) { st.style.color='#ef4444'; st.textContent='❌ Firebase mein base structure nahi! Pehle Advanced se full JSON save karo.'; return; }
+    // ✅ AUTO-INIT: Agar Firebase mein structure nahi to SA_COURSE se khud bana lo
+    if (!data || !data.sections) {
+      const courseTemplate = SA_COURSE[_saCurrentTopic];
+      if (!courseTemplate) { st.style.color='#ef4444'; st.textContent='❌ Course template nahi mila topic: '+_saCurrentTopic; return; }
+      // Deep clone karo — sirf structure, content nahi
+      data = JSON.parse(JSON.stringify(courseTemplate));
+      // Sab levels se content fields hata do (sirf skeleton rakho)
+      data.sections.forEach(sec => {
+        if(sec.levels) sec.levels.forEach(lv => {
+          delete lv.articleContent; delete lv.articleBilingual;
+          delete lv.quizQuestions; delete lv.gameData;
+        });
+      });
+      st.style.color='#F5C400'; st.textContent='⏳ Structure auto-ban raha hai Firebase pe...';
+    }
 
     const sec = data.sections.find(s => s.id === lv.secId);
     if (!sec) { st.style.color='#ef4444'; st.textContent='❌ Section "'+lv.secId+'" nahi mila!'; return; }
