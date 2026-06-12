@@ -4731,6 +4731,32 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-h
 </div>
 
 <!-- ▲ END: 10b-skills.html ▲ -->
+<!-- ▼ SKILL QUIZ SCREEN ▼ -->
+<div class="screen pb80" id="skillQuiz" style="">
+  <div style="background:var(--bg,#0F0E17);padding:52px 20px 16px;position:relative;">
+    <button onclick="closeSkillQuiz()" style="position:absolute;top:14px;left:16px;background:rgba(255,255,255,.1);border:none;border-radius:50%;width:36px;height:36px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
+    <div id="sqSection" style="font-size:11px;color:#F5C400;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;"></div>
+    <div id="sqTitle" style="font-size:20px;font-weight:900;color:#fff;font-family:'Fredoka One',sans-serif;"></div>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+      <div id="sqProgressBar" style="flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;">
+        <div id="sqProgressFill" style="height:100%;background:#F5C400;border-radius:3px;width:0%;transition:width .4s;"></div>
+      </div>
+      <div id="sqCounter" style="font-size:11px;color:rgba(255,255,255,.5);font-weight:700;white-space:nowrap;">0 / 0</div>
+    </div>
+  </div>
+  <div id="sqContent" style="padding:16px;"></div>
+  <div class="bn">
+    <button class="nb" onclick="tab('dashboard')"><span class="ni">🏠</span>Home</button>
+    <button class="nb" onclick="tab('pastpapers')"><span class="ni">📄</span>Papers</button>
+    <button class="nb on"><span class="ni">🎓</span>Skills</button>
+    <button class="nb" onclick="tab('profile')"><span class="ni">👤</span>Profile</button>
+    <button class="nb" onclick="tab('leaderboard')"><span class="ni">🏆</span>League</button>
+    <button class="nb" onclick="tab('settings')"><span class="ni">⚙️</span>Settings</button>
+  </div>
+</div>
+<!-- ▲ SKILL QUIZ SCREEN ▲ -->
+
+
 
 <!-- ▼ INCLUDE: screens/11-certificate.html ▼ -->
 <!-- ═══ Certificate v1 + v2 ═══ -->
@@ -27292,10 +27318,26 @@ function _normalizeFirebaseSkillData(val){
   return val.sections.length > 0 ? val : null;
 }
 
-function loadSkillsFromFirebase(){
+function loadSkillsFromFirebase(retryCount){
+  retryCount = retryCount || 0;
   document.getElementById('skillsLoadingState').style.display='block';
   document.getElementById('skillSectionsContainer').innerHTML='';
-  // Try Firebase
+
+  // Firebase ready nahi hai — wait karo (max 5 retries = 2.5 sec)
+  if(!window.FB_DB || !window.FB_GET || !window.FB_REF){
+    if(retryCount < 5){ setTimeout(()=>loadSkillsFromFirebase(retryCount+1), 500); }
+    else { _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic]; renderSkillsScreen(); }
+    return;
+  }
+
+  // Auth check — user logged in hona chahiye
+  const uid = window.FB_AUTH && window.FB_AUTH.currentUser && window.FB_AUTH.currentUser.uid;
+  if(!uid){
+    if(retryCount < 5){ setTimeout(()=>loadSkillsFromFirebase(retryCount+1), 500); }
+    else { _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic]; renderSkillsScreen(); }
+    return;
+  }
+
   try {
     const dbRef = window.FB_REF(window.FB_DB, 'skills/'+_currentSkillTopic);
     window.FB_GET(dbRef).then(snap => {
@@ -27355,7 +27397,7 @@ function renderSkillsScreen(){
       // PRO badge removed from individual cards — already shown in Skills Hub header
       const proHint = '';
 
-      const clickFn = lv.type==='game' ? `openSkillGame('${lv.id}','${sec.id}')` : `openSkillArticle('${lv.id}','${sec.id}')`;
+      const clickFn = lv.type==='game' ? `openSkillGame('${lv.id}','${sec.id}')` : lv.type==='quiz' ? `openSkillQuiz('${lv.id}','${sec.id}')` : `openSkillArticle('${lv.id}','${sec.id}')`;
 
       html += `<div style="display:flex;justify-content:${align};margin:4px 0;">
         <div style="width:148px;cursor:pointer;" onclick="${clickFn}">
@@ -28010,9 +28052,10 @@ function completeSkillArticle(){
   const sec=_skillsData.sections.find(s=>s.id===_currentSkillSection);
   const li=sec&&sec.levels.findIndex(l=>l.id===_currentSkillLevel);
   const next=sec&&sec.levels[li+1];
-  if(next && (next.type==='article'||next.type==='game')){
+  if(next){
     if(next.type==='article') openSkillArticle(next.id,_currentSkillSection);
-    else openSkillGame(next.id,_currentSkillSection);
+    else if(next.type==='quiz') openSkillQuiz(next.id,_currentSkillSection);
+    else if(next.type==='game') openSkillGame(next.id,_currentSkillSection);
   } else {
     showScreen('skills');
     if(typeof showSuToast==='function') showSuToast('✅ Level complete! +50 XP');
@@ -28069,6 +28112,170 @@ function selectSkillTopic(topicId){
   _skillsData = null;
   closeSkillTopicModal();
   loadSkillsFromFirebase();
+}
+
+
+// ═══════════════════════════════════════
+// SKILL QUIZ SYSTEM
+// ═══════════════════════════════════════
+let _sqQuestions = [];
+let _sqCurrentIdx = 0;
+let _sqScore = 0;
+let _sqAnswered = false;
+
+function openSkillQuiz(levelId, sectionId){
+  if(!isPro()){ showSkillProPopup(); return; }
+  _currentSkillLevel = levelId;
+  _currentSkillSection = sectionId;
+  const sec = _skillsData.sections.find(s=>s.id===sectionId);
+  const lv = sec && sec.levels.find(l=>l.id===levelId);
+  if(!lv) return;
+
+  document.getElementById('sqSection').textContent = sec.eyebrow||sec.title;
+  document.getElementById('sqTitle').textContent = lv.title;
+
+  // quizQuestions load karo
+  let qs = lv.quizQuestions || [];
+  if(!Array.isArray(qs) || qs.length === 0){
+    document.getElementById('sqContent').innerHTML = '<div style="padding:40px 16px;text-align:center;color:rgba(255,255,255,.5);">⏳ Quiz questions abhi add nahi hue — Admin se add karwao.</div>';
+    showScreen('skillQuiz');
+    return;
+  }
+
+  _sqQuestions = qs;
+  _sqCurrentIdx = 0;
+  _sqScore = 0;
+  _sqAnswered = false;
+  _sqRenderQuestion();
+  showScreen('skillQuiz');
+}
+
+function _sqRenderQuestion(){
+  const q = _sqQuestions[_sqCurrentIdx];
+  if(!q) return;
+  const total = _sqQuestions.length;
+  const pct = Math.round((_sqCurrentIdx / total) * 100);
+
+  document.getElementById('sqProgressFill').style.width = pct + '%';
+  document.getElementById('sqCounter').textContent = (_sqCurrentIdx+1) + ' / ' + total;
+  _sqAnswered = false;
+
+  const opts = q.options || q.choices || [];
+  const optHtml = opts.map((opt, i) => {
+    const label = String.fromCharCode(65+i);
+    return `<button onclick="_sqAnswer(${i})" id="sqOpt${i}" style="width:100%;text-align:left;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:14px;padding:13px 14px;margin-bottom:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;">
+      <span style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">${label}</span>
+      <span>${opt}</span>
+    </button>`;
+  }).join('');
+
+  document.getElementById('sqContent').innerHTML = `
+    <div style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;margin-bottom:16px;">
+      <div style="font-size:13px;color:rgba(255,255,255,.45);font-weight:700;margin-bottom:8px;">SAWAAL ${_sqCurrentIdx+1}</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;line-height:1.5;">${q.q || q.question || ''}</div>
+    </div>
+    <div id="sqOptions">${optHtml}</div>
+    <div id="sqFeedback" style="display:none;padding:12px 14px;border-radius:12px;margin-top:4px;font-size:13px;font-weight:700;"></div>
+    <button id="sqNextBtn" onclick="_sqNext()" style="display:none;width:100%;margin-top:12px;background:linear-gradient(135deg,#F5C400,#ff9500);border:none;border-radius:14px;padding:14px;font-family:'Fredoka One',sans-serif;font-size:16px;color:#000;font-weight:800;cursor:pointer;">Agla Sawaal ➡️</button>
+  `;
+}
+
+function _sqAnswer(idx){
+  if(_sqAnswered) return;
+  _sqAnswered = true;
+  const q = _sqQuestions[_sqCurrentIdx];
+  const correct = q.correct !== undefined ? q.correct : q.answer;
+  const isCorrect = (idx === correct || idx === Number(correct));
+
+  if(isCorrect) _sqScore++;
+
+  // Color the buttons
+  const opts = q.options || q.choices || [];
+  opts.forEach((_, i) => {
+    const btn = document.getElementById('sqOpt'+i);
+    if(!btn) return;
+    btn.style.cursor = 'default';
+    if(i === Number(correct)){
+      btn.style.background = 'rgba(34,197,94,.2)';
+      btn.style.border = '1.5px solid #22C55E';
+    } else if(i === idx && !isCorrect){
+      btn.style.background = 'rgba(239,68,68,.2)';
+      btn.style.border = '1.5px solid #ef4444';
+    }
+  });
+
+  // Feedback
+  const fb = document.getElementById('sqFeedback');
+  fb.style.display = 'block';
+  if(isCorrect){
+    fb.style.background = 'rgba(34,197,94,.15)';
+    fb.style.color = '#22C55E';
+    fb.style.border = '1px solid rgba(34,197,94,.3)';
+    fb.textContent = '✅ Sahi jawab! ' + (q.explanation || '');
+  } else {
+    fb.style.background = 'rgba(239,68,68,.12)';
+    fb.style.color = '#ef4444';
+    fb.style.border = '1px solid rgba(239,68,68,.3)';
+    fb.textContent = '❌ Galat — Sahi jawab: ' + (q.options||q.choices||[])[Number(correct)] + (q.explanation ? ' — ' + q.explanation : '');
+  }
+
+  document.getElementById('sqNextBtn').style.display = 'block';
+  const isLast = _sqCurrentIdx >= _sqQuestions.length - 1;
+  document.getElementById('sqNextBtn').textContent = isLast ? '✅ Quiz Mukammal Karo' : 'Agla Sawaal ➡️';
+}
+
+function _sqNext(){
+  const isLast = _sqCurrentIdx >= _sqQuestions.length - 1;
+  if(isLast){
+    _sqShowResult();
+    return;
+  }
+  _sqCurrentIdx++;
+  _sqRenderQuestion();
+}
+
+function _sqShowResult(){
+  const total = _sqQuestions.length;
+  const pct = Math.round((_sqScore / total) * 100);
+  const grade = pct >= 80 ? '🏆 Zabardast!' : pct >= 60 ? '👍 Achha!' : '📚 Aur practice karo';
+  const color = pct >= 80 ? '#22C55E' : pct >= 60 ? '#F5C400' : '#ef4444';
+
+  document.getElementById('sqProgressFill').style.width = '100%';
+  document.getElementById('sqCounter').textContent = total + ' / ' + total;
+
+  document.getElementById('sqContent').innerHTML = `
+    <div style="text-align:center;padding:30px 16px;">
+      <div style="font-size:64px;margin-bottom:12px;">${pct>=80?'🏆':pct>=60?'⭐':'📚'}</div>
+      <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:${color};margin-bottom:6px;">${grade}</div>
+      <div style="font-size:40px;font-weight:900;color:#fff;margin:12px 0;">${pct}%</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.6);margin-bottom:24px;">${_sqScore} / ${total} sahi jawab</div>
+      <button onclick="_sqComplete()" style="width:100%;background:linear-gradient(135deg,#22C55E,#1aad54);border:none;border-radius:16px;padding:14px;font-family:'Fredoka One',sans-serif;font-size:16px;color:#fff;cursor:pointer;margin-bottom:10px;">✅ Complete — Agla Level</button>
+      <button onclick="openSkillQuiz(_currentSkillLevel,_currentSkillSection)" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:16px;padding:12px;font-size:14px;color:rgba(255,255,255,.7);cursor:pointer;">🔄 Dobara Karo</button>
+    </div>
+  `;
+}
+
+function _sqComplete(){
+  if(!_currentSkillLevel) return;
+  _skillsProgress[_currentSkillLevel] = true;
+  localStorage.setItem('su_skills_progress', JSON.stringify(_skillsProgress));
+  const sec = _skillsData.sections.find(s=>s.id===_currentSkillSection);
+  const li = sec && sec.levels.findIndex(l=>l.id===_currentSkillLevel);
+  const next = sec && sec.levels[li+1];
+  if(next){
+    if(next.type==='article') openSkillArticle(next.id, _currentSkillSection);
+    else if(next.type==='quiz') openSkillQuiz(next.id, _currentSkillSection);
+    else if(next.type==='game') openSkillGame(next.id, _currentSkillSection);
+  } else {
+    showScreen('skills');
+    if(typeof showSuToast==='function') showSuToast('🏆 Section complete! Shabaash!');
+    setTimeout(initSkillsScreen, 300);
+  }
+}
+
+function closeSkillQuiz(){
+  showScreen('skills');
+  setTimeout(initSkillsScreen, 200);
 }
 
 // Show leaderboard nav fix - remove league from leaderboard bn if it breaks
