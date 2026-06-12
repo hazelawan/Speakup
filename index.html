@@ -27321,6 +27321,18 @@ function _normalizeFirebaseSkillData(val){
         if(lv.quizQuestions && !Array.isArray(lv.quizQuestions)){
           lv.quizQuestions = Object.values(lv.quizQuestions);
         }
+        // har question ke options bhi normalize karo
+        if(lv.quizQuestions && Array.isArray(lv.quizQuestions)){
+          lv.quizQuestions = lv.quizQuestions.map(q => {
+            if(q.options && !Array.isArray(q.options)){
+              q.options = Object.values(q.options);
+            }
+            if(q.choices && !Array.isArray(q.choices)){
+              q.choices = Object.values(q.choices);
+            }
+            return q;
+          });
+        }
         // articleBilingual — object hai, theek hai, kuch nahi karna
         // articleContent — string hai, theek hai
         return lv;
