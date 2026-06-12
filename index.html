@@ -27276,6 +27276,22 @@ function initSkillsScreen(){
   loadSkillsFromFirebase();
 }
 
+function _normalizeFirebaseSkillData(val){
+  // Firebase Realtime DB arrays ko objects mein convert kar deta hai
+  // Yeh function dono cases handle karta hai
+  if(!val || !val.sections) return null;
+  if(!Array.isArray(val.sections)){
+    val.sections = Object.values(val.sections);
+  }
+  val.sections = val.sections.map(sec => {
+    if(sec && sec.levels && !Array.isArray(sec.levels)){
+      sec.levels = Object.values(sec.levels);
+    }
+    return sec;
+  });
+  return val.sections.length > 0 ? val : null;
+}
+
 function loadSkillsFromFirebase(){
   document.getElementById('skillsLoadingState').style.display='block';
   document.getElementById('skillSectionsContainer').innerHTML='';
@@ -27283,12 +27299,9 @@ function loadSkillsFromFirebase(){
   try {
     const dbRef = window.FB_REF(window.FB_DB, 'skills/'+_currentSkillTopic);
     window.FB_GET(dbRef).then(snap => {
-      const val = snap && snap.val ? snap.val() : null;
-      if(val && val.sections && val.sections.length > 0){
-        _skillsData = val;
-      } else {
-        _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
-      }
+      const raw = snap && snap.val ? snap.val() : null;
+      const val = _normalizeFirebaseSkillData(raw);
+      _skillsData = val || SKILLS_DEFAULT_DATA[_currentSkillTopic];
       renderSkillsScreen();
     }).catch(()=>{
       _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
