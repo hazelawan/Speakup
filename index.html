@@ -19434,6 +19434,8 @@ function onFirebaseAuthChange(user){
       setTimeout(function(){ if(typeof initNotifSystem==='function') initNotifSystem(); }, 1000);
       // 📄 Firebase paper meta load karo (sirf titles — sections baad mein)
       setTimeout(function(){ if(typeof loadFirebasePapersMeta==='function') loadFirebasePapersMeta(); }, 1500);
+      // 📚 Skills data preload karo auth ke baad
+      setTimeout(function(){ if(typeof loadSkillsFromFirebase==='function') loadSkillsFromFirebase(); }, 2000);
       // 2b. Maintenance mode real-time listener
       setTimeout(function(){ if(typeof initMaintenanceListener==='function') initMaintenanceListener(); }, 800);
     }
@@ -27304,7 +27306,7 @@ function initSkillsScreen(){
 
 function _normalizeFirebaseSkillData(val){
   // Firebase Realtime DB arrays ko objects mein convert kar deta hai
-  // Yeh function dono cases handle karta hai
+  // sections, levels, quizQuestions, articleBilingual sab normalize karo
   if(!val || !val.sections) return null;
   if(!Array.isArray(val.sections)){
     val.sections = Object.values(val.sections);
@@ -27313,38 +27315,37 @@ function _normalizeFirebaseSkillData(val){
     if(sec && sec.levels && !Array.isArray(sec.levels)){
       sec.levels = Object.values(sec.levels);
     }
+    if(sec && sec.levels){
+      sec.levels = sec.levels.map(lv => {
+        // quizQuestions normalize
+        if(lv.quizQuestions && !Array.isArray(lv.quizQuestions)){
+          lv.quizQuestions = Object.values(lv.quizQuestions);
+        }
+        // articleBilingual — object hai, theek hai, kuch nahi karna
+        // articleContent — string hai, theek hai
+        return lv;
+      });
+    }
     return sec;
   });
   return val.sections.length > 0 ? val : null;
 }
 
-function loadSkillsFromFirebase(retryCount){
-  retryCount = retryCount || 0;
-  document.getElementById('skillsLoadingState').style.display='block';
-  document.getElementById('skillSectionsContainer').innerHTML='';
-
-  // Firebase ready nahi hai — wait karo (max 5 retries = 2.5 sec)
-  if(!window.FB_DB || !window.FB_GET || !window.FB_REF){
-    if(retryCount < 5){ setTimeout(()=>loadSkillsFromFirebase(retryCount+1), 500); }
-    else { _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic]; renderSkillsScreen(); }
-    return;
-  }
-
-  // Auth check — user logged in hona chahiye
-  const uid = window.FB_AUTH && window.FB_AUTH.currentUser && window.FB_AUTH.currentUser.uid;
-  if(!uid){
-    if(retryCount < 5){ setTimeout(()=>loadSkillsFromFirebase(retryCount+1), 500); }
-    else { _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic]; renderSkillsScreen(); }
-    return;
-  }
-
+function loadSkillsFromFirebase(){
   try {
+    if(!window.FB_DB || !window.FB_GET || !window.FB_REF){
+      _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
+      renderSkillsScreen();
+      return;
+    }
     const dbRef = window.FB_REF(window.FB_DB, 'skills/'+_currentSkillTopic);
     window.FB_GET(dbRef).then(snap => {
       const raw = snap && snap.val ? snap.val() : null;
       const val = _normalizeFirebaseSkillData(raw);
       _skillsData = val || SKILLS_DEFAULT_DATA[_currentSkillTopic];
-      renderSkillsScreen();
+      // Agar Skills screen open hai toh render karo
+      const skillScreen = document.getElementById('skills');
+      if(skillScreen && skillScreen.style.display !== 'none') renderSkillsScreen();
     }).catch(()=>{
       _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
       renderSkillsScreen();
