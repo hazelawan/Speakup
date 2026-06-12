@@ -27330,6 +27330,9 @@ function _normalizeFirebaseSkillData(val){
             if(q.choices && !Array.isArray(q.choices)){
               q.choices = Object.values(q.choices);
             }
+            if(q.o && !Array.isArray(q.o)){
+              q.o = Object.values(q.o);
+            }
             return q;
           });
         }
@@ -28173,7 +28176,7 @@ function _sqRenderQuestion(){
   document.getElementById('sqCounter').textContent = (_sqCurrentIdx+1) + ' / ' + total;
   _sqAnswered = false;
 
-  const opts = q.options || q.choices || [];
+  const opts = q.options || q.choices || q.o || [];
   const optHtml = opts.map((opt, i) => {
     const label = String.fromCharCode(65+i);
     return `<button onclick="_sqAnswer(${i})" id="sqOpt${i}" style="width:100%;text-align:left;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:14px;padding:13px 14px;margin-bottom:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;">
@@ -28197,13 +28200,13 @@ function _sqAnswer(idx){
   if(_sqAnswered) return;
   _sqAnswered = true;
   const q = _sqQuestions[_sqCurrentIdx];
-  const correct = q.correct !== undefined ? q.correct : q.answer;
+  const correct = q.correct !== undefined ? q.correct : (q.answer !== undefined ? q.answer : q.a);
   const isCorrect = (idx === correct || idx === Number(correct));
 
   if(isCorrect) _sqScore++;
 
   // Color the buttons
-  const opts = q.options || q.choices || [];
+  const opts = q.options || q.choices || q.o || [];
   opts.forEach((_, i) => {
     const btn = document.getElementById('sqOpt'+i);
     if(!btn) return;
@@ -28224,12 +28227,12 @@ function _sqAnswer(idx){
     fb.style.background = 'rgba(34,197,94,.15)';
     fb.style.color = '#22C55E';
     fb.style.border = '1px solid rgba(34,197,94,.3)';
-    fb.textContent = '✅ Sahi jawab! ' + (q.explanation || '');
+    fb.textContent = '✅ Sahi jawab! ' + (q.explanation || q.explain || '');
   } else {
     fb.style.background = 'rgba(239,68,68,.12)';
     fb.style.color = '#ef4444';
     fb.style.border = '1px solid rgba(239,68,68,.3)';
-    fb.textContent = '❌ Galat — Sahi jawab: ' + (q.options||q.choices||[])[Number(correct)] + (q.explanation ? ' — ' + q.explanation : '');
+    fb.textContent = '❌ Galat — Sahi jawab: ' + (q.options||q.choices||q.o||[])[Number(correct)] + ((q.explanation||q.explain) ? ' — ' + (q.explanation||q.explain) : '');
   }
 
   document.getElementById('sqNextBtn').style.display = 'block';
