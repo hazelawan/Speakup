@@ -14201,7 +14201,8 @@ function saSaveLevel(){
   let parsed = null;
   try { parsed = JSON.parse(raw.replace(/```json|```/g,'').trim()); } catch(e){}
 
-  get(ref(db, 'skills/'+_saCurrentTopic)).then(snap=>{
+  if(!window.FB_DB){ st.style.color='#ef4444'; st.textContent='❌ Firebase connect nahi hua'; return; }
+  window.FB_GET(window.FB_REF(window.FB_DB, 'skills/'+_saCurrentTopic)).then(snap=>{
     let data = snap.val();
 
     // Auto-init structure if not present
@@ -14239,7 +14240,7 @@ function saSaveLevel(){
     }
 
     // Save to Firebase
-    set(ref(db,'skills/'+_saCurrentTopic), data).then(()=>{
+    window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic), data).then(()=>{
       st.style.color='#22C55E';
       st.textContent='✅ "'+lv.title+'" save ho gaya! App mein live hai.';
       showAdminToast('💾 Saved: '+lv.title);
@@ -14273,7 +14274,8 @@ function saInitFirebase(){
     }))
   };
 
-  set(ref(db,'skills/'+topic), skeleton).then(()=>{
+  if(!window.FB_DB){ st.style.color='#ef4444'; st.textContent='❌ Firebase connect nahi hua — thoda wait karo'; return; }
+  window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+topic), skeleton).then(()=>{
     st.style.color='#22C55E';
     st.textContent='✅ Structure save ho gaya! Ab content add kar sakte ho.';
     showAdminToast('🚀 Firebase ready!');
@@ -14476,7 +14478,8 @@ function saveSingleLevel() {
   const lv  = _saSelectedLevel;
   const st  = document.getElementById('slStatus');
 
-  get(ref(db, 'skills/' + _saCurrentTopic)).then(snap => {
+  if(!window.FB_DB){ showAdminToast('❌ Firebase connect nahi hua'); return; }
+  window.FB_GET(window.FB_REF(window.FB_DB, 'skills/' + _saCurrentTopic)).then(snap => {
     let data = snap.val();
     // ✅ AUTO-INIT: Agar Firebase mein structure nahi to SA_COURSE se khud bana lo
     if (!data || !data.sections) {
@@ -14547,7 +14550,7 @@ function saveSingleLevel() {
       if(hint) existing.hint = hint;
     }
 
-    set(ref(db, 'skills/' + _saCurrentTopic), data).then(() => {
+    window.FB_SET(window.FB_REF(window.FB_DB, 'skills/' + _saCurrentTopic), data).then(() => {
       st.style.color = '#22C55E';
       st.textContent = '✅ "' + lv.title + '" save ho gaya! App mein live hai.';
       showAdminToast('💾 Level saved: ' + lv.title);
@@ -14609,7 +14612,8 @@ function saveSkillsToFirebase() {
   if (!validateSkillsJson()) return;
   const data = JSON.parse(document.getElementById('skillsJsonInput').value.trim());
   const st   = document.getElementById('skillsJsonStatus');
-  set(ref(db, 'skills/'+_saCurrentTopic), data).then(()=>{
+  if(!window.FB_DB){ st.style.color='#ef4444'; st.textContent='❌ Firebase connect nahi hua'; return; }
+  window.FB_SET(window.FB_REF(window.FB_DB, 'skills/'+_saCurrentTopic), data).then(()=>{
     st.style.color='#22C55E'; st.textContent='✅ Firebase pe save ho gaya!';
     showAdminToast('⚡ Skills data saved!');
     loadSkillsFromFirebaseAdmin();
@@ -14621,7 +14625,8 @@ function loadSkillsFromFirebaseAdmin() {
   // Show loading state
   const el = document.getElementById('skillsSavedList');
   if(el) el.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">⏳ Loading...</div>';
-  get(ref(db, 'skills/'+_saCurrentTopic)).then(snap=>{
+  if(!window.FB_DB){ if(preview) preview.innerHTML='<span style="color:#FFD166;">⏳ Firebase connect ho raha hai...</span>'; return; }
+  window.FB_GET(window.FB_REF(window.FB_DB, 'skills/'+_saCurrentTopic)).then(snap=>{
     const data = snap.val();
     _saFirebaseData = data;
     if (!data) {
@@ -14655,12 +14660,12 @@ function loadSkillsFromFirebaseAdmin() {
 
 function deleteSkillLevel(secId,lvId){
   if(!confirm('Is level ko delete karo?')) return;
-  get(ref(db,'skills/'+_saCurrentTopic)).then(snap=>{
+  window.FB_GET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic)).then(snap=>{
     let data=snap.val(); if(!data) return;
     const sec=data.sections&&data.sections.find(s=>s.id===secId);
     if(!sec||!sec.levels) return;
     sec.levels=sec.levels.filter(l=>l.id!==lvId);
-    set(ref(db,'skills/'+_saCurrentTopic),data).then(()=>{
+    window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic),data).then(()=>{
       showAdminToast('🗑️ Level deleted!'); loadSkillsFromFirebaseAdmin();
     });
   });
@@ -14748,7 +14753,8 @@ function saveEditedLevel(){
   const content=document.getElementById('editModalContent').value.trim();
   const st=document.getElementById('editModalStatus');
   if(!content){st.style.color='#ef4444';st.textContent='❌ Content khali hai!';return;}
-  get(ref(db,'skills/'+_saCurrentTopic)).then(snap=>{
+  if(!window.FB_DB){st.style.color='#ef4444';st.textContent='❌ Firebase connect nahi hua';return;}
+  window.FB_GET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic)).then(snap=>{
     let data=snap.val(); if(!data) return;
     const sec=data.sections&&data.sections.find(s=>s.id===secId);
     const lv=sec&&sec.levels&&sec.levels.find(l=>l.id===lvId);
@@ -14769,7 +14775,7 @@ function saveEditedLevel(){
       // Plain text/HTML
       lv.articleContent=content; delete lv.articleBilingual;
     }
-    set(ref(db,'skills/'+_saCurrentTopic),data).then(()=>{
+    window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic),data).then(()=>{
       st.style.color='#22C55E';st.textContent='✅ Saved!';
       showAdminToast('✅ '+lv.title+' updated!');
       setTimeout(()=>{document.getElementById('skillsEditModal').style.display='none';},800);
@@ -14781,14 +14787,14 @@ function saveEditedLevel(){
 
 function deleteSkillLevelContent(secId,lvId){
   showConfirm('🗑️','Content Delete Karo?','Is level ka Firebase content delete ho jayega (structure rahega)','Delete','#FF6B6B','#CC3333',()=>{
-    get(ref(db,'skills/'+_saCurrentTopic)).then(snap=>{
+    window.FB_GET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic)).then(snap=>{
       let data=snap.val(); if(!data) return;
       const sec=data.sections&&data.sections.find(s=>s.id===secId);
       const lv=sec&&sec.levels&&sec.levels.find(l=>l.id===lvId);
       if(!lv) return;
       delete lv.articleContent; delete lv.articleBilingual; delete lv.articleContentEn;
       delete lv.quizQuestions; delete lv.gameId; delete lv.gameData; delete lv.hint;
-      set(ref(db,'skills/'+_saCurrentTopic),data).then(()=>{
+      window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic),data).then(()=>{
         showAdminToast('🗑️ Content deleted!');
         loadSkillsFromFirebaseAdmin();
         setTimeout(renderSkillsSavedList,1200);
