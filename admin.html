@@ -14255,32 +14255,43 @@ function saInitFirebase(){
   const topic = document.getElementById('sa_topic').value || 'electricity';
   const course = SA_COURSE[topic];
   if(!course){ st.style.color='#ef4444'; st.textContent='❌ SA_COURSE nahi mila'; return; }
-  st.style.color='#F5C400'; st.textContent='⏳ Sirf structure bana raha hai...';
-
-  // LIGHTWEIGHT: sirf skeleton — koi content nahi, sirf id/title/type/icon
-  const skeleton = {
-    title: course.title,
-    icon: course.icon,
-    sections: course.sections.map(sec=>({
-      id: sec.id,
-      eyebrow: sec.eyebrow,
-      title: sec.title,
-      levels: (sec.levels||[]).map(lv=>({
-        id: lv.id,
-        title: lv.title,
-        type: lv.type,
-        icon: lv.icon || (lv.type==='game'?'🎮':lv.type==='quiz'?'✏️':'📖')
-      }))
-    }))
-  };
-
   if(!window.FB_DB){ st.style.color='#ef4444'; st.textContent='❌ Firebase connect nahi hua — thoda wait karo'; return; }
-  window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+topic), skeleton).then(()=>{
-    st.style.color='#22C55E';
-    st.textContent='✅ Structure save ho gaya! Ab content add kar sakte ho.';
-    showAdminToast('🚀 Firebase ready!');
-    saLoadFirebase();
-  }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Error: '+e.message; });
+
+  st.style.color='#F5C400'; st.textContent='⏳ Check kar raha hai...';
+
+  // ✅ SAFETY: Pehle check karo — agar data already hai toh OVERWRITE NAHI KAREGA
+  window.FB_GET(window.FB_REF(window.FB_DB,'skills/'+topic)).then(snap=>{
+    if(snap && snap.val && snap.val() && snap.val().sections){
+      // Data already exist karta hai — confirm maango
+      st.style.color='#F5C400';
+      st.textContent='⚠️ Data already exists! Dobara initialize karne se sara content delete ho jayega. Confirm karne ke liye Reset button use karo.';
+      return;
+    }
+
+    // Data nahi hai — fresh structure banao
+    st.style.color='#F5C400'; st.textContent='⏳ Sirf structure bana raha hai...';
+    const skeleton = {
+      title: course.title,
+      icon: course.icon,
+      sections: course.sections.map(sec=>({
+        id: sec.id,
+        eyebrow: sec.eyebrow,
+        title: sec.title,
+        levels: (sec.levels||[]).map(lv=>({
+          id: lv.id,
+          title: lv.title,
+          type: lv.type,
+          icon: lv.icon || (lv.type==='game'?'🎮':lv.type==='quiz'?'✏️':'📖')
+        }))
+      }))
+    };
+    window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+topic), skeleton).then(()=>{
+      st.style.color='#22C55E';
+      st.textContent='✅ Structure save ho gaya! Ab content add kar sakte ho.';
+      showAdminToast('🚀 Firebase ready!');
+      saLoadFirebase();
+    }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Error: '+e.message; });
+  }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Firebase read error: '+e.message; });
 }
 
 function saLoadFirebase(){
