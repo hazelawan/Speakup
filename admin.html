@@ -8036,67 +8036,86 @@ function saveDayFromModal(){
 
   // Agar JSON tab mein content hai to parse karo
   if(jsonRaw.trim()){
+    let parsed = null;
+    let parseError = null;
+
     try{
-      let parsed;
+      const cleaned = jsObjectToJson(jsonRaw);
+      parsed = JSON.parse(cleaned);
+    } catch(e1){
       try{
-        const cleaned = jsObjectToJson(jsonRaw);
-        parsed = JSON.parse(cleaned);
-      } catch(e1){
-        try{
-          let raw2 = jsonRaw
-            .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')
-            .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-          if(raw2.endsWith(';')) raw2 = raw2.slice(0,-1).trim();
-          parsed = (new Function('return ('+raw2+')'))();
-        } catch(e2){ throw new Error(e1.message); }
+        let raw2 = jsonRaw
+          .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/,'')
+          .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+        if(raw2.endsWith(';')) raw2 = raw2.slice(0,-1).trim();
+        parsed = (new Function('return ('+raw2+')'))();
+      } catch(e2){
+        parseError = e1;
       }
-      day.lessonContent = parsed;
-      day.title = parsed.themeEn || parsed.theme || title;
-      day.emoji = parsed.emoji || emoji;
-      day.lessonCount = (parsed.vocab||[]).length || day.lessonCount || 15;
-    } catch(e){
-      const msg = e.message || '';
-      // Line number + context nikalo
-      const posMatch = msg.match(/position (\d+)/i);
-      let lineNum = '?', colNum = '?', badLine = '', arrowStr = '', hint = '';
-      if(posMatch){
-        const pos = parseInt(posMatch[1]);
-        const lines = jsonRaw.substring(0, pos).split('\n');
-        lineNum = lines.length;
-        colNum  = lines[lines.length-1].length + 1;
-        const allLines = jsonRaw.split('\n');
-        badLine = (allLines[lineNum-1] || '').trim();
-        if(badLine.length > 60) badLine = badLine.substring(0,60)+'…';
-        arrowStr = ' '.repeat(Math.min(colNum-1,60)) + '^';
-        // Textarea mein cursor set karo
-        const ta = document.getElementById('lessonJson');
-        if(ta){ ta.focus(); ta.setSelectionRange(pos, pos+1); }
-      }
-      // Helpful hint
-      if(msg.includes("property name"))      hint = '💡 JSON adhoora paste hua — poora dobara copy karke paste karo';
-      else if(msg.includes("Unexpected end")) hint = '💡 JSON beech mein kat gaya — closing } ya ] missing hai';
-      else if(msg.includes("Unexpected token")) hint = '💡 Extra/missing comma ya bracket — us line ko check karo';
-      else if(msg.includes("control character")) hint = '💡 Hidden character hai — Gemini se fresh copy karo';
-      else                                    hint = '💡 JSON structure theek nahi hai';
-      // Inline panel mein dikhao (JSON tab ke neeche)
-      const panel = document.getElementById('jsonParseResult');
-      if(panel){
-        panel.innerHTML =
-          '<div style="background:rgba(255,80,80,.12);border:1.5px solid #FF6B6B;border-radius:10px;padding:10px;margin-top:6px;font-family:monospace;font-size:11px;line-height:1.7;">' +
-          '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:6px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+'</div>' +
-          (badLine ? '<div style="color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow:auto;">'+badLine+'</div>' : '') +
-          (arrowStr ? '<div style="color:#FF6B6B;padding:0 8px;letter-spacing:0;">'+arrowStr+'</div>' : '') +
-          '<div style="color:#aaa;font-size:10px;margin-top:4px;">'+msg+'</div>' +
-          '<div style="color:#2EE59D;margin-top:6px;font-family:Nunito,sans-serif;">'+hint+'</div>' +
-          '</div>';
-        // JSON tab pe le jao agar us par nahi hain
-        const jsonTab = document.querySelector('[onclick*="lpanel-json"]');
-        if(jsonTab) jsonTab.click();
-        panel.scrollIntoView({behavior:'smooth', block:'nearest'});
-      }
-      showToast('\u274c Line '+lineNum+': '+hint,'#FF6B6B', 4000);
-      return;
     }
+
+    // Direct parse fail ho gaya — Auto-Fix try karo
+    if(parsed === null && parseError){
+      const fix = tryAutoFixJson(jsonRaw);
+      if(fix.success){
+        parsed = fix.parsed;
+        const ta = document.getElementById('lessonJson');
+        if(ta) ta.value = fix.json;
+        const panel = document.getElementById('jsonParseResult');
+        if(panel){
+          panel.innerHTML =
+            '<div style="background:rgba(46,229,157,.1);border:1.5px solid #2EE59D;border-radius:10px;padding:10px;margin-top:6px;font-size:11px;line-height:1.7;">' +
+            '<div style="color:#2EE59D;font-weight:700;margin-bottom:4px;">🔧 Auto-Fixed!</div>' +
+            '<div style="color:#cde;">'+fix.fixes.join('<br>')+'</div>' +
+            (fix.truncated ? '<div style="color:#FFD166;margin-top:6px;">⚠️ JSON adhoora paste hua tha — bracket auto-close kar diye. Save hone se pehle neeche scroll karke last vocab/sentence item check kar lo, ho sakta hai woh incomplete ho.</div>' : '') +
+            '</div>';
+        }
+        showToast(fix.truncated ? '🔧 Auto-Fixed (adhoora JSON close kiya) — verify karo' : '🔧 Auto-Fixed! Save ho raha hai…', fix.truncated ? '#FFD166' : '#2EE59D', 4500);
+      } else {
+        const msg = parseError.message || '';
+        // Line number + context nikalo
+        const posMatch = msg.match(/position (\d+)/i);
+        let lineNum = '?', colNum = '?', badLine = '', arrowStr = '', hint = '';
+        if(posMatch){
+          const pos = parseInt(posMatch[1]);
+          const lines = jsonRaw.substring(0, pos).split('\n');
+          lineNum = lines.length;
+          colNum  = lines[lines.length-1].length + 1;
+          const allLines = jsonRaw.split('\n');
+          badLine = (allLines[lineNum-1] || '').trim();
+          if(badLine.length > 60) badLine = badLine.substring(0,60)+'…';
+          arrowStr = ' '.repeat(Math.min(colNum-1,60)) + '^';
+          const ta = document.getElementById('lessonJson');
+          if(ta){ ta.focus(); ta.setSelectionRange(pos, pos+1); }
+        }
+        if(msg.includes("property name"))      hint = '💡 JSON adhoora paste hua — poora dobara copy karke paste karo';
+        else if(msg.includes("Unexpected end")) hint = '💡 JSON beech mein kat gaya — closing } ya ] missing hai';
+        else if(msg.includes("Unexpected token")) hint = '💡 Extra/missing comma ya bracket — us line ko check karo';
+        else if(msg.includes("control character")) hint = '💡 Hidden character hai — Gemini se fresh copy karo';
+        else                                    hint = '💡 JSON structure theek nahi hai';
+        const panel = document.getElementById('jsonParseResult');
+        if(panel){
+          panel.innerHTML =
+            '<div style="background:rgba(255,80,80,.12);border:1.5px solid #FF6B6B;border-radius:10px;padding:10px;margin-top:6px;font-family:monospace;font-size:11px;line-height:1.7;">' +
+            '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:6px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+' (Auto-Fix bhi nahi kar saka)</div>' +
+            (badLine ? '<div style="color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow:auto;">'+badLine+'</div>' : '') +
+            (arrowStr ? '<div style="color:#FF6B6B;padding:0 8px;letter-spacing:0;">'+arrowStr+'</div>' : '') +
+            '<div style="color:#aaa;font-size:10px;margin-top:4px;">'+msg+'</div>' +
+            '<div style="color:#2EE59D;margin-top:6px;font-family:Nunito,sans-serif;">'+hint+'</div>' +
+            '</div>';
+          const jsonTab = document.querySelector('[onclick*="lpanel-json"]');
+          if(jsonTab) jsonTab.click();
+          panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+        }
+        showToast('\u274c Line '+lineNum+': '+hint,'#FF6B6B', 4000);
+        return;
+      }
+    }
+
+    day.lessonContent = parsed;
+    day.title = parsed.themeEn || parsed.theme || title;
+    day.emoji = parsed.emoji || emoji;
+    day.lessonCount = (parsed.vocab||[]).length || day.lessonCount || 15;
   }
 
   // Vocab/Sentences/Grammar separate tabs se bhi lo
@@ -8207,6 +8226,83 @@ function sanitizeJsonString(str){
     });
 }
 
+// ── balanceBrackets — counts unclosed { [ " and returns suffix to close them ──
+function balanceBrackets(s){
+  const stack = [];
+  let inStr = false, escape = false;
+  for(let i=0; i<s.length; i++){
+    const c = s[i];
+    if(inStr){
+      if(escape){ escape = false; continue; }
+      if(c === '\\'){ escape = true; continue; }
+      if(c === '"'){ inStr = false; }
+      continue;
+    }
+    if(c === '"'){ inStr = true; continue; }
+    if(c === '{' || c === '[') stack.push(c);
+    else if(c === '}'){ if(stack[stack.length-1] === '{') stack.pop(); }
+    else if(c === ']'){ if(stack[stack.length-1] === '[') stack.pop(); }
+  }
+  let suffix = '';
+  if(inStr) suffix += '"';
+  for(let i = stack.length-1; i >= 0; i--){
+    suffix += (stack[i] === '{') ? '}' : ']';
+  }
+  return {suffix, openCount: stack.length, wasInString: inStr};
+}
+
+// ── tryAutoFixJson — attempts to repair common Gemini/ChatGPT paste issues ──
+// Returns {success, json, parsed, fixes, truncated} or {success:false, fixes, error}
+function tryAutoFixJson(raw){
+  const fixes = [];
+  let s = raw;
+
+  // 1. Sanitize hidden/control characters
+  let before = s;
+  s = sanitizeJsonString(s);
+  if(s !== before) fixes.push('Hidden/invisible characters hataye');
+
+  // 2. Strip wrapper (ALL_DAYS[...]=, code fences, trailing ;)
+  before = s.trim();
+  s = before
+    .replace(/^ALL_DAYS\[['"][^'"]+['"]\]\[\d+\]\s*=\s*/, '')
+    .replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+  if(s.endsWith(';')) s = s.slice(0, -1).trim();
+  if(s !== before) fixes.push('Extra wrapper code (```/ALL_DAYS=) hataya');
+
+  // 3. Smart/curly quotes → straight quotes
+  before = s;
+  s = s.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
+  if(s !== before) fixes.push('Smart quotes ko seedha quotes mein badla');
+
+  // 4. Trailing commas before } or ]
+  before = s;
+  s = s.replace(/,(\s*[}\]])/g, '$1');
+  if(s !== before) fixes.push('Extra commas hataye');
+
+  // Try parsing after basic cleanups
+  try{
+    const parsed = JSON.parse(s);
+    return {success:true, json:s, parsed, fixes, truncated:false};
+  } catch(e){ /* fall through to bracket-balancing */ }
+
+  // 5. Handle truncated JSON — close unterminated string + unclosed brackets
+  let s2 = s.replace(/,\s*$/, '');           // remove dangling trailing comma
+  const bal = balanceBrackets(s2);
+  let truncated = false;
+  if(bal.wasInString || bal.openCount > 0){
+    s2 = s2 + bal.suffix;
+    truncated = true;
+  }
+  try{
+    const parsed = JSON.parse(s2);
+    if(truncated) fixes.push('JSON adhoora tha — missing brackets/quotes auto-close kiye');
+    return {success:true, json:s2, parsed, fixes, truncated};
+  } catch(e2){
+    return {success:false, fixes, error:e2};
+  }
+}
+
 function jsObjectToJson(str){
   // Step 0: Sanitize bad control characters
   str = sanitizeJsonString(str);
@@ -8291,7 +8387,8 @@ function parseJsonLesson(){
   if(!raw.trim()){ showToast('\u274c JSON khali hai','#FF6B6B'); return; }
 
   // Parse — JS object aur JSON dono handle
-  let parsed;
+  let parsed = null;
+  let parseError = null;
   try{
     const cleaned = jsObjectToJson(raw);
     parsed = JSON.parse(cleaned);
@@ -8303,7 +8400,32 @@ function parseJsonLesson(){
       if(raw2.endsWith(';')) raw2 = raw2.slice(0,-1).trim();
       parsed = (new Function('return ('+raw2+')'))();
     } catch(e2){
-      const msg = e1.message || '';
+      parseError = e1;
+    }
+  }
+
+  // Direct parse fail ho gaya — Auto-Fix try karo
+  if(parsed === null && parseError){
+    const fix = tryAutoFixJson(raw);
+    if(fix.success){
+      parsed = fix.parsed;
+      const ta = isEditOpen
+        ? document.getElementById('edJsonInp')
+        : document.getElementById('lessonJson');
+      if(ta) ta.value = fix.json;
+      const panel = document.getElementById('jsonParseResult');
+      if(panel){
+        panel.innerHTML =
+          '<div style="background:rgba(46,229,157,.1);border:1.5px solid #2EE59D;border-radius:10px;padding:10px;margin-top:6px;font-size:11px;line-height:1.7;">' +
+          '<div style="color:#2EE59D;font-weight:700;margin-bottom:4px;">🔧 Auto-Fixed!</div>' +
+          '<div style="color:#cde;">'+fix.fixes.join('<br>')+'</div>' +
+          (fix.truncated ? '<div style="color:#FFD166;margin-top:6px;">⚠️ JSON adhoora paste hua tha — bracket auto-close kar diye. Last vocab/sentence item check kar lo, ho sakta hai woh incomplete ho.</div>' : '') +
+          '</div>';
+        panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+      showToast(fix.truncated ? '🔧 Auto-Fixed (adhoora JSON close kiya) — verify karo' : '🔧 Auto-Fixed! Parsed successfully','#2EE59D', 4500);
+    } else {
+      const msg = parseError.message || '';
       const posMatch = msg.match(/position (\d+)/i);
       let lineNum = '?', colNum = '?', badLine = '', arrowStr = '', hint = '';
       if(posMatch){
@@ -8329,7 +8451,7 @@ function parseJsonLesson(){
       if(panel){
         panel.innerHTML =
           '<div style="background:rgba(255,80,80,.12);border:1.5px solid #FF6B6B;border-radius:10px;padding:10px;margin-top:6px;font-family:monospace;font-size:11px;line-height:1.7;">' +
-          '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:6px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+'</div>' +
+          '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:6px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+' (Auto-Fix bhi nahi kar saka)</div>' +
           (badLine ? '<div style="color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow:auto;">'+badLine+'</div>' : '') +
           (arrowStr ? '<div style="color:#FF6B6B;padding:0 8px;letter-spacing:0;">'+arrowStr+'</div>' : '') +
           '<div style="color:#aaa;font-size:10px;margin-top:4px;">'+msg+'</div>' +
