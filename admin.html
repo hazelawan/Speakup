@@ -8147,7 +8147,30 @@ function saveDayFromModal(){
 
 // JS object string ko valid JSON mein convert karo
 // ROBUST: escaped apostrophes, all edge cases handle
+function sanitizeJsonString(str){
+  // Remove invisible/control characters that break JSON.parse
+  // Covers: null bytes, BOM, RTL/LTR marks, zero-width chars, soft hyphens, non-breaking spaces
+  return str
+    .replace(/\u0000/g, '')           // null bytes
+    .replace(/\uFEFF/g, '')           // BOM
+    .replace(/[\u200B-\u200F]/g, '')  // zero-width + RTL/LTR marks
+    .replace(/\u00AD/g, '')           // soft hyphen
+    .replace(/\u00A0/g, ' ')          // non-breaking space → normal space
+    .replace(/[\u2028\u2029]/g, ' ')  // line/paragraph separators → space
+    // Fix unescaped literal newlines INSIDE string values only
+    // (replace raw \n \r \t inside strings with their escaped versions)
+    .replace(/"((?:[^"\\]|\\.)*)"/g, function(match, inner){
+      return '"' + inner
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t') + '"';
+    });
+}
+
 function jsObjectToJson(str){
+  // Step 0: Sanitize bad control characters
+  str = sanitizeJsonString(str);
+
   // Step 1: Strip Gemini format prefix and code fences
   str = str.trim();
   // Remove ALL_DAYS['en'][4] = prefix
