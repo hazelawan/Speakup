@@ -6516,14 +6516,15 @@ function confirmCancel(){ document.getElementById('customConfirm').style.display
 // ════════════════════════════════════════════
 // TOAST
 // ════════════════════════════════════════════
-function showToast(msg,color='var(--g)'){
+function showToast(msg,color,duration){
+  color=color||'var(--g)'; duration=duration||2200;
   const t=document.createElement('div');
-  t.style.cssText=`position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(14,28,40,.97);border:2px solid ${color};color:${color};padding:13px 22px;border-radius:20px;font-family:'Fredoka One',sans-serif;font-size:15px;z-index:9999;white-space:nowrap;box-shadow:0 12px 40px rgba(0,0,0,.5);max-width:90vw;text-align:center;backdrop-filter:blur(12px);opacity:0;transition:opacity .22s,transform .28s;`;
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(14,28,40,.97);border:2px solid '+color+';color:'+color+';padding:13px 22px;border-radius:20px;font-family:\'Fredoka One\',sans-serif;font-size:13px;z-index:9999;white-space:pre-wrap;word-break:break-word;box-shadow:0 12px 40px rgba(0,0,0,.5);max-width:90vw;text-align:center;backdrop-filter:blur(12px);opacity:0;transition:opacity .22s,transform .28s;';
   t.textContent=msg;
   document.body.appendChild(t);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';}));
-  setTimeout(()=>{t.style.opacity='0';},2200);
-  setTimeout(()=>t.remove(),2550);
+  setTimeout(()=>{t.style.opacity='0';},duration);
+  setTimeout(()=>t.remove(),duration+350);
 }
 
 // ════════════════════════════════════════════
@@ -8054,7 +8055,46 @@ function saveDayFromModal(){
       day.emoji = parsed.emoji || emoji;
       day.lessonCount = (parsed.vocab||[]).length || day.lessonCount || 15;
     } catch(e){
-      showToast('\u274c JSON error: '+e.message,'#FF6B6B');
+      const msg = e.message || '';
+      // Line number + context nikalo
+      const posMatch = msg.match(/position (\d+)/i);
+      let lineNum = '?', colNum = '?', badLine = '', arrowStr = '', hint = '';
+      if(posMatch){
+        const pos = parseInt(posMatch[1]);
+        const lines = jsonRaw.substring(0, pos).split('\n');
+        lineNum = lines.length;
+        colNum  = lines[lines.length-1].length + 1;
+        const allLines = jsonRaw.split('\n');
+        badLine = (allLines[lineNum-1] || '').trim();
+        if(badLine.length > 60) badLine = badLine.substring(0,60)+'…';
+        arrowStr = ' '.repeat(Math.min(colNum-1,60)) + '^';
+        // Textarea mein cursor set karo
+        const ta = document.getElementById('lessonJson');
+        if(ta){ ta.focus(); ta.setSelectionRange(pos, pos+1); }
+      }
+      // Helpful hint
+      if(msg.includes("property name"))      hint = '💡 JSON adhoora paste hua — poora dobara copy karke paste karo';
+      else if(msg.includes("Unexpected end")) hint = '💡 JSON beech mein kat gaya — closing } ya ] missing hai';
+      else if(msg.includes("Unexpected token")) hint = '💡 Extra/missing comma ya bracket — us line ko check karo';
+      else if(msg.includes("control character")) hint = '💡 Hidden character hai — Gemini se fresh copy karo';
+      else                                    hint = '💡 JSON structure theek nahi hai';
+      // Inline panel mein dikhao (JSON tab ke neeche)
+      const panel = document.getElementById('jsonParseResult');
+      if(panel){
+        panel.innerHTML =
+          '<div style="background:rgba(255,80,80,.12);border:1.5px solid #FF6B6B;border-radius:10px;padding:10px;margin-top:6px;font-family:monospace;font-size:11px;line-height:1.7;">' +
+          '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:6px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+'</div>' +
+          (badLine ? '<div style="color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow:auto;">'+badLine+'</div>' : '') +
+          (arrowStr ? '<div style="color:#FF6B6B;padding:0 8px;letter-spacing:0;">'+arrowStr+'</div>' : '') +
+          '<div style="color:#aaa;font-size:10px;margin-top:4px;">'+msg+'</div>' +
+          '<div style="color:#2EE59D;margin-top:6px;font-family:Nunito,sans-serif;">'+hint+'</div>' +
+          '</div>';
+        // JSON tab pe le jao agar us par nahi hain
+        const jsonTab = document.querySelector('[onclick*="lpanel-json"]');
+        if(jsonTab) jsonTab.click();
+        panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+      showToast('\u274c Line '+lineNum+': '+hint,'#FF6B6B', 4000);
       return;
     }
   }
@@ -8263,7 +8303,42 @@ function parseJsonLesson(){
       if(raw2.endsWith(';')) raw2 = raw2.slice(0,-1).trim();
       parsed = (new Function('return ('+raw2+')'))();
     } catch(e2){
-      showToast('\u274c JSON error: '+e1.message,'#FF6B6B'); return;
+      const msg = e1.message || '';
+      const posMatch = msg.match(/position (\d+)/i);
+      let lineNum = '?', colNum = '?', badLine = '', arrowStr = '', hint = '';
+      if(posMatch){
+        const pos = parseInt(posMatch[1]);
+        const lines = raw.substring(0, pos).split('\n');
+        lineNum = lines.length;
+        colNum  = lines[lines.length-1].length + 1;
+        const allLines = raw.split('\n');
+        badLine = (allLines[lineNum-1] || '').trim();
+        if(badLine.length > 60) badLine = badLine.substring(0,60)+'…';
+        arrowStr = ' '.repeat(Math.min(colNum-1,60)) + '^';
+        const ta = isEditOpen
+          ? document.getElementById('edJsonInp')
+          : document.getElementById('lessonJson');
+        if(ta){ ta.focus(); ta.setSelectionRange(pos, pos+1); }
+      }
+      if(msg.includes("property name"))       hint = '💡 JSON adhoora paste hua — poora dobara copy karke paste karo';
+      else if(msg.includes("Unexpected end")) hint = '💡 JSON beech mein kat gaya — closing } ya ] missing hai';
+      else if(msg.includes("Unexpected token")) hint = '💡 Extra/missing comma ya bracket — us line ko check karo';
+      else if(msg.includes("control character")) hint = '💡 Hidden character hai — Gemini se fresh copy karo';
+      else                                     hint = '💡 JSON structure theek nahi hai';
+      const panel = document.getElementById('jsonParseResult');
+      if(panel){
+        panel.innerHTML =
+          '<div style="background:rgba(255,80,80,.12);border:1.5px solid #FF6B6B;border-radius:10px;padding:10px;margin-top:6px;font-family:monospace;font-size:11px;line-height:1.7;">' +
+          '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:6px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+'</div>' +
+          (badLine ? '<div style="color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow:auto;">'+badLine+'</div>' : '') +
+          (arrowStr ? '<div style="color:#FF6B6B;padding:0 8px;letter-spacing:0;">'+arrowStr+'</div>' : '') +
+          '<div style="color:#aaa;font-size:10px;margin-top:4px;">'+msg+'</div>' +
+          '<div style="color:#2EE59D;margin-top:6px;font-family:Nunito,sans-serif;">'+hint+'</div>' +
+          '</div>';
+        panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+      showToast('\u274c Line '+lineNum+': '+hint,'#FF6B6B', 4000);
+      return;
     }
   }
 
