@@ -27311,12 +27311,30 @@ function _normalizeFirebaseSkillData(val){
   if(!Array.isArray(val.sections)){
     val.sections = Object.values(val.sections);
   }
+
+  // ── gameId lookup map (id → gameId) from SKILLS_DEFAULT_DATA ──
+  // Admin se save hote waqt 'gameId' field Firebase mein nahi jaata,
+  // is liye yahan default structure se backfill kar dete hain.
+  const defaultCourse = SKILLS_DEFAULT_DATA[_currentSkillTopic];
+  const gameIdMap = {};
+  if(defaultCourse && defaultCourse.sections){
+    defaultCourse.sections.forEach(dsec => {
+      (dsec.levels||[]).forEach(dlv => {
+        if(dlv.gameId) gameIdMap[dlv.id] = dlv.gameId;
+      });
+    });
+  }
+
   val.sections = val.sections.map(sec => {
     if(sec && sec.levels && !Array.isArray(sec.levels)){
       sec.levels = Object.values(sec.levels);
     }
     if(sec && sec.levels){
       sec.levels = sec.levels.map(lv => {
+        // ✅ gameId backfill — agar Firebase data mein missing hai
+        if(lv.type==='game' && !lv.gameId && gameIdMap[lv.id]){
+          lv.gameId = gameIdMap[lv.id];
+        }
         // quizQuestions normalize
         if(lv.quizQuestions && !Array.isArray(lv.quizQuestions)){
           lv.quizQuestions = Object.values(lv.quizQuestions);
