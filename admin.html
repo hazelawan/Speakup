@@ -8065,8 +8065,8 @@ function saveDayFromModal(){
           const ta = document.getElementById('lessonJson');
           if(ta){ ta.focus(); ta.setSelectionRange(pos, pos+1); }
         }
-        const hintObj1 = getDetailedJsonHint(msg, badLine, colNum);
-        hint = hintObj1.short;
+        const hObj = getDetailedJsonHint(msg, badLine, colNum);
+        hint = hObj.short;
         const panel = document.getElementById('jsonParseResult');
         if(panel){
           panel.innerHTML =
@@ -8075,13 +8075,13 @@ function saveDayFromModal(){
             (badLine ? '<div style="font-family:monospace;color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow-x:auto;white-space:pre;">'+badLine.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : '') +
             (arrowStr ? '<div style="font-family:monospace;color:#FF6B6B;padding:0 8px;white-space:pre;">'+arrowStr+'</div>' : '') +
             '<div style="color:#888;font-size:10px;margin:4px 0 8px;">'+msg+'</div>' +
-            hintObj1.html +
+            hObj.html +
             '</div>';
           const jsonTab = document.querySelector('[onclick*="lpanel-json"]');
           if(jsonTab) jsonTab.click();
           panel.scrollIntoView({behavior:'smooth', block:'nearest'});
         }
-        showToast('\u274c Line '+lineNum+': '+hintObj1.short,'#FF6B6B', 4000);
+        showToast('\u274c Line '+lineNum+': '+hObj.short,'#FF6B6B', 4000);
         return;
       }
     }
@@ -8178,160 +8178,90 @@ function saveDayFromModal(){
   showToast('✅ Day '+dayNum+' save ho gaya! ('+lang.toUpperCase()+')','#2EE59D');
 }
 
+// JS object string ko valid JSON mein convert karo
+// ROBUST: escaped apostrophes, all edge cases handle
+
 // ── getDetailedJsonHint — exact fix batata hai user ko ──
 function getDetailedJsonHint(msg, badLine, colNum){
   const line = (badLine||'').trim();
   let short = '💡 JSON mein galti hai';
   let steps = [];
 
-  if(msg.includes("Expected ':'") || (msg.includes("property name") && line.match(/^\s*"[^"]+"\s*[^:]/))) {
+  if(msg.includes("Expected ':'") || (msg.includes("property name") && line.match(/^"[^"]+"\s*[^:]/))) {
     const m = line.match(/^"([^"]+)"\s+"([^"]+)"/);
     if(m){
       short = '💡 Colon (:) missing hai key ke baad';
-      steps = [
-        '❌ Galat:  "'+m[1]+'" "'+m[2]+'"',
-        '✅ Sahi:   "'+m[1]+'": "'+m[2]+'"',
-        '👉 Fix: key aur value ke beech mein <b>:</b> lagao'
-      ];
+      steps = ['❌ Galat: "'+m[1]+'" "'+m[2]+'"','✅ Sahi: "'+m[1]+'": "'+m[2]+'"','👉 Fix: key aur value ke beech <b>:</b> lagao'];
     } else {
       short = '💡 Colon (:) missing ya JSON adhoora paste hua';
-      steps = [
-        '👉 Is line ko check karo: key ke baad <b>:</b> hona chahiye',
-        '✅ Sahi format:  "fieldName": "value"',
-        '⚠️ Ya JSON adhoora hai — pura dobara ChatGPT/Gemini se copy karo'
-      ];
+      steps = ['👉 Is line ko check karo: key ke baad <b>:</b> hona chahiye','✅ Sahi format: "fieldName": "value"','⚠️ Ya JSON adhoora hai — pura dobara ChatGPT/Gemini se copy karo'];
     }
-  }
-
-  else if(msg.includes("Unexpected string") || msg.includes("Unexpected number") ||
-          (msg.includes("Unexpected token") && line.match(/"[^"]*"\s*\n?\s*"/))) {
+  } else if(msg.includes("Unexpected string")||msg.includes("Unexpected number")||(msg.includes("Unexpected token")&&line.match(/"[^"]*"\s+"/))){
     short = '💡 Comma (,) missing hai do items ke beech';
-    steps = [
-      '❌ Galat:  { "a": "1"  "b": "2" }',
-      '✅ Sahi:   { "a": "1", "b": "2" }',
-      '👉 Fix: is line ke aakhir mein <b>,</b> lagao'
-    ];
-  }
-
-  else if(msg.includes("Unexpected token }") || msg.includes("Unexpected token ]")) {
+    steps = ['❌ Galat: { "a": "1"  "b": "2" }','✅ Sahi: { "a": "1", "b": "2" }','👉 Fix: is line ke aakhir mein <b>,</b> lagao'];
+  } else if(msg.includes("Unexpected token }")||msg.includes("Unexpected token ]")){
     short = '💡 Extra } ya ] hai — ek zyada closing bracket';
-    steps = [
-      '👉 Is line pe ek extra <b>}</b> ya <b>]</b> hai — hata do',
-      '✅ Har { ka ek } hona chahiye, har [ ka ek ]'
-    ];
-  }
-
-  else if(msg.includes("Unexpected token") && line.match(/,\s*[}\]]/)) {
-    const fixed = line.replace(/,(\s*[}\]])/, '$1');
+    steps = ['👉 Is line pe extra <b>}</b> ya <b>]</b> hai — hata do','✅ Har { ka ek } hona chahiye, har [ ka ek ]'];
+  } else if(msg.includes("Unexpected token")&&line.match(/,\s*[}\]]/)){
+    const fixed = line.replace(/,(\s*[}\]])/,'$1');
     short = '💡 Extra comma hai closing bracket se pehle';
-    steps = [
-      '❌ Galat:  '+line,
-      '✅ Sahi:   '+fixed,
-      '👉 Fix: <b>}</b> ya <b>]</b> se pehle wali <b>,</b> hata do'
-    ];
-  }
-
-  else if(msg.includes("Unexpected end") || msg.includes("Unterminated string")) {
-    const quoteCount = (line.match(/"/g)||[]).length;
-    if(quoteCount % 2 !== 0){
+    steps = ['❌ Galat: '+line,'✅ Sahi: '+fixed,'👉 Fix: <b>}</b> ya <b>]</b> se pehle wali <b>,</b> hata do'];
+  } else if(msg.includes("Unexpected end")||msg.includes("Unterminated string")){
+    const qc = (line.match(/"/g)||[]).length;
+    if(qc%2!==0){
       short = '💡 String band nahi hui — closing " missing hai';
-      steps = [
-        '❌ Galat:  "value": "Jo cheez hai',
-        '✅ Sahi:   "value": "Jo cheez hai"',
-        '👉 Fix: is line ke aakhir mein <b>"</b> lagao',
-        '⚠️ Ya JSON beech mein kat gaya — pura copy karo'
-      ];
+      steps = ['❌ Galat: "value": "Jo cheez hai','✅ Sahi: "value": "Jo cheez hai"','👉 Fix: is line ke aakhir mein <b>"</b> lagao','⚠️ Ya JSON beech mein kat gaya — pura copy karo'];
     } else {
       short = '💡 JSON beech mein kat gaya — } ya ] missing hai';
-      steps = [
-        '👉 Scroll karke neeche dekho — closing <b>}</b> ya <b>]</b> missing hai',
-        '✅ Pura JSON dobara ChatGPT/Gemini se copy karo'
-      ];
+      steps = ['👉 Scroll karke neeche dekho — closing <b>}</b> ya <b>]</b> missing hai','✅ Pura JSON dobara ChatGPT/Gemini se copy karo'];
     }
-  }
-
-  else if(msg.includes("property name") && line.match(/"[^"]*"[^:,}\]]/)) {
-    short = '💡 String ke andar " (double quote) unescaped hai';
-    steps = [
-      '👉 String value ke andar koi <b>"</b> hai jo escape nahi hua',
-      '✅ Fix: us " ko <b>\\"</b> se replace karo',
-      'Misaal: "tip": "Jo "cheez" hai"  →  "tip": "Jo \\"cheez\\" hai"'
-    ];
-  }
-
-  else if(msg.includes("control character") || msg.includes("Bad control")) {
+  } else if(msg.includes("control character")||msg.includes("Bad control")){
     short = '💡 String ke andar hidden/invisible character hai';
-    steps = [
-      '👉 ChatGPT/Gemini se fresh copy karo',
-      '✅ Ya sirf woh value manually type karo',
-      '⚠️ Urdu text mein aksar RTL marker aa jaata hai'
-    ];
-  }
-
-  else if(msg.includes("property name")) {
-    short = '💡 JSON adhoora paste hua ya structure galat hai';
-    steps = [
-      '👉 Scroll karke bilkul neeche dekho — koi <b>}</b> ya <b>]</b> missing ho sakta hai',
-      '✅ Ya pura JSON dobara copy karke paste karo',
-      '⚠️ ChatGPT kabhi kabhi JSON beech mein rok deta hai — dobara generate karo'
-    ];
-  }
-
-  else {
+    steps = ['👉 ChatGPT/Gemini se fresh copy karo','✅ Ya sirf woh value manually type karo','⚠️ Urdu text mein aksar RTL marker aa jaata hai'];
+  } else if(msg.includes("property name")){
+    short = '💡 JSON adhoora paste hua ya koi key galat likhi';
+    steps = ['👉 Is line ka key check karo: <b>place:</b> ya <b>"level: 1</b> jaisi galti to nahi?','✅ Sahi: "place": "value"  aur  "level": 1','⚠️ Ya JSON adhoora hai — pura dobara copy karo'];
+  } else {
     short = '💡 JSON structure mein galti';
-    steps = [
-      '👉 Is line ko check karo: <b>comma, colon, quote</b> sab theek hain?',
-      '✅ Sahi format: "key": "value",  ya  "key": 123,  ya  "key": [...]'
-    ];
+    steps = ['👉 Is line ko check karo: <b>comma, colon, quote</b> sab theek hain?','✅ Sahi format: "key": "value",  ya  "key": 123,'];
   }
 
   const html = '<div style="font-family:Nunito,sans-serif;font-size:11px;line-height:1.9;">'
-    + '<div style="color:#FFD166;font-weight:800;margin-bottom:6px;">' + short + '</div>'
-    + steps.map(s => '<div style="color:#cde;padding:1px 0;">' + s + '</div>').join('')
-    + '</div>';
-
-  return { short, html };
+    +'<div style="color:#FFD166;font-weight:800;margin-bottom:6px;">'+short+'</div>'
+    +steps.map(s=>'<div style="color:#cde;padding:1px 0;">'+s+'</div>').join('')
+    +'</div>';
+  return {short, html};
 }
 
-// JS object string ko valid JSON mein convert karo
-// ROBUST: escaped apostrophes, all edge cases handle
 function sanitizeJsonString(str){
-  // Step 1: Remove invisible/control characters that break JSON.parse
+  // Step 1: Remove invisible/control characters
   str = str
-    .replace(/\u0000/g, '')           // null bytes
-    .replace(/\uFEFF/g, '')           // BOM
-    .replace(/[\u200B-\u200F]/g, '')  // zero-width + RTL/LTR marks
-    .replace(/\u00AD/g, '')           // soft hyphen
-    .replace(/\u00A0/g, ' ')          // non-breaking space → normal space
-    .replace(/[\u2028\u2029]/g, ' ')  // line/paragraph separators → space
-    .replace(/[\u202A-\u202E]/g, '')  // bidirectional override chars (RTL/LTR embed)
-    .replace(/[\u2060-\u2064]/g, '')  // word joiner & related
-    .replace(/\uFFFD/g, '');          // replacement character
-
-  // Step 2: Fix unescaped literal newlines/tabs INSIDE string values
-  // Uses character-by-character scan so it handles broken/incomplete strings too
+    .replace(/\u0000/g, '')
+    .replace(/\uFEFF/g, '')
+    .replace(/[\u200B-\u200F]/g, '')
+    .replace(/\u00AD/g, '')
+    .replace(/\u00A0/g, ' ')
+    .replace(/[\u2028\u2029]/g, ' ')
+    .replace(/[\u202A-\u202E]/g, '')
+    .replace(/[\u2060-\u2064]/g, '')
+    .replace(/\uFFFD/g, '');
+  // Step 2: character-by-character — fix unescaped newlines inside strings
   let result = '';
   let i = 0;
   while(i < str.length){
     const ch = str[i];
     if(ch === '"'){
-      // Start of a double-quoted string — scan until closing unescaped "
       result += ch; i++;
       while(i < str.length){
         const c2 = str[i];
-        if(c2 === '\\' && i+1 < str.length){
-          result += c2 + str[i+1]; i += 2; continue;
-        }
+        if(c2 === '\\' && i+1 < str.length){ result += c2 + str[i+1]; i += 2; continue; }
         if(c2 === '"'){ result += c2; i++; break; }
-        // Unescaped control chars inside string — escape them
         if(c2 === '\n'){ result += '\\n'; i++; continue; }
         if(c2 === '\r'){ result += '\\r'; i++; continue; }
         if(c2 === '\t'){ result += '\\t'; i++; continue; }
         result += c2; i++;
       }
-    } else {
-      result += ch; i++;
-    }
+    } else { result += ch; i++; }
   }
   return result;
 }
@@ -8389,54 +8319,6 @@ function tryAutoFixJson(raw){
   before = s;
   s = s.replace(/,(\s*[}\]])/g, '$1');
   if(s !== before) fixes.push('Extra commas hataye');
-
-  // 4b. Fix unescaped double-quotes INSIDE string values
-  // e.g. "tip": "Jo "cheez" hai" → "tip": "Jo \"cheez\" hai"
-  before = s;
-  try {
-    // Only do this expensive fix if JSON.parse still fails
-    JSON.parse(s); // quick check
-  } catch(_quickErr){
-    // character-by-character: inside a string value, escape any bare " that isn't preceded by \
-    let fixed = '';
-    let inStr = false;
-    let isKey = false; // track if we're parsing a key (after { or ,)
-    let esc = false;
-    let afterColon = false;
-    for(let ci=0; ci<s.length; ci++){
-      const cc = s[ci];
-      if(esc){ fixed += cc; esc = false; continue; }
-      if(cc === '\\'){ fixed += cc; esc = true; continue; }
-      if(!inStr){
-        if(cc === '"'){ inStr = true; fixed += cc; continue; }
-        if(cc === ':') afterColon = true;
-        else if(cc === '{' || cc === ',') afterColon = false;
-        fixed += cc;
-      } else {
-        // inside a string — look ahead to detect if this is a closing " or rogue "
-        if(cc === '"'){
-          // Peek: after this " is there whitespace then : or , or } or ] ?
-          let peek = ci+1;
-          while(peek < s.length && (s[peek]===' '||s[peek]==='\t')) peek++;
-          const nextNonSpace = s[peek] || '';
-          if(nextNonSpace===':'||nextNonSpace===','||nextNonSpace==='}'||nextNonSpace===']'||nextNonSpace===''){
-            // Likely a real closing quote
-            fixed += cc; inStr = false;
-          } else {
-            // Rogue unescaped quote inside string value — escape it
-            fixed += '\\"';
-          }
-          continue;
-        }
-        fixed += cc;
-      }
-    }
-    if(fixed !== before){
-      // Verify it improved things
-      try{ JSON.parse(fixed); fixes.push('String ke andar unescaped quotes fix kiye'); s = fixed; }
-      catch(_){ /* revert — our fix made it worse */ }
-    }
-  }
 
   // Try parsing after basic cleanups
   try{
@@ -8600,8 +8482,8 @@ function parseJsonLesson(){
           : document.getElementById('lessonJson');
         if(ta){ ta.focus(); ta.setSelectionRange(pos, pos+1); }
       }
-      const hintObj2 = getDetailedJsonHint(msg, badLine, colNum);
-      hint = hintObj2.short;
+      const hObj2 = getDetailedJsonHint(msg, badLine, colNum);
+      hint = hObj2.short;
       const panel = document.getElementById('jsonParseResult');
       if(panel){
         panel.innerHTML =
@@ -8610,11 +8492,11 @@ function parseJsonLesson(){
           (badLine ? '<div style="font-family:monospace;color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow-x:auto;white-space:pre;">'+badLine.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : '') +
           (arrowStr ? '<div style="font-family:monospace;color:#FF6B6B;padding:0 8px;white-space:pre;">'+arrowStr+'</div>' : '') +
           '<div style="color:#888;font-size:10px;margin:4px 0 8px;">'+msg+'</div>' +
-          hintObj2.html +
+          hObj2.html +
           '</div>';
         panel.scrollIntoView({behavior:'smooth', block:'nearest'});
       }
-      showToast('\u274c Line '+lineNum+': '+hintObj2.short,'#FF6B6B', 4000);
+      showToast('\u274c Line '+lineNum+': '+hObj2.short,'#FF6B6B', 4000);
       return;
     }
   }
@@ -12459,7 +12341,31 @@ SUBMIT SE PEHLE CHECK KARO:
 □ koi markdown nahi — sirf pure JavaScript?
 
 AGAR KOI GHALAT = DOBARA LIKHO.
-SIRF PURE JAVASCRIPT — KOI EXPLANATION YA MARKDOWN NAHI.`;
+SIRF PURE JAVASCRIPT — KOI EXPLANATION YA MARKDOWN NAHI.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL JSON RULES — IN KO IGNORE KARNA MANA HAI:
+
+RULE 1 — Sabb keys double quotes mein likhna LAZMI hai:
+  SAHI:  "place": "School mein"
+  GALAT: place: "School mein"
+
+RULE 2 — Key ka naam aur colon alag hona LAZMI hai:
+  SAHI:  "level": 1
+  GALAT: "level: 1
+
+RULE 3 — "words" key bilkul sahi format mein:
+  SAHI:  "words": [
+  GALAT: "words: [
+
+RULE 4 — Situations array mein "place" hamesha quoted:
+  SAHI:  {"emoji":"X", "place":"School mein", "example":"..."}
+  GALAT: {"emoji":"X", place:"School mein", "example":"..."}
+
+RULE 5 — Trailing comma BILKUL nahi: ["a","b","c",] GALAT
+RULE 6 — Har string ka opening aur closing quote match kare
+RULE 7 — Koi markdown nahi, koi backtick nahi, sirf pure JS output
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
   document.getElementById('pgPromptText').value = prompt;
   document.getElementById('pgOutputBox').style.display = 'block';
