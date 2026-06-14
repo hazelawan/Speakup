@@ -6621,21 +6621,26 @@ window._syncRetryTimer = null;
 function _doCloudSync(data, attempt){
   attempt = attempt || 1;
   clearTimeout(window._syncRetryTimer); // purana pending retry (stale data) cancel karo
-  if(!window.FIREBASE_READY || !window.FB_DB){
-    // ✅ FIX: Pehle yahan silently return ho jata tha — agar Firebase abhi
-    // connect ho raha tha (page load ke turant baad), to save Firebase
-    // tak kabhi nahi jata tha aur koi error/retry bhi nahi hota tha.
-    // Ab hum poll karenge — Firebase ready hote hi yeh save automatically
-    // retry ho jayega.
+
+  // ✅ FIX: window.FIREBASE_READY app-init hote hi true ho jata hai —
+  // login session restore hone se PEHLE bhi. Agar usi waqt FB_SET() call
+  // ho jaye (auth.currentUser abhi null hai), to Firebase rules
+  // ".write": "auth != null && auth.token.email == '...'" ki wajah se
+  // "PERMISSION_DENIED" deta hai — aur yeh error silently fail ho jata
+  // tha kyunki "✅ Day save ho gaya!" toast ispe depend nahi karta.
+  // Ab hum FIREBASE_READY ke saath FB_AUTH.currentUser bhi check karenge.
+  const authReady = window.FB_AUTH && window.FB_AUTH.currentUser;
+
+  if(!window.FIREBASE_READY || !window.FB_DB || !authReady){
     window._syncPending = true;
     updateCloudBar('offline');
     if(attempt === 1){
-      showToast('⏳ Firebase connect ho raha hai... save hote hi sync karunga','#FFD166', 3000);
+      showToast('⏳ Login session load ho raha hai... save hote hi sync karunga','#FFD166', 3000);
     }
     if(attempt <= 20){ // ~20 * 500ms = 10 sec max wait
       window._syncRetryTimer = setTimeout(()=>{ _doCloudSync(data, attempt+1); }, 500);
     } else {
-      showToast('❌ Firebase connect nahi ho saka — internet check karo. "Force Sync" button try karo.','#FF6B6B', 5000);
+      showToast('❌ Login session ready nahi ho saka — dobara login karo ya "Force Sync" try karo.','#FF6B6B', 5000);
     }
     return;
   }
@@ -6651,12 +6656,12 @@ function _doCloudSync(data, attempt){
     .catch(err=>{
       if(attempt < 4){
         const delay = attempt * 3000;
-        showToast('⚠️ Sync retry ('+attempt+'/3)...','#FFD166');
+        showToast('⚠️ Sync retry ('+attempt+'/3)... — '+err.message,'#FFD166');
         updateCloudBar('error');
         window._syncRetryTimer = setTimeout(()=>{ _doCloudSync(data, attempt+1); }, delay);
       } else {
         window._syncPending = true;
-        showToast('❌ Sync fail — internet check karo. Next save pe retry hoga.','#FF6B6B');
+        showToast('❌ Sync fail: '+err.message+' — internet/login check karo. Next save pe retry hoga.','#FF6B6B', 6000);
         updateCloudBar('error');
       }
     });
