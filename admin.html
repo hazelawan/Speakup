@@ -1446,29 +1446,6 @@ ZAROORI RULES:
     </div>
   </div>
 
-  <!-- Hidden fields for old compatibility -->
-  <select id="slGameType" style="display:none;"><option value="mcq">mcq</option></select>
-  <div id="skillsSavedList" style="display:none;"></div>
-  <div id="skillsCourseMap" style="display:none;"></div>
-  <div id="skillsPromptCard" style="display:none;"></div>
-  <div id="skillsContentCard" style="display:none;"></div>
-  <div id="skillsPromptBox" style="display:none;"></div>
-  <div id="contentLevelTitle" style="display:none;"></div>
-  <div id="promptLevelTitle" style="display:none;"></div>
-  <div id="contentTypeHint" style="display:none;"></div>
-  <div id="contentArticleWrap" style="display:none;"></div>
-  <div id="contentQuizWrap" style="display:none;"></div>
-  <div id="contentGameWrap" style="display:none;"></div>
-  <textarea id="slArticle" style="display:none;"></textarea>
-  <textarea id="slQuizJson" style="display:none;"></textarea>
-  <textarea id="slGameJson" style="display:none;"></textarea>
-  <input id="slGameHint" style="display:none;">
-  <div id="gameJsonError" style="display:none;"></div>
-  <button id="previewBtn" style="display:none;"></button>
-  <div id="slStatus" style="display:none;"></div>
-  <div id="skillsPreview" style="display:none;"></div>
-  <div id="skillsCurrentTopicLabel" style="display:none;"></div>
-
   <!-- Edit Modal (kept for compatibility) -->
   <div id="skillsEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;overflow-y:auto;padding:20px;">
     <div style="background:#111827;border-radius:20px;padding:20px;max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.1);">
@@ -8088,26 +8065,23 @@ function saveDayFromModal(){
           const ta = document.getElementById('lessonJson');
           if(ta){ ta.focus(); ta.setSelectionRange(pos, pos+1); }
         }
-        if(msg.includes("property name"))      hint = '💡 JSON adhoora paste hua — poora dobara copy karke paste karo';
-        else if(msg.includes("Unexpected end")) hint = '💡 JSON beech mein kat gaya — closing } ya ] missing hai';
-        else if(msg.includes("Unexpected token")) hint = '💡 Extra/missing comma ya bracket — us line ko check karo';
-        else if(msg.includes("control character")) hint = '💡 Hidden character hai — Gemini se fresh copy karo';
-        else                                    hint = '💡 JSON structure theek nahi hai';
+        const hintObj1 = getDetailedJsonHint(msg, badLine, colNum);
+        hint = hintObj1.short;
         const panel = document.getElementById('jsonParseResult');
         if(panel){
           panel.innerHTML =
-            '<div style="background:rgba(255,80,80,.12);border:1.5px solid #FF6B6B;border-radius:10px;padding:10px;margin-top:6px;font-family:monospace;font-size:11px;line-height:1.7;">' +
-            '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:6px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+' (Auto-Fix bhi nahi kar saka)</div>' +
-            (badLine ? '<div style="color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow:auto;">'+badLine+'</div>' : '') +
-            (arrowStr ? '<div style="color:#FF6B6B;padding:0 8px;letter-spacing:0;">'+arrowStr+'</div>' : '') +
-            '<div style="color:#aaa;font-size:10px;margin-top:4px;">'+msg+'</div>' +
-            '<div style="color:#2EE59D;margin-top:6px;font-family:Nunito,sans-serif;">'+hint+'</div>' +
+            '<div style="background:rgba(255,80,80,.12);border:1.5px solid #FF6B6B;border-radius:10px;padding:10px;margin-top:6px;font-size:11px;line-height:1.7;">' +
+            '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:8px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+'</div>' +
+            (badLine ? '<div style="font-family:monospace;color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow-x:auto;white-space:pre;">'+badLine.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : '') +
+            (arrowStr ? '<div style="font-family:monospace;color:#FF6B6B;padding:0 8px;white-space:pre;">'+arrowStr+'</div>' : '') +
+            '<div style="color:#888;font-size:10px;margin:4px 0 8px;">'+msg+'</div>' +
+            hintObj1.html +
             '</div>';
           const jsonTab = document.querySelector('[onclick*="lpanel-json"]');
           if(jsonTab) jsonTab.click();
           panel.scrollIntoView({behavior:'smooth', block:'nearest'});
         }
-        showToast('\u274c Line '+lineNum+': '+hint,'#FF6B6B', 4000);
+        showToast('\u274c Line '+lineNum+': '+hintObj1.short,'#FF6B6B', 4000);
         return;
       }
     }
@@ -8204,26 +8178,162 @@ function saveDayFromModal(){
   showToast('✅ Day '+dayNum+' save ho gaya! ('+lang.toUpperCase()+')','#2EE59D');
 }
 
+// ── getDetailedJsonHint — exact fix batata hai user ko ──
+function getDetailedJsonHint(msg, badLine, colNum){
+  const line = (badLine||'').trim();
+  let short = '💡 JSON mein galti hai';
+  let steps = [];
+
+  if(msg.includes("Expected ':'") || (msg.includes("property name") && line.match(/^\s*"[^"]+"\s*[^:]/))) {
+    const m = line.match(/^"([^"]+)"\s+"([^"]+)"/);
+    if(m){
+      short = '💡 Colon (:) missing hai key ke baad';
+      steps = [
+        '❌ Galat:  "'+m[1]+'" "'+m[2]+'"',
+        '✅ Sahi:   "'+m[1]+'": "'+m[2]+'"',
+        '👉 Fix: key aur value ke beech mein <b>:</b> lagao'
+      ];
+    } else {
+      short = '💡 Colon (:) missing ya JSON adhoora paste hua';
+      steps = [
+        '👉 Is line ko check karo: key ke baad <b>:</b> hona chahiye',
+        '✅ Sahi format:  "fieldName": "value"',
+        '⚠️ Ya JSON adhoora hai — pura dobara ChatGPT/Gemini se copy karo'
+      ];
+    }
+  }
+
+  else if(msg.includes("Unexpected string") || msg.includes("Unexpected number") ||
+          (msg.includes("Unexpected token") && line.match(/"[^"]*"\s*\n?\s*"/))) {
+    short = '💡 Comma (,) missing hai do items ke beech';
+    steps = [
+      '❌ Galat:  { "a": "1"  "b": "2" }',
+      '✅ Sahi:   { "a": "1", "b": "2" }',
+      '👉 Fix: is line ke aakhir mein <b>,</b> lagao'
+    ];
+  }
+
+  else if(msg.includes("Unexpected token }") || msg.includes("Unexpected token ]")) {
+    short = '💡 Extra } ya ] hai — ek zyada closing bracket';
+    steps = [
+      '👉 Is line pe ek extra <b>}</b> ya <b>]</b> hai — hata do',
+      '✅ Har { ka ek } hona chahiye, har [ ka ek ]'
+    ];
+  }
+
+  else if(msg.includes("Unexpected token") && line.match(/,\s*[}\]]/)) {
+    const fixed = line.replace(/,(\s*[}\]])/, '$1');
+    short = '💡 Extra comma hai closing bracket se pehle';
+    steps = [
+      '❌ Galat:  '+line,
+      '✅ Sahi:   '+fixed,
+      '👉 Fix: <b>}</b> ya <b>]</b> se pehle wali <b>,</b> hata do'
+    ];
+  }
+
+  else if(msg.includes("Unexpected end") || msg.includes("Unterminated string")) {
+    const quoteCount = (line.match(/"/g)||[]).length;
+    if(quoteCount % 2 !== 0){
+      short = '💡 String band nahi hui — closing " missing hai';
+      steps = [
+        '❌ Galat:  "value": "Jo cheez hai',
+        '✅ Sahi:   "value": "Jo cheez hai"',
+        '👉 Fix: is line ke aakhir mein <b>"</b> lagao',
+        '⚠️ Ya JSON beech mein kat gaya — pura copy karo'
+      ];
+    } else {
+      short = '💡 JSON beech mein kat gaya — } ya ] missing hai';
+      steps = [
+        '👉 Scroll karke neeche dekho — closing <b>}</b> ya <b>]</b> missing hai',
+        '✅ Pura JSON dobara ChatGPT/Gemini se copy karo'
+      ];
+    }
+  }
+
+  else if(msg.includes("property name") && line.match(/"[^"]*"[^:,}\]]/)) {
+    short = '💡 String ke andar " (double quote) unescaped hai';
+    steps = [
+      '👉 String value ke andar koi <b>"</b> hai jo escape nahi hua',
+      '✅ Fix: us " ko <b>\\"</b> se replace karo',
+      'Misaal: "tip": "Jo "cheez" hai"  →  "tip": "Jo \\"cheez\\" hai"'
+    ];
+  }
+
+  else if(msg.includes("control character") || msg.includes("Bad control")) {
+    short = '💡 String ke andar hidden/invisible character hai';
+    steps = [
+      '👉 ChatGPT/Gemini se fresh copy karo',
+      '✅ Ya sirf woh value manually type karo',
+      '⚠️ Urdu text mein aksar RTL marker aa jaata hai'
+    ];
+  }
+
+  else if(msg.includes("property name")) {
+    short = '💡 JSON adhoora paste hua ya structure galat hai';
+    steps = [
+      '👉 Scroll karke bilkul neeche dekho — koi <b>}</b> ya <b>]</b> missing ho sakta hai',
+      '✅ Ya pura JSON dobara copy karke paste karo',
+      '⚠️ ChatGPT kabhi kabhi JSON beech mein rok deta hai — dobara generate karo'
+    ];
+  }
+
+  else {
+    short = '💡 JSON structure mein galti';
+    steps = [
+      '👉 Is line ko check karo: <b>comma, colon, quote</b> sab theek hain?',
+      '✅ Sahi format: "key": "value",  ya  "key": 123,  ya  "key": [...]'
+    ];
+  }
+
+  const html = '<div style="font-family:Nunito,sans-serif;font-size:11px;line-height:1.9;">'
+    + '<div style="color:#FFD166;font-weight:800;margin-bottom:6px;">' + short + '</div>'
+    + steps.map(s => '<div style="color:#cde;padding:1px 0;">' + s + '</div>').join('')
+    + '</div>';
+
+  return { short, html };
+}
+
 // JS object string ko valid JSON mein convert karo
 // ROBUST: escaped apostrophes, all edge cases handle
 function sanitizeJsonString(str){
-  // Remove invisible/control characters that break JSON.parse
-  // Covers: null bytes, BOM, RTL/LTR marks, zero-width chars, soft hyphens, non-breaking spaces
-  return str
+  // Step 1: Remove invisible/control characters that break JSON.parse
+  str = str
     .replace(/\u0000/g, '')           // null bytes
     .replace(/\uFEFF/g, '')           // BOM
     .replace(/[\u200B-\u200F]/g, '')  // zero-width + RTL/LTR marks
     .replace(/\u00AD/g, '')           // soft hyphen
     .replace(/\u00A0/g, ' ')          // non-breaking space → normal space
     .replace(/[\u2028\u2029]/g, ' ')  // line/paragraph separators → space
-    // Fix unescaped literal newlines INSIDE string values only
-    // (replace raw \n \r \t inside strings with their escaped versions)
-    .replace(/"((?:[^"\\]|\\.)*)"/g, function(match, inner){
-      return '"' + inner
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r')
-        .replace(/\t/g, '\\t') + '"';
-    });
+    .replace(/[\u202A-\u202E]/g, '')  // bidirectional override chars (RTL/LTR embed)
+    .replace(/[\u2060-\u2064]/g, '')  // word joiner & related
+    .replace(/\uFFFD/g, '');          // replacement character
+
+  // Step 2: Fix unescaped literal newlines/tabs INSIDE string values
+  // Uses character-by-character scan so it handles broken/incomplete strings too
+  let result = '';
+  let i = 0;
+  while(i < str.length){
+    const ch = str[i];
+    if(ch === '"'){
+      // Start of a double-quoted string — scan until closing unescaped "
+      result += ch; i++;
+      while(i < str.length){
+        const c2 = str[i];
+        if(c2 === '\\' && i+1 < str.length){
+          result += c2 + str[i+1]; i += 2; continue;
+        }
+        if(c2 === '"'){ result += c2; i++; break; }
+        // Unescaped control chars inside string — escape them
+        if(c2 === '\n'){ result += '\\n'; i++; continue; }
+        if(c2 === '\r'){ result += '\\r'; i++; continue; }
+        if(c2 === '\t'){ result += '\\t'; i++; continue; }
+        result += c2; i++;
+      }
+    } else {
+      result += ch; i++;
+    }
+  }
+  return result;
 }
 
 // ── balanceBrackets — counts unclosed { [ " and returns suffix to close them ──
@@ -8279,6 +8389,54 @@ function tryAutoFixJson(raw){
   before = s;
   s = s.replace(/,(\s*[}\]])/g, '$1');
   if(s !== before) fixes.push('Extra commas hataye');
+
+  // 4b. Fix unescaped double-quotes INSIDE string values
+  // e.g. "tip": "Jo "cheez" hai" → "tip": "Jo \"cheez\" hai"
+  before = s;
+  try {
+    // Only do this expensive fix if JSON.parse still fails
+    JSON.parse(s); // quick check
+  } catch(_quickErr){
+    // character-by-character: inside a string value, escape any bare " that isn't preceded by \
+    let fixed = '';
+    let inStr = false;
+    let isKey = false; // track if we're parsing a key (after { or ,)
+    let esc = false;
+    let afterColon = false;
+    for(let ci=0; ci<s.length; ci++){
+      const cc = s[ci];
+      if(esc){ fixed += cc; esc = false; continue; }
+      if(cc === '\\'){ fixed += cc; esc = true; continue; }
+      if(!inStr){
+        if(cc === '"'){ inStr = true; fixed += cc; continue; }
+        if(cc === ':') afterColon = true;
+        else if(cc === '{' || cc === ',') afterColon = false;
+        fixed += cc;
+      } else {
+        // inside a string — look ahead to detect if this is a closing " or rogue "
+        if(cc === '"'){
+          // Peek: after this " is there whitespace then : or , or } or ] ?
+          let peek = ci+1;
+          while(peek < s.length && (s[peek]===' '||s[peek]==='\t')) peek++;
+          const nextNonSpace = s[peek] || '';
+          if(nextNonSpace===':'||nextNonSpace===','||nextNonSpace==='}'||nextNonSpace===']'||nextNonSpace===''){
+            // Likely a real closing quote
+            fixed += cc; inStr = false;
+          } else {
+            // Rogue unescaped quote inside string value — escape it
+            fixed += '\\"';
+          }
+          continue;
+        }
+        fixed += cc;
+      }
+    }
+    if(fixed !== before){
+      // Verify it improved things
+      try{ JSON.parse(fixed); fixes.push('String ke andar unescaped quotes fix kiye'); s = fixed; }
+      catch(_){ /* revert — our fix made it worse */ }
+    }
+  }
 
   // Try parsing after basic cleanups
   try{
@@ -8442,24 +8600,21 @@ function parseJsonLesson(){
           : document.getElementById('lessonJson');
         if(ta){ ta.focus(); ta.setSelectionRange(pos, pos+1); }
       }
-      if(msg.includes("property name"))       hint = '💡 JSON adhoora paste hua — poora dobara copy karke paste karo';
-      else if(msg.includes("Unexpected end")) hint = '💡 JSON beech mein kat gaya — closing } ya ] missing hai';
-      else if(msg.includes("Unexpected token")) hint = '💡 Extra/missing comma ya bracket — us line ko check karo';
-      else if(msg.includes("control character")) hint = '💡 Hidden character hai — Gemini se fresh copy karo';
-      else                                     hint = '💡 JSON structure theek nahi hai';
+      const hintObj2 = getDetailedJsonHint(msg, badLine, colNum);
+      hint = hintObj2.short;
       const panel = document.getElementById('jsonParseResult');
       if(panel){
         panel.innerHTML =
-          '<div style="background:rgba(255,80,80,.12);border:1.5px solid #FF6B6B;border-radius:10px;padding:10px;margin-top:6px;font-family:monospace;font-size:11px;line-height:1.7;">' +
-          '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:6px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+' (Auto-Fix bhi nahi kar saka)</div>' +
-          (badLine ? '<div style="color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow:auto;">'+badLine+'</div>' : '') +
-          (arrowStr ? '<div style="color:#FF6B6B;padding:0 8px;letter-spacing:0;">'+arrowStr+'</div>' : '') +
-          '<div style="color:#aaa;font-size:10px;margin-top:4px;">'+msg+'</div>' +
-          '<div style="color:#2EE59D;margin-top:6px;font-family:Nunito,sans-serif;">'+hint+'</div>' +
+          '<div style="background:rgba(255,80,80,.12);border:1.5px solid #FF6B6B;border-radius:10px;padding:10px;margin-top:6px;font-size:11px;line-height:1.7;">' +
+          '<div style="color:#FF6B6B;font-weight:700;font-size:12px;margin-bottom:8px;">❌ JSON Error — Line '+lineNum+', Col '+colNum+'</div>' +
+          (badLine ? '<div style="font-family:monospace;color:#FFD166;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:6px;margin-bottom:2px;overflow-x:auto;white-space:pre;">'+badLine.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : '') +
+          (arrowStr ? '<div style="font-family:monospace;color:#FF6B6B;padding:0 8px;white-space:pre;">'+arrowStr+'</div>' : '') +
+          '<div style="color:#888;font-size:10px;margin:4px 0 8px;">'+msg+'</div>' +
+          hintObj2.html +
           '</div>';
         panel.scrollIntoView({behavior:'smooth', block:'nearest'});
       }
-      showToast('\u274c Line '+lineNum+': '+hint,'#FF6B6B', 4000);
+      showToast('\u274c Line '+lineNum+': '+hintObj2.short,'#FF6B6B', 4000);
       return;
     }
   }
@@ -14008,6 +14163,41 @@ let _saCurrentTopic = 'electricity';
 let _saSelectedLevel = null; // { secId, lvId, title, type, icon }
 let _saFirebaseData  = null; // cached firebase data
 
+// ── Helper: SA_COURSE mein section/level ka stable array-index dhoondo ──
+// Firebase array paths (sections/<si>/levels/<li>) ke liye zaroori hai
+function _saIndexOf(topic, secId, lvId){
+  const course = SA_COURSE[topic];
+  if(!course) return null;
+  const si = course.sections.findIndex(s=>s.id===secId);
+  if(si<0) return null;
+  if(lvId==null) return {si};
+  const li = course.sections[si].levels.findIndex(l=>l.id===lvId);
+  if(li<0) return null;
+  return {si, li};
+}
+
+// ── Helper: SA_COURSE se Firebase skeleton banao (sirf titles/types, content nahi) ──
+function _saBuildSkeleton(topic){
+  const course = SA_COURSE[topic];
+  if(!course) return null;
+  return {
+    title: course.title,
+    icon: course.icon,
+    sections: course.sections.map(sec=>({
+      id: sec.id,
+      eyebrow: sec.eyebrow,
+      title: sec.title,
+      levels: (sec.levels||[]).map(lv=>({
+        id: lv.id,
+        title: lv.title,
+        type: lv.type,
+        icon: lv.icon || (lv.type==='game'?'🎮':lv.type==='quiz'?'✏️':'📖'),
+        ...(lv.gameId ? {gameId: lv.gameId} : {})
+      }))
+    }))
+  };
+}
+
 // ── Course structure (mirrors app's SKILLS_DEFAULT_DATA) ──
 const SA_COURSE = {
   electricity: {
@@ -14024,24 +14214,24 @@ const SA_COURSE = {
           {id:"l1_7",  title:"Pakistan Mein Bijli Ka Nizam",      type:"article", icon:"🇵🇰"},
           {id:"l1_8",  title:"WAPDA aur Distribution System",     type:"article", icon:"🏭"},
           {id:"l1_9",  title:"Foundations Quiz",                  type:"quiz",    icon:"✏️"},
-          {id:"l1_10", title:"Basic Circuit — Game",              type:"game",    icon:"🎮"},
-          {id:"l1_11", title:"Open vs Closed Circuit — Game",     type:"game",    icon:"🔌"},
-          {id:"l1_12", title:"Series Circuit — Game",             type:"game",    icon:"➡️"},
-          {id:"l1_13", title:"Parallel Circuit — Game",           type:"game",    icon:"⇉"},
+          {id:"l1_10", title:"Basic Circuit — Game",              type:"game",    icon:"🎮", gameId:"basic_circuit"},
+          {id:"l1_11", title:"Open vs Closed Circuit — Game",     type:"game",    icon:"🔌", gameId:"open_closed"},
+          {id:"l1_12", title:"Series Circuit — Game",             type:"game",    icon:"➡️", gameId:"series_circuit"},
+          {id:"l1_13", title:"Parallel Circuit — Game",           type:"game",    icon:"⇉", gameId:"parallel_circuit"},
           {id:"l1_14", title:"Section 1 Final Test",              type:"quiz",    icon:"🏆"}
         ]},
       { id:"s2", title:"Auzaar aur Safety", eyebrow:"Section 2 — Tools & Safety",
         levels:[
           {id:"l2_1",  title:"Electrician Ke Zaroori Auzaar",     type:"article", icon:"🧰"},
           {id:"l2_2",  title:"Multimeter — Poori Rahnamai",       type:"article", icon:"🔬"},
-          {id:"l2_3",  title:"Multimeter Use Karo — Game",        type:"game",    icon:"🎮"},
+          {id:"l2_3",  title:"Multimeter Use Karo — Game",        type:"game",    icon:"🎮", gameId:"multimeter_game"},
           {id:"l2_4",  title:"Wire Stripper aur Crimper",         type:"article", icon:"✂️"},
           {id:"l2_5",  title:"Electrical Safety — Pehli Baat",    type:"article", icon:"⚠️"},
           {id:"l2_6",  title:"Live Wire Se Bachao",               type:"article", icon:"🛡️"},
           {id:"l2_7",  title:"PPE — Personal Protection",         type:"article", icon:"🧤"},
           {id:"l2_8",  title:"Lockout / Tagout (LOTO)",           type:"article", icon:"🔒"},
           {id:"l2_9",  title:"Shock Lagnay Par Kya Karain?",      type:"article", icon:"🚨"},
-          {id:"l2_10", title:"Safety Hazards — Spot Karo — Game", type:"game",    icon:"🎮"},
+          {id:"l2_10", title:"Safety Hazards — Spot Karo — Game", type:"game",    icon:"🎮", gameId:"hazard_spot"},
           {id:"l2_11", title:"Tools & Safety Quiz",               type:"quiz",    icon:"✏️"},
           {id:"l2_12", title:"Section 2 Final Test",              type:"quiz",    icon:"🏆"}
         ]},
@@ -14057,9 +14247,9 @@ const SA_COURSE = {
           {id:"l3_8",  title:"Fuse — Kaam aur Types",             type:"article", icon:"🔮"},
           {id:"l3_9",  title:"Switch — Types aur Wiring",         type:"article", icon:"🔲"},
           {id:"l3_10", title:"Socket / Outlet — Types",           type:"article", icon:"🔌"},
-          {id:"l3_11", title:"MCB Sizing — Game",                 type:"game",    icon:"🎮"},
+          {id:"l3_11", title:"MCB Sizing — Game",                 type:"game",    icon:"🎮", gameId:"mcb_sizing"},
           {id:"l3_12", title:"Earthing / Grounding Kya Hai?",     type:"article", icon:"🌍"},
-          {id:"l3_13", title:"Earthing System — Game",            type:"game",    icon:"🎮"},
+          {id:"l3_13", title:"Earthing System — Game",            type:"game",    icon:"🎮", gameId:"earthing_game"},
           {id:"l3_14", title:"Capacitor aur Inductor — Basics",   type:"article", icon:"⚙️"},
           {id:"l3_15", title:"Components Quiz",                   type:"quiz",    icon:"✏️"},
           {id:"l3_16", title:"Section 3 Final Test",              type:"quiz",    icon:"🏆"}
@@ -14068,18 +14258,18 @@ const SA_COURSE = {
         levels:[
           {id:"l4_1",  title:"Single Phase Supply — Ghar Tak",    type:"article", icon:"🏠"},
           {id:"l4_2",  title:"Distribution Board (DB Box)",       type:"article", icon:"📦"},
-          {id:"l4_3",  title:"DB Box Wiring — Game",              type:"game",    icon:"🎮"},
+          {id:"l4_3",  title:"DB Box Wiring — Game",              type:"game",    icon:"🎮", gameId:"db_box_wiring"},
           {id:"l4_4",  title:"One-Way Switch Wiring",             type:"article", icon:"💡"},
           {id:"l4_5",  title:"Two-Way Switch — Zina / Siri",      type:"article", icon:"🪜"},
-          {id:"l4_6",  title:"Switch Wiring — Game",              type:"game",    icon:"🎮"},
+          {id:"l4_6",  title:"Switch Wiring — Game",              type:"game",    icon:"🎮", gameId:"switch_wiring"},
           {id:"l4_7",  title:"Socket / Outlet Lagana",            type:"article", icon:"🔌"},
           {id:"l4_8",  title:"Ghar Ki Wiring Plan Banana",        type:"article", icon:"📐"},
-          {id:"l4_9",  title:"Wiring Plan — Game",                type:"game",    icon:"🎮"},
+          {id:"l4_9",  title:"Wiring Plan — Game",                type:"game",    icon:"🎮", gameId:"wiring_plan"},
           {id:"l4_10", title:"Ceiling Fan Installation",          type:"article", icon:"💨"},
-          {id:"l4_11", title:"Fan Wiring — Game",                 type:"game",    icon:"🎮"},
+          {id:"l4_11", title:"Fan Wiring — Game",                 type:"game",    icon:"🎮", gameId:"fan_wiring"},
           {id:"l4_12", title:"Geyser / Water Heater Wiring",      type:"article", icon:"🚿"},
           {id:"l4_13", title:"Short Circuit — Kyon Hota Hai?",    type:"article", icon:"💥"},
-          {id:"l4_14", title:"Fault Finding — Game",              type:"game",    icon:"🎮"},
+          {id:"l4_14", title:"Fault Finding — Game",              type:"game",    icon:"🎮", gameId:"fault_finding"},
           {id:"l4_15", title:"Home Wiring Quiz",                  type:"quiz",    icon:"✏️"},
           {id:"l4_16", title:"Section 4 Final Test",              type:"quiz",    icon:"🏆"}
         ]},
@@ -14087,17 +14277,17 @@ const SA_COURSE = {
         levels:[
           {id:"l5_1",  title:"AC Unit — Andar Kya Hai?",          type:"article", icon:"❄️"},
           {id:"l5_2",  title:"AC Wiring — Step by Step",          type:"article", icon:"🔧"},
-          {id:"l5_3",  title:"AC Wiring — Game",                  type:"game",    icon:"🎮"},
+          {id:"l5_3",  title:"AC Wiring — Game",                  type:"game",    icon:"🎮", gameId:"ac_wiring"},
           {id:"l5_4",  title:"3-Phase Supply Kya Hai?",           type:"article", icon:"🔱"},
           {id:"l5_5",  title:"3-Phase vs Single Phase",           type:"article", icon:"📊"},
           {id:"l5_6",  title:"Electric Motor — Kaise Kaam Karta?",type:"article", icon:"⚙️"},
           {id:"l5_7",  title:"Motor Starter Types",               type:"article", icon:"▶️"},
-          {id:"l5_8",  title:"Motor Wiring — Game",               type:"game",    icon:"🎮"},
+          {id:"l5_8",  title:"Motor Wiring — Game",               type:"game",    icon:"🎮", gameId:"motor_wiring"},
           {id:"l5_9",  title:"Industrial Panel Board",            type:"article", icon:"🏭"},
           {id:"l5_10", title:"Transformer — Basics",              type:"article", icon:"🔄"},
           {id:"l5_11", title:"UPS aur Inverter",                  type:"article", icon:"🔋"},
           {id:"l5_12", title:"Solar Panel System Wiring",         type:"article", icon:"☀️"},
-          {id:"l5_13", title:"Solar Wiring — Game",               type:"game",    icon:"🎮"},
+          {id:"l5_13", title:"Solar Wiring — Game",               type:"game",    icon:"🎮", gameId:"solar_wiring"},
           {id:"l5_14", title:"Advanced Systems Quiz",             type:"quiz",    icon:"✏️"},
           {id:"l5_15", title:"Section 5 Final Test",              type:"quiz",    icon:"🏆"}
         ]},
@@ -14105,15 +14295,15 @@ const SA_COURSE = {
         levels:[
           {id:"l6_1",  title:"Electrical Codes — Pakistan + IEC", type:"article", icon:"📋"},
           {id:"l6_2",  title:"Wiring Estimation — Material List", type:"article", icon:"🧮"},
-          {id:"l6_3",  title:"Estimation — Game",                 type:"game",    icon:"🎮"},
+          {id:"l6_3",  title:"Estimation — Game",                 type:"game",    icon:"🎮", gameId:"estimation_game"},
           {id:"l6_4",  title:"Troubleshooting — Masla Dhundho",   type:"article", icon:"🔍"},
-          {id:"l6_5",  title:"Troubleshooting — Game",            type:"game",    icon:"🎮"},
+          {id:"l6_5",  title:"Troubleshooting — Game",            type:"game",    icon:"🎮", gameId:"troubleshoot_game"},
           {id:"l6_6",  title:"Client Se Baat Karna",              type:"article", icon:"🤝"},
           {id:"l6_7",  title:"Rates aur Billing",                 type:"article", icon:"💰"},
           {id:"l6_8",  title:"Interview Mein Kya Poochha Jata Hai",type:"article",icon:"💼"},
           {id:"l6_9",  title:"Mock Interview — 30 Sawaal",        type:"quiz",    icon:"🎤"},
-          {id:"l6_10", title:"Real Scenario — House Fault — Game",type:"game",    icon:"🎮"},
-          {id:"l6_11", title:"Real Scenario — Industrial Fault — Game",type:"game",icon:"🏭"},
+          {id:"l6_10", title:"Real Scenario — House Fault — Game",type:"game",    icon:"🎮", gameId:"house_fault"},
+          {id:"l6_11", title:"Real Scenario — Industrial Fault — Game",type:"game",icon:"🏭", gameId:"industrial_fault"},
           {id:"l6_12", title:"Grand Final Test — 50 Sawaal",      type:"quiz",    icon:"🏆"},
           {id:"l6_13", title:"Certificate — Certified Electrician",type:"article",icon:"🎓"}
         ]}
@@ -14422,51 +14612,55 @@ function saSaveLevel(){
   try { parsed = JSON.parse(raw.replace(/```json|```/g,'').trim()); } catch(e){}
 
   if(!window.FB_DB){ st.style.color='#ef4444'; st.textContent='❌ Firebase connect nahi hua'; return; }
-  window.FB_GET(window.FB_REF(window.FB_DB, 'skills/'+_saCurrentTopic)).then(snap=>{
-    let data = snap.val();
 
-    // Auto-init structure if not present
-    if(!data || !data.sections){
-      const courseTemplate = SA_COURSE[_saCurrentTopic];
-      if(!courseTemplate){ st.style.color='#ef4444'; st.textContent='❌ Course template nahi mila'; return; }
-      data = JSON.parse(JSON.stringify(courseTemplate));
-      data.sections.forEach(sec=>{
-        if(sec.levels) sec.levels.forEach(l=>{
-          delete l.articleContent; delete l.articleBilingual;
-          delete l.quizQuestions; delete l.gameData;
-        });
-      });
-    }
+  // ✅ Stable index from SA_COURSE — taake targeted path-update ho sake
+  const idx = _saIndexOf(_saCurrentTopic, lv.secId, lv.id);
+  if(!idx){ st.style.color='#ef4444'; st.textContent='❌ Level position SA_COURSE mein nahi mili'; return; }
+  const base = 'sections/'+idx.si+'/levels/'+idx.li+'/';
 
-    // Find section and level
-    const sec = data.sections.find(s=>s.id===lv.secId);
-    if(!sec){ st.style.color='#ef4444'; st.textContent='❌ Section nahi mila: '+lv.secId; return; }
-    if(!sec.levels) sec.levels=[];
-    let existing = sec.levels.find(l=>l.id===lv.id);
-    if(!existing){ existing={id:lv.id,title:lv.title,type:lv.type,icon:lv.icon||'📖'}; sec.levels.push(existing); }
-
-    // Save content based on type
-    if(lv.type==='article'){
-      if(parsed && (parsed.ur||parsed.en)){ existing.articleBilingual=parsed; delete existing.articleContent; }
-      else { existing.articleContent=raw; delete existing.articleBilingual; }
-    } else if(lv.type==='quiz'){
-      existing.quizQuestions = Array.isArray(parsed)?parsed:(parsed&&parsed.questions?parsed.questions:null);
-      if(!existing.quizQuestions){ st.style.color='#ef4444'; st.textContent='❌ Quiz JSON valid nahi'; return; }
+  // Build targeted update map — SIRF is level ke content fields,
+  // baki saare levels/sections ko touch nahi karta (no race condition)
+  const updates = {};
+  if(lv.type==='article'){
+    if(parsed && (parsed.ur||parsed.en)){
+      updates[base+'articleBilingual'] = parsed;
+      updates[base+'articleContent'] = null;
     } else {
-      if(!parsed){ st.style.color='#ef4444'; st.textContent='❌ Game JSON valid nahi'; return; }
-      existing.gameData = parsed;
-      const hint = document.getElementById('sa_hint').value.trim();
-      if(hint) existing.hint = hint;
+      updates[base+'articleContent'] = raw;
+      updates[base+'articleBilingual'] = null;
     }
+  } else if(lv.type==='quiz'){
+    const quizQuestions = Array.isArray(parsed)?parsed:(parsed&&parsed.questions?parsed.questions:null);
+    if(!quizQuestions){ st.style.color='#ef4444'; st.textContent='❌ Quiz JSON valid nahi'; return; }
+    updates[base+'quizQuestions'] = quizQuestions;
+  } else {
+    if(!parsed){ st.style.color='#ef4444'; st.textContent='❌ Game JSON valid nahi'; return; }
+    updates[base+'gameData'] = parsed;
+    // ✅ gameId hamesha set karo — app isi se decide karta hai konsa game engine load karna hai
+    updates[base+'gameId'] = lv.gameId || lv.id;
+    const hint = document.getElementById('sa_hint').value.trim();
+    if(hint) updates[base+'hint'] = hint;
+  }
 
-    // Save to Firebase
-    window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic), data).then(()=>{
-      st.style.color='#22C55E';
-      st.textContent='✅ "'+lv.title+'" save ho gaya! App mein live hai.';
-      showAdminToast('💾 Saved: '+lv.title);
-      _saFirebaseData = data;
-      renderSkillsSavedList();
-    }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Save error: '+e.message; });
+  // Pehle check karo structure exist karta hai ya nahi (lightweight read)
+  window.FB_GET(window.FB_REF(window.FB_DB, 'skills/'+_saCurrentTopic+'/sections')).then(snap=>{
+    const doUpdate = () => {
+      window.FB_UPDATE(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic), updates).then(()=>{
+        st.style.color='#22C55E';
+        st.textContent='✅ "'+lv.title+'" save ho gaya! App mein live hai.';
+        showAdminToast('💾 Saved: '+lv.title);
+        loadSkillsFromFirebaseAdmin();
+      }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Save error: '+e.message; });
+    };
+    if(snap && snap.exists && snap.exists()){
+      doUpdate();
+    } else {
+      // Pehli baar — pura skeleton banao, phir content update karo
+      const skeleton = _saBuildSkeleton(_saCurrentTopic);
+      if(!skeleton){ st.style.color='#ef4444'; st.textContent='❌ Course template nahi mila'; return; }
+      window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic), skeleton).then(doUpdate)
+        .catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Init error: '+e.message; });
+    }
   }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ Firebase read error: '+e.message; });
 }
 
@@ -14490,21 +14684,7 @@ function saInitFirebase(){
 
     // Data nahi hai — fresh structure banao
     st.style.color='#F5C400'; st.textContent='⏳ Sirf structure bana raha hai...';
-    const skeleton = {
-      title: course.title,
-      icon: course.icon,
-      sections: course.sections.map(sec=>({
-        id: sec.id,
-        eyebrow: sec.eyebrow,
-        title: sec.title,
-        levels: (sec.levels||[]).map(lv=>({
-          id: lv.id,
-          title: lv.title,
-          type: lv.type,
-          icon: lv.icon || (lv.type==='game'?'🎮':lv.type==='quiz'?'✏️':'📖')
-        }))
-      }))
-    };
+    const skeleton = _saBuildSkeleton(topic);
     window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+topic), skeleton).then(()=>{
       st.style.color='#22C55E';
       st.textContent='✅ Structure save ho gaya! Ab content add kar sakte ho.';
@@ -14522,393 +14702,51 @@ function saLoadFirebase(){
   loadSkillsFromFirebaseAdmin();
 }
 
-function renderCourseMap() {
-  const topic = _saCurrentTopic;
-  const course = SA_COURSE[topic];
-  if (!course) { document.getElementById('skillsCourseMap').innerHTML = '<span style="color:#888;">Course data nahi mila.</span>'; return; }
-
-  let html = '';
-  course.sections.forEach((sec, si) => {
-    html += `<div style="margin-bottom:14px;">
-      <div style="color:#F5C400;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;padding:6px 0;border-bottom:1px solid rgba(245,196,0,.2);">
-        ${sec.eyebrow} — ${sec.title}
-      </div>`;
-    sec.levels.forEach((lv, li) => {
-      const typeColor = lv.type==='game'?'#5B8DEF':lv.type==='quiz'?'#F5C400':'#22C55E';
-      const typeBg    = lv.type==='game'?'rgba(91,141,239,.15)':lv.type==='quiz'?'rgba(245,196,0,.12)':'rgba(34,197,94,.1)';
-      const typeIcon  = lv.type==='game'?'🎮':lv.type==='quiz'?'✏️':'📖';
-      const isSelected = _saSelectedLevel && _saSelectedLevel.id === lv.id;
-      html += `<div onclick="selectSkillLevel('${sec.id}','${lv.id}')"
-        style="display:flex;align-items:center;gap:8px;padding:8px 10px;margin:3px 0;
-               background:${isSelected?'rgba(245,196,0,.18)':typeBg};
-               border:1px solid ${isSelected?'#F5C400':'rgba(255,255,255,.07)'};
-               border-radius:10px;cursor:pointer;transition:all .15s;">
-        <span style="font-size:14px;">${lv.icon}</span>
-        <span style="flex:1;color:${isSelected?'#F5C400':'rgba(255,255,255,.85)'};font-size:12px;font-weight:${isSelected?700:400};">${lv.title}</span>
-        <span style="font-size:10px;color:${typeColor};background:${typeBg};padding:2px 7px;border-radius:6px;font-weight:700;">${typeIcon} ${lv.type}</span>
-        <span style="font-size:10px;color:#555;">${lv.id}</span>
-        <span id="lvStatus-${lv.id}" style="font-size:11px;"></span>
-      </div>`;
-    });
-    html += '</div>';
-  });
-  document.getElementById('skillsCourseMap').innerHTML = html;
-}
-
-function selectSkillLevel(secId, lvId) {
-  const course = SA_COURSE[_saCurrentTopic];
-  if (!course) return;
-  const sec = course.sections.find(s => s.id === secId);
-  if (!sec) return;
-  const lv = sec.levels.find(l => l.id === lvId);
-  if (!lv) return;
-
-  _saSelectedLevel = { ...lv, secId };
-
-  // Build prompt
-  const prompt = _buildPrompt(sec, lv);
-  document.getElementById('skillsPromptBox').textContent = prompt;
-  document.getElementById('promptLevelTitle').textContent = lv.icon + ' ' + lv.title;
-  document.getElementById('skillsPromptCard').style.display = 'block';
-
-  // Show content input card
-  document.getElementById('contentLevelTitle').textContent = lv.icon + ' ' + lv.title;
-  document.getElementById('skillsContentCard').style.display = 'block';
-
-  // Show correct input based on type
-  document.getElementById('contentArticleWrap').style.display = lv.type==='article' ? 'block' : 'none';
-  document.getElementById('contentQuizWrap').style.display    = lv.type==='quiz'    ? 'block' : 'none';
-  document.getElementById('contentGameWrap').style.display    = lv.type==='game'    ? 'block' : 'none';
-  document.getElementById('previewBtn').style.display         = lv.type==='article' ? 'inline-flex' : 'none';
-
-  const typeHint = document.getElementById('contentTypeHint');
-  if (lv.type === 'article') {
-    typeHint.style.cssText = 'margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22C55E;';
-    typeHint.textContent = '📖 Article — Gemini se HTML copy karo, yahan paste karo';
-  } else if (lv.type === 'quiz') {
-    typeHint.style.cssText = 'margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(245,196,0,.12);border:1px solid rgba(245,196,0,.3);color:#F5C400;';
-    typeHint.textContent = '✏️ Quiz — Gemini se JSON array copy karo, yahan paste karo';
-  } else {
-    typeHint.style.cssText = 'margin:8px 0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.3);color:#5B8DEF;';
-    typeHint.textContent = '🎮 Game — Neeche game type choose karo → Prompt copy karo → Gemini mein paste karo → JSON wapas paste karo → Save!';
-  }
-
-  // Clear previous status + inputs
-  document.getElementById('slStatus').textContent = '';
-  document.getElementById('slArticle').value = '';
-  if(document.getElementById('slQuizJson')) document.getElementById('slQuizJson').value = '';
-  if(document.getElementById('slGameJson')){ document.getElementById('slGameJson').value = ''; }
-  if(document.getElementById('slGameHint')){ document.getElementById('slGameHint').value = ''; }
-  if(document.getElementById('slGameType')){ document.getElementById('slGameType').value = ''; }
-  if(document.getElementById('gameJsonError')){ document.getElementById('gameJsonError').style.display='none'; }
-
-  // ✅ AUTO-DETECT game type from level ID — Firebase ka wait nahi karo
-  if(lv.type === 'game' && document.getElementById('slGameType')){
-    const gid = lv.gameId || lv.id || '';
-    const circuitIds=['basic_circuit','open_closed','series_circuit','parallel_circuit','db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring','earthing_game','l1_10','l1_11','l1_12','l1_13','l4_3','l4_6','l4_9','l4_11','l5_3','l5_8','l5_13'];
-    const mcqIds=['mcb_sizing','estimation_game','troubleshoot_game','house_fault','industrial_fault','fault_finding','l3_11','l6_3','l6_5','l6_10','l6_11','l4_14'];
-    const matchIds=['wire_color_match','tool_matcher','ppe_dresser','component_id','socket_wiring','step_sequence','wiring_plan','l3_5','l2_11'];
-    const hazardIds=['hazard_spot','l2_10'];
-    const multimeterIds=['multimeter_game','l2_3'];
-    const autoSel = circuitIds.includes(gid)?'circuit':mcqIds.includes(gid)?'mcq':matchIds.includes(gid)?'match':hazardIds.includes(gid)?'hazard':multimeterIds.includes(gid)?'multimeter':'';
-    if(autoSel){
-      document.getElementById('slGameType').value = autoSel;
-      setTimeout(updateGamePrompt, 50); // Prompt khud update ho jaye
-    }
-  }
-
-  // Pre-fill if Firebase data exists
-  if (_saFirebaseData) {
-    const fbSec = (_saFirebaseData.sections||[]).find(s=>s.id===secId);
-    const fbLv  = fbSec && fbSec.levels && fbSec.levels.find(l=>l.id===lvId);
-    if (fbLv) {
-      if (fbLv.articleBilingual) {
-        document.getElementById('slArticle').value = JSON.stringify(fbLv.articleBilingual, null, 2);
-      } else if (fbLv.articleContent) {
-        document.getElementById('slArticle').value = fbLv.articleContent;
-      }
-      if (fbLv.quizQuestions) document.getElementById('slQuizJson').value = JSON.stringify(fbLv.quizQuestions, null, 2);
-      // Game fields pre-fill
-      if(fbLv.gameData && document.getElementById('slGameJson')){
-        document.getElementById('slGameJson').value = JSON.stringify(fbLv.gameData, null, 2);
-      }
-      if(fbLv.hint && document.getElementById('slGameHint')){
-        document.getElementById('slGameHint').value = fbLv.hint;
-      }
-      // Auto-detect game type from gameId OR level id
-      if(lv.type==='game' && document.getElementById('slGameType')){
-        const gid = fbLv.gameId || lv.gameId || lv.id || '';
-        const circuitIds=['basic_circuit','open_closed','series_circuit','parallel_circuit','db_box_wiring','switch_wiring','fan_wiring','ac_wiring','motor_wiring','solar_wiring','earthing_game','l1_10','l1_11','l1_12','l1_13','l4_3','l4_6','l4_9','l4_11','l5_3','l5_8','l5_13'];
-        const mcqIds=['mcb_sizing','estimation_game','troubleshoot_game','house_fault','industrial_fault','fault_finding','l3_11','l6_3','l6_5','l6_10','l6_11','l4_14'];
-        const matchIds=['wire_color_match','tool_matcher','ppe_dresser','component_id','socket_wiring','step_sequence','wiring_plan','l3_5','l2_11'];
-        const hazardIds=['hazard_spot','l2_10'];
-        const multimeterIds=['multimeter_game','l2_3'];
-        const sel = circuitIds.includes(gid)?'circuit':mcqIds.includes(gid)?'mcq':matchIds.includes(gid)?'match':hazardIds.includes(gid)?'hazard':multimeterIds.includes(gid)?'multimeter':'';
-        document.getElementById('slGameType').value = sel;
-        // Auto-update prompt if game type detected
-        if(sel) setTimeout(updateGamePrompt, 100);
-      }
-    }
-  }
-
-  // Re-render map to highlight selected
-  renderCourseMap();
-
-  // Scroll to prompt
-  document.getElementById('skillsPromptCard').scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-// Game type dropdown change → prompt update karo
-function updateGamePrompt(){
-  if(!_saSelectedLevel || _saSelectedLevel.type !== 'game') return;
-  const gameType = document.getElementById('slGameType').value;
-  if(!gameType) return;
-  const course = SA_COURSE[_saCurrentTopic];
-  if(!course) return;
-  const sec = course.sections.find(s=>s.id===_saSelectedLevel.secId);
-  if(!sec) return;
-  // Map dropdown value → known gameId for prompt
-  const gameIdMap = {
-    circuit: _saSelectedLevel.id || 'basic_circuit',
-    mcq: _saSelectedLevel.id || 'mcb_sizing',
-    match: _saSelectedLevel.id || 'wire_color_match',
-    hazard: 'hazard_spot',
-    multimeter: 'multimeter_game'
-  };
-  const lv = {..._saSelectedLevel, gameId: gameIdMap[gameType] || _saSelectedLevel.id};
-  const prompt = _buildPrompt(sec, lv);
-  document.getElementById('skillsPromptBox').textContent = prompt;
-  // Also store selected game type for save
-  _saSelectedLevel._gameType = gameType;
-}
-
-function copySkillsPrompt() {
-  const txt = document.getElementById('skillsPromptBox').textContent;
-  navigator.clipboard.writeText(txt).then(() => showAdminToast('✅ Prompt copy ho gaya! Gemini mein paste karo.'));
-}
-
-function previewArticleContent() {
-  const raw = document.getElementById('slArticle').value.trim();
-  if (!raw) { showAdminToast('⚠️ Pehle content paste karo!'); return; }
-  let html = raw;
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed.ur || parsed.en) {
-      html = `<div style="margin-bottom:12px;display:flex;gap:8px;">
-        <button onclick="document.getElementById('articlePreviewContent').innerHTML=atob('${btoa(unescape(encodeURIComponent(parsed.ur||'')))}')" style="padding:5px 12px;border-radius:8px;background:#F5C400;color:#000;border:none;cursor:pointer;font-size:11px;font-weight:700;">🇵🇰 UR</button>
-        ${parsed.en ? `<button onclick="document.getElementById('articlePreviewContent').innerHTML=atob('${btoa(unescape(encodeURIComponent(parsed.en||'')))}')" style="padding:5px 12px;border-radius:8px;background:rgba(91,141,239,.3);color:#fff;border:1px solid rgba(91,141,239,.5);cursor:pointer;font-size:11px;font-weight:700;">🇬🇧 EN</button>` : ''}
-      </div>${parsed.ur||''}`;
-    }
-  } catch(e) { /* plain HTML, use as-is */ }
-  document.getElementById('articlePreviewContent').innerHTML = html;
-  document.getElementById('articlePreviewModal').style.display = 'block';
-}
-
-function saveSingleLevel() {
-  if (!_saSelectedLevel) { showAdminToast('⚠️ Pehle koi level select karo!'); return; }
-  const lv  = _saSelectedLevel;
-  const st  = document.getElementById('slStatus');
-
-  if(!window.FB_DB){ showAdminToast('❌ Firebase connect nahi hua'); return; }
-  window.FB_GET(window.FB_REF(window.FB_DB, 'skills/' + _saCurrentTopic)).then(snap => {
-    let data = snap.val();
-    // ✅ AUTO-INIT: Agar Firebase mein structure nahi to SA_COURSE se khud bana lo
-    if (!data || !data.sections) {
-      const courseTemplate = SA_COURSE[_saCurrentTopic];
-      if (!courseTemplate) { st.style.color='#ef4444'; st.textContent='❌ Course template nahi mila topic: '+_saCurrentTopic; return; }
-      // Deep clone karo — sirf structure, content nahi
-      data = JSON.parse(JSON.stringify(courseTemplate));
-      // Sab levels se content fields hata do (sirf skeleton rakho)
-      data.sections.forEach(sec => {
-        if(sec.levels) sec.levels.forEach(lv => {
-          delete lv.articleContent; delete lv.articleBilingual;
-          delete lv.quizQuestions; delete lv.gameData;
-        });
-      });
-      st.style.color='#F5C400'; st.textContent='⏳ Structure auto-ban raha hai Firebase pe...';
-    }
-
-    const sec = data.sections.find(s => s.id === lv.secId);
-    if (!sec) { st.style.color='#ef4444'; st.textContent='❌ Section "'+lv.secId+'" nahi mila!'; return; }
-
-    if (!sec.levels) sec.levels = [];
-    let existing = sec.levels.find(l => l.id === lv.id);
-    if (!existing) { existing = {id:lv.id, title:lv.title, type:lv.type, icon:lv.icon, unlocked:false}; sec.levels.push(existing); }
-
-    // Update content based on type
-    if (lv.type === 'article') {
-      const content = document.getElementById('slArticle').value.trim();
-      if (!content) { st.style.color='#ef4444'; st.textContent='❌ Article content khali hai!'; return; }
-      // Try bilingual JSON format first
-      try {
-        const parsed = JSON.parse(content);
-        if (parsed.ur || parsed.en) {
-          existing.articleBilingual = parsed;
-          existing.articleContent = parsed.ur || '';
-          delete existing.articleContentEn;
-        } else {
-          throw new Error('no ur/en keys');
-        }
-      } catch(e) {
-        // Fallback: treat as plain HTML (legacy Roman Urdu only)
-        existing.articleContent = content;
-        delete existing.articleBilingual;
-        delete existing.articleContentEn;
-      }
-    } else if (lv.type === 'quiz') {
-      const qTxt = document.getElementById('slQuizJson').value.trim();
-      if (!qTxt) { st.style.color='#ef4444'; st.textContent='❌ Quiz JSON khali hai!'; return; }
-      try {
-        existing.quizQuestions = JSON.parse(qTxt);
-      } catch(e) { st.style.color='#ef4444'; st.textContent='❌ Invalid JSON: '+e.message; return; }
-    } else if (lv.type === 'game') {
-      existing.gameId = lv.gameId || lv.id;
-      // Game data save karo
-      const gJson = document.getElementById('slGameJson') && document.getElementById('slGameJson').value.trim();
-      const errEl = document.getElementById('gameJsonError');
-      if(gJson){
-        try{
-          const parsed = JSON.parse(gJson);
-          existing.gameData = parsed;
-          if(errEl){ errEl.style.display='none'; errEl.textContent=''; }
-        } catch(e){
-          if(errEl){ errEl.style.display='block'; errEl.textContent='❌ Invalid JSON: '+e.message; }
-          st.style.color='#ef4444'; st.textContent='❌ Game JSON galat hai: '+e.message; return;
-        }
-      }
-      // Hint save karo
-      const hint = document.getElementById('slGameHint') && document.getElementById('slGameHint').value.trim();
-      if(hint) existing.hint = hint;
-    }
-
-    window.FB_SET(window.FB_REF(window.FB_DB, 'skills/' + _saCurrentTopic), data).then(() => {
-      st.style.color = '#22C55E';
-      st.textContent = '✅ "' + lv.title + '" save ho gaya! App mein live hai.';
-      showAdminToast('💾 Level saved: ' + lv.title);
-      // Mark level as done in map
-      const badge = document.getElementById('lvStatus-' + lv.id);
-      if (badge) badge.textContent = '✅';
-      loadSkillsFromFirebaseAdmin();
-    }).catch(e => { st.style.color='#ef4444'; st.textContent='❌ '+e.message; });
-  }).catch(e => { st.style.color='#ef4444'; st.textContent='❌ Firebase read error: '+e.message; });
-}
-
-function setSkillsTopic(topic) {
-  _saCurrentTopic = topic;
-  _saSelectedLevel = null;
-  document.getElementById('skillsCurrentTopicLabel').textContent =
-    (topic==='electricity'?'⚡ ':'📚 ') + topic.charAt(0).toUpperCase()+topic.slice(1);
-  document.querySelectorAll('[id^="stBtn-"]').forEach(b => {
-    b.className = b.id==='stBtn-'+topic ? 'btn btn-green' : 'btn';
-    if (b.id !== 'stBtn-'+topic) b.style.cssText='font-size:12px;padding:7px 13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:10px;cursor:pointer;';
-    else b.style.cssText='font-size:12px;padding:7px 13px;';
-  });
-  document.getElementById('skillsPromptCard').style.display='none';
-  document.getElementById('skillsContentCard').style.display='none';
-  renderCourseMap();
-  loadSkillsFromFirebaseAdmin();
-}
-
-function addNewSkillTopic() {
-  const name = prompt('Naya topic name (e.g. "electronics"):');
-  if (!name||!name.trim()) return;
-  const id = name.trim().toLowerCase().replace(/\s+/g,'_');
-  _saCurrentTopic = id;
-  showAdminToast('Topic "'+id+'" selected. Advanced se JSON paste karke save karo.');
-}
-
-function toggleAdvanced() {
-  const el = document.getElementById('advancedSection');
-  const ic = document.getElementById('advToggleIcon');
-  const shown = el.style.display !== 'none';
-  el.style.display = shown ? 'none' : 'block';
-  ic.textContent = shown ? '▼ Show' : '▲ Hide';
-}
-
-function validateSkillsJson() {
-  const txt = document.getElementById('skillsJsonInput').value.trim();
-  const st  = document.getElementById('skillsJsonStatus');
-  if (!txt) { st.style.color='#ef4444'; st.textContent='❌ JSON khali hai!'; return false; }
-  try {
-    const data = JSON.parse(txt);
-    if (!data.sections||!Array.isArray(data.sections)) { st.style.color='#ef4444'; st.textContent='❌ "sections" array nahi mila!'; return false; }
-    const lvCount = data.sections.reduce((a,s)=>a+(s.levels?s.levels.length:0),0);
-    st.style.color='#22C55E';
-    st.textContent=`✅ Valid! ${data.sections.length} sections, ${lvCount} levels.`;
-    return true;
-  } catch(e) { st.style.color='#ef4444'; st.textContent='❌ Invalid JSON: '+e.message; return false; }
-}
-
-function saveSkillsToFirebase() {
-  if (!validateSkillsJson()) return;
-  const data = JSON.parse(document.getElementById('skillsJsonInput').value.trim());
-  const st   = document.getElementById('skillsJsonStatus');
-  if(!window.FB_DB){ st.style.color='#ef4444'; st.textContent='❌ Firebase connect nahi hua'; return; }
-  window.FB_SET(window.FB_REF(window.FB_DB, 'skills/'+_saCurrentTopic), data).then(()=>{
-    st.style.color='#22C55E'; st.textContent='✅ Firebase pe save ho gaya!';
-    showAdminToast('⚡ Skills data saved!');
-    loadSkillsFromFirebaseAdmin();
-  }).catch(e=>{ st.style.color='#ef4444'; st.textContent='❌ '+e.message; });
-}
 
 function loadSkillsFromFirebaseAdmin() {
-  const preview = document.getElementById('skillsPreview');
-  // Show loading state
-  const el = document.getElementById('skillsSavedList');
-  if(el) el.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">⏳ Loading...</div>';
-  if(!window.FB_DB){ if(preview) preview.innerHTML='<span style="color:#FFD166;">⏳ Firebase connect ho raha hai...</span>'; return; }
+  if(!window.FB_DB) return;
   window.FB_GET(window.FB_REF(window.FB_DB, 'skills/'+_saCurrentTopic)).then(snap=>{
     const data = snap.val();
     _saFirebaseData = data;
     if (!data) {
-      if(preview) preview.innerHTML='<span style="color:#888;">Firebase mein abhi data nahi.</span>';
       _saFirebaseData = null;
       const saElNull = document.getElementById('sa_savedList');
       if(saElNull) saElNull.innerHTML='<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Firebase mein abhi koi saved data nahi — pehle koi level save karo</div>';
       renderSkillsSavedList();
       return;
     }
-    // Update ✅ badges on map
-    (data.sections||[]).forEach(sec=>{
-      (sec.levels||[]).forEach(lv=>{
-        const badge = document.getElementById('lvStatus-'+lv.id);
-        if (!badge) return;
-        const hasContent = lv.articleContent || lv.articleBilingual || lv.quizQuestions || lv.gameData || lv.gameId;
-        badge.textContent = hasContent ? (lv.gameData ? '🎮✅' : '✅') : '';
+    // ✅ Self-heal: agar purane saved games mein gameId missing hai (purani admin
+    // version se save hua tha), to SA_COURSE se backfill karke Firebase update kar do
+    const course = SA_COURSE[_saCurrentTopic];
+    if(course){
+      const updates = {};
+      (data.sections||[]).forEach((sec,si)=>{
+        const cSec = course.sections[si];
+        if(!cSec) return;
+        (sec.levels||[]).forEach((lv,li)=>{
+          const cLv = cSec.levels[li];
+          if(cLv && cLv.gameId && lv.type==='game' && lv.gameData && !lv.gameId){
+            updates['sections/'+si+'/levels/'+li+'/gameId'] = cLv.gameId;
+            lv.gameId = cLv.gameId;
+          }
+        });
       });
-    });
-    // Update JSON textarea
-    const ta = document.getElementById('skillsJsonInput');
-    if (ta) ta.value = JSON.stringify(data, null, 2);
-    if (preview) {
-      const lvCount = (data.sections||[]).reduce((a,s)=>a+(s.levels?s.levels.length:0),0);
-      const doneCount = (data.sections||[]).reduce((a,s)=>a+(s.levels||[]).filter(l=>l.articleContent||l.quizQuestions||l.gameData||l.articleBilingual).length,0);
-      preview.innerHTML = `<div style="color:#22C55E;font-weight:700;">✅ Firebase: ${(data.sections||[]).length} sections, ${lvCount} levels — ${doneCount} content added</div>`;
+      if(Object.keys(updates).length){
+        window.FB_UPDATE(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic), updates).then(()=>{
+          showAdminToast('🔧 '+Object.keys(updates).length+' game(s) auto-fix ho gaye (gameId)');
+        }).catch(e=>console.warn('gameId backfill error:', e));
+      }
     }
     renderSkillsSavedList();
-  }).catch(e=>{ if(preview) preview.innerHTML='<span style="color:#ef4444;">Error: '+e.message+'</span>'; });
+  }).catch(e=>console.warn('loadSkillsFromFirebaseAdmin error:', e.message));
 }
 
-function deleteSkillLevel(secId,lvId){
-  if(!confirm('Is level ko delete karo?')) return;
-  window.FB_GET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic)).then(snap=>{
-    let data=snap.val(); if(!data) return;
-    const sec=data.sections&&data.sections.find(s=>s.id===secId);
-    if(!sec||!sec.levels) return;
-    sec.levels=sec.levels.filter(l=>l.id!==lvId);
-    window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic),data).then(()=>{
-      showAdminToast('🗑️ Level deleted!'); loadSkillsFromFirebaseAdmin();
-    });
-  });
-}
 
 function renderSkillsSavedList(){
-  const el  = document.getElementById('skillsSavedList');   // hidden — ignore
-  const saEl = document.getElementById('sa_savedList');     // visible one
+  const saEl = document.getElementById('sa_savedList');
   const noData = '<div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">Firebase mein abhi koi content save nahi</div>';
   if(!_saFirebaseData || !_saFirebaseData.sections){
     if(saEl) saEl.innerHTML = noData;
-    if(el)   el.innerHTML   = noData;
     return;
   }
   let html='';
@@ -14944,11 +14782,9 @@ function renderSkillsSavedList(){
     });
   });
   if(!totalSaved){
-    if(el)   el.innerHTML = noData;
     if(saEl) saEl.innerHTML = noData;
     return;
   }
-  if(el)   el.innerHTML = html;
   if(saEl) saEl.innerHTML = html;
 }
 
@@ -14985,52 +14821,57 @@ function saveEditedLevel(){
   const st=document.getElementById('editModalStatus');
   if(!content){st.style.color='#ef4444';st.textContent='❌ Content khali hai!';return;}
   if(!window.FB_DB){st.style.color='#ef4444';st.textContent='❌ Firebase connect nahi hua';return;}
-  window.FB_GET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic)).then(snap=>{
-    let data=snap.val(); if(!data) return;
-    const sec=data.sections&&data.sections.find(s=>s.id===secId);
-    const lv=sec&&sec.levels&&sec.levels.find(l=>l.id===lvId);
-    if(!lv){st.style.color='#ef4444';st.textContent='❌ Level nahi mila!';return;}
-    try{
-      const parsed=JSON.parse(content);
-      if(type==='quiz'||Array.isArray(parsed)){
-        lv.quizQuestions=Array.isArray(parsed)?parsed:(parsed.questions||parsed);
-      } else if(type==='game'||(parsed.questions&&!Array.isArray(parsed))||parsed.pairs||parsed.hazards||parsed.scenario){
-        lv.gameData=parsed;
-      } else if(parsed.ur||parsed.en){
-        lv.articleBilingual=parsed; lv.articleContent=parsed.ur||'';
-        delete lv.articleContentEn;
-      } else {
-        lv.articleContent=content; delete lv.articleBilingual;
-      }
-    } catch(e){
-      // Plain text/HTML
-      lv.articleContent=content; delete lv.articleBilingual;
+
+  const idx = _saIndexOf(_saCurrentTopic, secId, lvId);
+  if(!idx){st.style.color='#ef4444';st.textContent='❌ Level position SA_COURSE mein nahi mili';return;}
+  const base = 'sections/'+idx.si+'/levels/'+idx.li+'/';
+  const updates = {};
+
+  try{
+    const parsed=JSON.parse(content);
+    if(type==='quiz'||Array.isArray(parsed)){
+      updates[base+'quizQuestions'] = Array.isArray(parsed)?parsed:(parsed.questions||parsed);
+    } else if(type==='game'||(parsed.questions&&!Array.isArray(parsed))||parsed.pairs||parsed.hazards||parsed.scenario){
+      updates[base+'gameData'] = parsed;
+    } else if(parsed.ur||parsed.en){
+      updates[base+'articleBilingual'] = parsed;
+      updates[base+'articleContent'] = parsed.ur||'';
+      updates[base+'articleContentEn'] = null;
+    } else {
+      updates[base+'articleContent'] = content;
+      updates[base+'articleBilingual'] = null;
     }
-    window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic),data).then(()=>{
-      st.style.color='#22C55E';st.textContent='✅ Saved!';
-      showAdminToast('✅ '+lv.title+' updated!');
-      setTimeout(()=>{document.getElementById('skillsEditModal').style.display='none';},800);
-      loadSkillsFromFirebaseAdmin();
-      setTimeout(renderSkillsSavedList,1200);
-    }).catch(e=>{st.style.color='#ef4444';st.textContent='❌ '+e.message;});
-  });
+  } catch(e){
+    // Plain text/HTML
+    updates[base+'articleContent'] = content;
+    updates[base+'articleBilingual'] = null;
+  }
+
+  const courseLv = SA_COURSE[_saCurrentTopic] && SA_COURSE[_saCurrentTopic].sections[idx.si].levels[idx.li];
+  // Game ke liye gameId bhi ensure karo (purana data ya naya — dono mein)
+  if(courseLv && courseLv.type==='game' && updates[base+'gameData']){
+    updates[base+'gameId'] = courseLv.gameId || courseLv.id;
+  }
+
+  window.FB_UPDATE(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic), updates).then(()=>{
+    st.style.color='#22C55E';st.textContent='✅ Saved!';
+    showAdminToast('✅ '+(courseLv?courseLv.title:lvId)+' updated!');
+    setTimeout(()=>{document.getElementById('skillsEditModal').style.display='none';},800);
+    loadSkillsFromFirebaseAdmin();
+  }).catch(e=>{st.style.color='#ef4444';st.textContent='❌ '+e.message;});
 }
 
 function deleteSkillLevelContent(secId,lvId){
   showConfirm('🗑️','Content Delete Karo?','Is level ka Firebase content delete ho jayega (structure rahega)','Delete','#FF6B6B','#CC3333',()=>{
-    window.FB_GET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic)).then(snap=>{
-      let data=snap.val(); if(!data) return;
-      const sec=data.sections&&data.sections.find(s=>s.id===secId);
-      const lv=sec&&sec.levels&&sec.levels.find(l=>l.id===lvId);
-      if(!lv) return;
-      delete lv.articleContent; delete lv.articleBilingual; delete lv.articleContentEn;
-      delete lv.quizQuestions; delete lv.gameId; delete lv.gameData; delete lv.hint;
-      window.FB_SET(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic),data).then(()=>{
-        showAdminToast('🗑️ Content deleted!');
-        loadSkillsFromFirebaseAdmin();
-        setTimeout(renderSkillsSavedList,1200);
-      });
-    });
+    const idx = _saIndexOf(_saCurrentTopic, secId, lvId);
+    if(!idx){ showAdminToast('❌ Level position SA_COURSE mein nahi mili'); return; }
+    const base = 'sections/'+idx.si+'/levels/'+idx.li+'/';
+    const updates = {};
+    ['articleContent','articleBilingual','articleContentEn','quizQuestions','gameId','gameData','hint'].forEach(f=>updates[base+f]=null);
+    window.FB_UPDATE(window.FB_REF(window.FB_DB,'skills/'+_saCurrentTopic), updates).then(()=>{
+      showAdminToast('🗑️ Content deleted!');
+      loadSkillsFromFirebaseAdmin();
+    }).catch(e=>showAdminToast('❌ '+e.message));
   });
 }
 
