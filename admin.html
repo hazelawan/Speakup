@@ -87,12 +87,17 @@
       window.FIREBASE_READY = true;
       if(typeof updateCloudBar === 'function') updateCloudBar('connected');
 
-      // ✅ adminData listener — sirf logged-in hone ke baad
+      // ✅ FIX: onValue real-time listener ki jagah sirf ek baar get() se load karo
+      // onValue bar-bar fire hota tha — jab bhi koi bhi Firebase node change hota
+      // (even unrelated nodes) toh yeh purana/stale data wapas AD mein inject kar deta tha
+      // aur locally kiya gaya unsaved change overwrite ho jaata tha (lesson disappear bug).
+      // Ab: sirf login pe ek baar full data load hoga get() se.
+      window._adminInitialLoadDone = false;
       const adminRef = ref(db, 'adminData');
-      onValue(adminRef, (snapshot) => {
+      get(adminRef).then((snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          // ✅ FIX: Firebase numeric keys ko string mein normalize karo
+          // Numeric keys normalize karo
           if(data.langs) {
             Object.keys(data.langs).forEach(lang => {
               if(data.langs[lang]?.days) {
@@ -107,12 +112,10 @@
           localStorage.setItem('speakup_admin', JSON.stringify(data));
           if(typeof AD !== 'undefined' && AD) {
             const prevSettings = AD.settings ? {...AD.settings} : {};
-            // ✅ FIX: Deep merge — sirf top-level nahi, langs bhi merge karo
             Object.assign(AD, data);
             if(data.settings) {
               AD.settings = Object.assign({}, prevSettings, data.settings);
             }
-            // Firebase numeric keys ko string mein normalize karo AD.langs mein
             if(AD.langs) {
               Object.keys(AD.langs).forEach(lang => {
                 if(AD.langs[lang]?.days) {
@@ -125,7 +128,7 @@
               });
             }
           }
-          // ✅ FIX: Firebase sync ke baad Day Manager bhi refresh karo
+          window._adminInitialLoadDone = true;
           if(typeof loadDaysList === 'function') setTimeout(loadDaysList, 100);
           if (typeof renderDashboard === 'function') renderDashboard();
           if (typeof renderLangManager === 'function') renderLangManager();
@@ -133,9 +136,38 @@
           if (typeof renderPayAccounts === 'function') renderPayAccounts();
           if (typeof renderThemeGrid === 'function') renderThemeGrid();
           if(typeof updateCloudBar === 'function') updateCloudBar('synced');
-          console.log('✅ Firebase se admin data load hua!');
+          console.log('✅ Firebase se admin data load hua (one-time get)!');
+
+          // ✅ RECOVERY: Agar pehle koi save pending tha toh ab sync karo
+          try{
+            const pending = localStorage.getItem('su_admin_sync_pending');
+            if(pending){
+              const obj = JSON.parse(pending);
+              // Sirf tab recover karo agar 30 minute se zyada purana na ho
+              if(obj && obj.data && obj.ts && (Date.now() - obj.ts) < 30*60*1000){
+                showToast('🔄 Pehle ka unsaved data mila — auto-sync ho raha hai...','#FFD166', 4000);
+                setTimeout(function(){
+                  // Pending data mein se lessons extract karke current AD mein merge karo
+                  if(obj.data.langs){
+                    Object.keys(obj.data.langs).forEach(function(l){
+                      if(!AD.langs) AD.langs = {};
+                      if(!AD.langs[l]) AD.langs[l] = obj.data.langs[l];
+                      else {
+                        if(obj.data.langs[l].days) Object.assign(AD.langs[l].days || {}, obj.data.langs[l].days);
+                      }
+                    });
+                  }
+                  localStorage.removeItem('su_admin_sync_pending');
+                  saveAdminData();
+                  showToast('✅ Pending data sync ho gaya!','#2EE59D');
+                }, 1500);
+              } else {
+                localStorage.removeItem('su_admin_sync_pending');
+              }
+            }
+          }catch(e){}
         }
-      }, (err) => {
+      }).catch((err) => {
         console.warn('adminData read error:', err);
         if(typeof updateCloudBar === 'function') updateCloudBar('error');
       });
@@ -6642,10 +6674,13 @@ function _doCloudSync(data, attempt){
     if(attempt === 1){
       showToast('⏳ Login session load ho raha hai... save hote hi sync karunga','#FFD166', 3000);
     }
-    if(attempt <= 20){ // ~20 * 500ms = 10 sec max wait
+    if(attempt <= 40){ // ~40 * 500ms = 20 sec max wait (auth restore ke liye kaafi waqt)
       window._syncRetryTimer = setTimeout(()=>{ _doCloudSync(data, attempt+1); }, 500);
     } else {
-      showToast('❌ Login session ready nahi ho saka — dobara login karo ya "Force Sync" try karo.','#FF6B6B', 5000);
+      // ✅ Data localStorage mein safe hai — Force Sync se recover ho sakta hai
+      showToast('❌ Login session ready nahi hua — Data localStorage mein save hai. Panel refresh karo ya "Force Sync" use karo.','#FF6B6B', 8000);
+      // ✅ Emergency: localStorage mein flag laga do ke pending sync hai
+      try{ localStorage.setItem('su_admin_sync_pending', JSON.stringify({ts: Date.now(), data: data})); }catch(e){}
     }
     return;
   }
@@ -6771,39 +6806,48 @@ function showPage(name,btn){
   if(name==='dashboard') renderDashboard();
   if(name==='lessons'){
     if(typeof _syncEnabledSkillsToLangInfo==='function') _syncEnabledSkillsToLangInfo();
-    // ✅ FIX: Firebase se fresh data pull karo phir render karo
-    // ✅ FIX: Firebase se fresh data pull karke render karo
-    (function refreshFromFirebase(){
-      const onVal = window.FB_ON_VALUE || window.FB_ONVALUE;
-      const fbRef = window.FB_REF;
-      const fbDb  = window.FB_DB;
-      if(window.FIREBASE_READY && fbDb && fbRef && onVal){
-        const ref = fbRef(fbDb, 'adminData');
-        onVal(ref, function(snap){
-          if(snap.exists()){
-            const data = snap.val();
-            // Normalize numeric keys to string
-            if(data.langs){
-              Object.keys(data.langs).forEach(function(lang){
-                if(data.langs[lang] && data.langs[lang].days){
-                  const norm = {};
-                  Object.keys(data.langs[lang].days).forEach(function(k){
-                    norm[String(k)] = data.langs[lang].days[k];
-                  });
-                  data.langs[lang].days = norm;
-                }
-              });
-            }
-            Object.assign(AD, data);
+    // ✅ FIX: onValue ki jagah get() — har tab switch pe overwrite nahi hoga
+    // AD mein jo data hai woh preserve rehta hai — sirf render karo
+    if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET){
+      window.FB_GET(window.FB_REF(window.FB_DB, 'adminData')).then(function(snap){
+        if(snap && snap.exists()){
+          const data = snap.val();
+          if(data.langs){
+            Object.keys(data.langs).forEach(function(lang){
+              if(data.langs[lang] && data.langs[lang].days){
+                const norm = {};
+                Object.keys(data.langs[lang].days).forEach(function(k){
+                  norm[String(k)] = data.langs[lang].days[k];
+                });
+                data.langs[lang].days = norm;
+              }
+            });
           }
-          loadDaysList();
-          if(typeof refreshLessonStats === 'function') refreshLessonStats();
-        }, { onlyOnce: true });
-      } else {
+          // ✅ CRITICAL: Object.assign nahi — deep merge karo
+          // Taake locally kiya gaya unsaved work overwrite na ho
+          if(!AD.langs) AD.langs = {};
+          if(data.langs){
+            Object.keys(data.langs).forEach(function(l){
+              if(!AD.langs[l]) AD.langs[l] = data.langs[l];
+              else {
+                if(data.langs[l].days) Object.assign(AD.langs[l].days || {}, data.langs[l].days);
+                if(data.langs[l].enabled !== undefined) AD.langs[l].enabled = data.langs[l].enabled;
+              }
+            });
+          }
+          if(data.settings) AD.settings = Object.assign({}, AD.settings, data.settings);
+          localStorage.setItem('speakup_admin', JSON.stringify(AD));
+        }
         loadDaysList();
         if(typeof refreshLessonStats === 'function') refreshLessonStats();
-      }
-    })();
+      }).catch(function(){
+        loadDaysList();
+        if(typeof refreshLessonStats === 'function') refreshLessonStats();
+      });
+    } else {
+      loadDaysList();
+      if(typeof refreshLessonStats === 'function') refreshLessonStats();
+    }
   }
   if(name==='languages') renderLangManager();
   if(name==='users') renderUsers();
@@ -8221,21 +8265,28 @@ function saveDayFromModal(){
   saveAdminData();
   closeModal('addDayModal');
 
-  // ✅ FIX: Firebase save ke baad fresh data pull karke render karo
-  const _onVal = window.FB_ON_VALUE || window.FB_ONVALUE;
-  if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && _onVal){
-    _onVal(window.FB_REF(window.FB_DB,'adminData'), function(snap){
-      if(snap.exists()){
-        const data = snap.val();
-        if(data.langs){ Object.keys(data.langs).forEach(function(l){ if(data.langs[l]&&data.langs[l].days){ const n={}; Object.keys(data.langs[l].days).forEach(function(k){ n[String(k)]=data.langs[l].days[k]; }); data.langs[l].days=n; } }); }
-        Object.assign(AD, data);
-      }
+  // ✅ FIX: onValue (real-time) ki jagah get() use karo — race condition avoid karo
+  // onValue { onlyOnce } SDK mein properly nahi kaam karta — FB_SET complete hone se
+  // PEHLE fire ho sakta tha aur purana data wapas AD mein dal deta tha.
+  // Ab sirf 800ms wait karo (FB_SET ko settle karne do) phir fresh pull karo.
+  setTimeout(function(){
+    if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET){
+      window.FB_GET(window.FB_REF(window.FB_DB,'adminData')).then(function(snap){
+        if(snap.exists()){
+          const data = snap.val();
+          if(data.langs){ Object.keys(data.langs).forEach(function(l){ if(data.langs[l]&&data.langs[l].days){ const n={}; Object.keys(data.langs[l].days).forEach(function(k){ n[String(k)]=data.langs[l].days[k]; }); data.langs[l].days=n; } }); }
+          // ✅ Deep merge — existing unsaved keys preserve karo
+          if(!AD.langs) AD.langs = {};
+          if(data.langs){ Object.keys(data.langs).forEach(function(l){ if(!AD.langs[l]) AD.langs[l]=data.langs[l]; else { if(data.langs[l].days) Object.assign(AD.langs[l].days||{}, data.langs[l].days); } }); }
+          if(data.settings) AD.settings = Object.assign({}, AD.settings, data.settings);
+        }
+        loadDaysList();
+        if(typeof refreshLessonStats === 'function') refreshLessonStats();
+      }).catch(function(){ loadDaysList(); });
+    } else {
       loadDaysList();
-      if(typeof refreshLessonStats === 'function') refreshLessonStats();
-    }, { onlyOnce: true });
-  } else {
-    loadDaysList();
-  }
+    }
+  }, 800);
 
   if(typeof renderLessonStatus === 'function') renderLessonStatus();
   if(typeof refreshLessonStats === 'function') refreshLessonStats();
