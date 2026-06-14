@@ -23,7 +23,7 @@
   import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import {
     getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider,
-    onAuthStateChanged, signOut, setPersistence, browserSessionPersistence
+    onAuthStateChanged, signOut, setPersistence, browserLocalPersistence
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
     getFirestore, doc, getDoc, setDoc, updateDoc, collection,
@@ -45,8 +45,13 @@
   const auth = getAuth(app);
   const fsdb = getFirestore(app);
 
-  // 🔒 Session only — tab band = logout, har baar login karna padega
-  setPersistence(auth, browserSessionPersistence).catch(()=>{});
+  // ✅ FIX: Pehle "session only" persistence thi — tab/app band karte hi
+  // Firebase Auth session khatam ho jata tha, lekin admin panel UI
+  // (localStorage flag se) dikhata tha "logged in hi ho". Result:
+  // FB_AUTH.currentUser = null → Firebase rules ke mutabik save reject
+  // (PERMISSION_DENIED) → "Day save ho gaya!" toast dikhta tha lekin
+  // data Firebase tak nahi jata tha. Ab login persistent rahega.
+  setPersistence(auth, browserLocalPersistence).catch(()=>{});
 
   window.FB_DB = db;
   window.FB_AUTH = auth;
