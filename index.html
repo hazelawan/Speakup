@@ -923,6 +923,17 @@ body { padding-top: 48px; }
 
   window._adminDayCache = {}; // In-memory cache for fetched days
   window._adminSettingsLoaded = false;
+  // ✅ FIX: App fresh load pe localStorage day cache bhi clear karo
+  // Taake admin se naya lesson save ho toh app fresh data Firebase se le
+  // (sirf in-memory cache clear — user progress safe rehti hai)
+  try {
+    const keysToDelete = [];
+    for(let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith('su_admin_day_')) keysToDelete.push(k);
+    }
+    keysToDelete.forEach(k => localStorage.removeItem(k));
+  } catch(e) {}
 
   // ── Helper: Ek specific day ka data inject karo ALL_DAYS mein ──
   function _injectDayData(lang, dayNum, dayData) {
@@ -1059,13 +1070,16 @@ body { padding-top: 48px; }
   // ── STEP 2: Ek specific lang + day ka data lazily fetch karo ──
   window.lazyFetchAdminDay = async function(lang, dayNum, opts = {}) {
     const cacheKey = lang + '_' + dayNum;
+    const lsCacheKey = 'su_admin_day_' + cacheKey;
 
-    // Cache mein hai? Return immediately
+    // In-memory cache mein hai? Return immediately (same session)
     if (window._adminDayCache[cacheKey]) {
       console.log(`📦 Cache se: ${lang} Day ${dayNum}`);
       return window._adminDayCache[cacheKey];
     }
 
+    // ✅ FIX: Pehle Firebase se try karo (fresh data priority)
+    // Agar internet nahi toh localStorage fallback use ho ga
     try {
       console.log(`🔄 Firebase se lazy fetch: ${lang} Day ${dayNum}...`);
       const dayRef = ref(db, `adminData/langs/${lang}/days/${dayNum}`);
@@ -1073,19 +1087,29 @@ body { padding-top: 48px; }
       const dayData = snap.val();
 
       if (dayData) {
-        // Cache mein save karo
+        // Memory + localStorage cache mein save karo
         window._adminDayCache[cacheKey] = dayData;
+        try { localStorage.setItem(lsCacheKey, JSON.stringify(dayData)); } catch(e2) {}
         // ALL_DAYS mein inject karo
         _injectDayData(lang, dayNum, dayData);
-        console.log(`✅ Lazy load hua: ${lang} Day ${dayNum}`);
+        console.log(`✅ Lazy load hua (Firebase): ${lang} Day ${dayNum}`);
         return dayData;
       } else {
-        // Firebase mein nahi hai — null cache karo (dobara try nahi)
+        // Firebase mein nahi hai — localStorage check karo (offline fallback)
+        try {
+          const lsData = localStorage.getItem(lsCacheKey);
+          if(lsData){ const parsed = JSON.parse(lsData); if(parsed){ window._adminDayCache[cacheKey]=parsed; _injectDayData(lang,dayNum,parsed); return parsed; } }
+        } catch(e2) {}
         window._adminDayCache[cacheKey] = null;
         console.log(`ℹ️ ${lang} Day ${dayNum} Firebase mein nahi — built-in use hoga`);
         return null;
       }
     } catch(e) {
+      // Internet nahi — localStorage fallback
+      try {
+        const lsData = localStorage.getItem(lsCacheKey);
+        if(lsData){ const parsed = JSON.parse(lsData); if(parsed){ window._adminDayCache[cacheKey]=parsed; _injectDayData(lang,dayNum,parsed); console.log(`📦 Offline fallback: ${lang} Day ${dayNum}`); return parsed; } }
+      } catch(e2) {}
       console.warn(`Lazy fetch error (${lang} Day ${dayNum}):`, e.message);
       return null;
     }
@@ -19432,10 +19456,9 @@ function onFirebaseAuthChange(user){
     // 2️⃣ Notification system init — sirf yahan, alag onAuthStateChanged nahi
     if(window.FB_DB && window.FB_REF && window.FB_ON_VALUE){
       setTimeout(function(){ if(typeof initNotifSystem==='function') initNotifSystem(); }, 1000);
-      // 📄 Firebase paper meta load karo (sirf titles — sections baad mein)
+      // 📄 Firebase paper meta load karo (sirf titles — sections baad mein lazy)
       setTimeout(function(){ if(typeof loadFirebasePapersMeta==='function') loadFirebasePapersMeta(); }, 1500);
-      // 📚 Skills data preload karo auth ke baad
-      setTimeout(function(){ if(typeof loadSkillsFromFirebase==='function') loadSkillsFromFirebase(); }, 2000);
+      // ✅ Skills data LOGIN pe load NAHI hoga — sirf tab jab user Skills screen khole (lazy load)
       // 2b. Maintenance mode real-time listener
       setTimeout(function(){ if(typeof initMaintenanceListener==='function') initMaintenanceListener(); }, 800);
     }
@@ -21717,58 +21740,95 @@ function ppBack(to){
 
 // ── Firebase Papers — Lazy Loader ──
 
-// Step 1: Sirf META fetch karo (login ke baad) — chhota data
+// ── Helper: Paper meta entries ko PP_DATA mein daalo ──
+function _applyPaperMetaData(data){
+  let count = 0;
+  Object.entries(data).forEach(function([key, entry]){
+    const p = (entry && entry.meta) ? entry.meta : entry;
+    if(!p || !p.class || !p.year || !p.board || !p.subject || !p.session) return;
+    const cls = parseInt(p.class);
+    const yr  = parseInt(p.year);
+    PP_DATA[cls] = PP_DATA[cls] || {};
+    PP_DATA[cls][yr] = PP_DATA[cls][yr] || {};
+    PP_DATA[cls][yr][p.board] = PP_DATA[cls][yr][p.board] || {};
+    PP_DATA[cls][yr][p.board][p.subject] = PP_DATA[cls][yr][p.board][p.subject] || {};
+    PP_DATA[cls][yr][p.board][p.subject][p.session] = {
+      title: p.title, class: cls, year: yr,
+      board: p.board, subject: p.subject, session: p.session,
+      sections: [],
+      _fbKey: key,
+      _metaOnly: true
+    };
+    count++;
+  });
+  return count;
+}
+
+// Step 1: Sirf META fetch karo (login ke baad) — offline-first with cache
 function loadFirebasePapersMeta(){
+  const PAPERS_CACHE_KEY = 'su_papers_meta_cache';
+
+  // ── Cache se foran load karo ──
+  try{
+    const cached = localStorage.getItem(PAPERS_CACHE_KEY);
+    if(cached){
+      const cData = JSON.parse(cached);
+      if(cData && Object.keys(cData).length > 0){
+        _applyPaperMetaData(cData);
+        console.log('📄 Papers meta cache se load hua (offline-ready)');
+      }
+    }
+  }catch(e){}
+
+  // ── Firebase se fresh data background mein update karo ──
   try{
     if(!window.FB_DB || !window.FB_REF || !window.FB_GET) return;
     const papersRef = window.FB_REF(window.FB_DB, 'pastPapers');
     window.FB_GET(papersRef).then(function(snap){
       if(!snap.exists()) return;
       const data = snap.val();
-      let count = 0;
-      Object.entries(data).forEach(function([key, entry]){
-        // New format: entry.meta | Old format: entry directly
-        const p = (entry && entry.meta) ? entry.meta : entry;
-        if(!p || !p.class || !p.year || !p.board || !p.subject || !p.session) return;
-        const cls = parseInt(p.class);
-        const yr  = parseInt(p.year);
-        PP_DATA[cls] = PP_DATA[cls] || {};
-        PP_DATA[cls][yr] = PP_DATA[cls][yr] || {};
-        PP_DATA[cls][yr][p.board] = PP_DATA[cls][yr][p.board] || {};
-        PP_DATA[cls][yr][p.board][p.subject] = PP_DATA[cls][yr][p.board][p.subject] || {};
-        // Sirf meta save karo — sections baad mein fetch honge
-        PP_DATA[cls][yr][p.board][p.subject][p.session] = {
-          title: p.title, class: cls, year: yr,
-          board: p.board, subject: p.subject, session: p.session,
-          sections: [], // placeholder — baad mein load hoga
-          _fbKey: key,
-          _metaOnly: true  // flag — sections abhi nahi hain
-        };
-        count++;
-      });
+      const count = _applyPaperMetaData(data);
+      // Cache save karo offline use ke liye
+      try{ localStorage.setItem(PAPERS_CACHE_KEY, JSON.stringify(data)); }catch(e){}
       console.log('✅ Firebase paper meta loaded:', count, 'papers');
-      // Agar year screen open hai toh refresh
       try{
         const yrScreen = document.getElementById('ppYearSelect');
         if(yrScreen && yrScreen.style.display !== 'none' && typeof ppState !== 'undefined' && ppState.board){
           ppSelectBoard(ppState.board);
         }
       }catch(e){}
-    }).catch(function(e){ console.warn('Papers meta load error:', e); });
+    }).catch(function(e){ console.warn('Papers meta Firebase error (cache se kaam chalega):', e); });
   }catch(e){ console.warn('loadFirebasePapersMeta error:', e); }
 }
 
-// Step 2: Jab user paper select kare tab sirf us paper ka sections fetch karo
+// Step 2: Jab user paper select kare tab sirf us paper ka sections fetch karo (offline-first)
 function loadPaperSectionsFromFirebase(fbKey, callback){
+  const SEC_CACHE_KEY = 'su_paper_sec_' + fbKey;
+
+  // Cache check — pehle local se load karo
+  try{
+    const cached = localStorage.getItem(SEC_CACHE_KEY);
+    if(cached){
+      const sections = JSON.parse(cached);
+      if(sections && sections.length > 0){
+        callback(sections, null);
+        return; // Cache se mil gaya — Firebase call skip
+      }
+    }
+  }catch(e){}
+
+  // Firebase se load karo
   try{
     if(!window.FB_DB || !window.FB_REF || !window.FB_GET){
-      callback(null, 'Firebase ready nahi'); return;
+      callback(null, 'Firebase ready nahi aur cache nahi'); return;
     }
     const sectRef = window.FB_REF(window.FB_DB, 'pastPapers/' + fbKey + '/sections');
     window.FB_GET(sectRef).then(function(snap){
       if(!snap.exists()){ callback(null, 'Sections nahi mile'); return; }
       const data = snap.val();
       const sections = data.sections || (Array.isArray(data) ? data : []);
+      // Cache save karo next time ke liye
+      try{ localStorage.setItem(SEC_CACHE_KEY, JSON.stringify(sections)); }catch(e){}
       callback(sections, null);
     }).catch(function(e){ callback(null, e.message); });
   }catch(e){ callback(null, e.message); }
@@ -27365,28 +27425,42 @@ function _normalizeFirebaseSkillData(val){
 }
 
 function loadSkillsFromFirebase(){
+  // ── Step 1: Cache se FORAN load karo (offline-first) ──
+  const cacheKey = 'su_skills_cache_' + _currentSkillTopic;
   try {
-    if(!window.FB_DB || !window.FB_GET || !window.FB_REF){
-      _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
-      renderSkillsScreen();
-      return;
+    const cached = localStorage.getItem(cacheKey);
+    if(cached){
+      const parsed = JSON.parse(cached);
+      if(parsed && parsed.sections){
+        _skillsData = parsed;
+        renderSkillsScreen();
+      }
     }
+  } catch(e){}
+
+  // Agar cache nahi mila toh default data use karo
+  if(!_skillsData){
+    _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
+    renderSkillsScreen();
+  }
+
+  // ── Step 2: Firebase se fresh data background mein update karo ──
+  try {
+    if(!window.FB_DB || !window.FB_GET || !window.FB_REF) return;
     const dbRef = window.FB_REF(window.FB_DB, 'skills/'+_currentSkillTopic);
     window.FB_GET(dbRef).then(snap => {
       const raw = snap && snap.val ? snap.val() : null;
       const val = _normalizeFirebaseSkillData(raw);
-      _skillsData = val || SKILLS_DEFAULT_DATA[_currentSkillTopic];
-      // Agar Skills screen open hai toh render karo
-      const skillScreen = document.getElementById('skills');
-      if(skillScreen && skillScreen.style.display !== 'none') renderSkillsScreen();
+      if(val){
+        _skillsData = val;
+        try { localStorage.setItem(cacheKey, JSON.stringify(val)); } catch(e){}
+        const skillScreen = document.getElementById('skills');
+        if(skillScreen && skillScreen.style.display !== 'none') renderSkillsScreen();
+      }
     }).catch(()=>{
-      _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
-      renderSkillsScreen();
+      // Internet nahi — cache/default se kaam chale ga
     });
-  } catch(e){
-    _skillsData = SKILLS_DEFAULT_DATA[_currentSkillTopic];
-    renderSkillsScreen();
-  }
+  } catch(e){}
 }
 
 function renderSkillsScreen(){
