@@ -6615,8 +6615,32 @@ function _doCloudSync(data, attempt){
 }
 
 function saveAdminData(){
-  localStorage.setItem(ADMIN_KEY,JSON.stringify(AD));
-  const snapshot = JSON.parse(JSON.stringify(AD));
+  // ✅ FIX: localStorage.setItem ko try/catch mein wrap kiya
+  // Pehle agar yeh QuotaExceededError (storage full) throw karta tha,
+  // to is function ke baad ka sara code (cloud sync, modal close, toast)
+  // chal hi nahi pata tha — isi wajah se "Save Day" pe kuch nahi hota tha
+  // jab lesson content bohot bara ho (40 vocab / 45 sentences / 80 quizzes).
+  let snapshot;
+  try{
+    snapshot = JSON.parse(JSON.stringify(AD));
+  } catch(e){
+    showToast('❌ Save fail: data structure mein error — '+e.message,'#FF6B6B', 5000);
+    console.error('saveAdminData stringify error:', e);
+    return;
+  }
+
+  try{
+    localStorage.setItem(ADMIN_KEY, JSON.stringify(AD));
+  } catch(e){
+    console.warn('localStorage save failed:', e);
+    if(e && (e.name === 'QuotaExceededError' || e.code === 22)){
+      showToast('⚠️ Local storage full hai — sirf cloud (Firebase) pe save ho raha hai','#FFD166', 5000);
+    } else {
+      showToast('⚠️ Local save warning: '+(e.message||e),'#FFD166', 5000);
+    }
+    // localStorage fail hone par bhi cloud sync zaroor chalao
+  }
+
   _doCloudSync(snapshot, 1);
   const fs=document.getElementById('floatSave');
   if(fs) fs.classList.remove('visible');
@@ -7988,6 +8012,7 @@ function showNewDayBanner(lang, dayNum, title, emoji){
 // ✅ Save Day From Add Day Modal
 // ════════════════════════════════════════════
 function saveDayFromModal(){
+ try{ // ✅ FIX: pura function try/catch mein — agar koi unexpected error aaye to silently fail na ho, toast dikhaye
   const lang = document.getElementById('modalEditLang')?.value || currentLang;
   const isEditMode = document.getElementById('modalIsEditMode')?.value === '1';
   // ✅ FIX: Edit mode mein HAMESHA modalEditDayNum lo — number change nahi hona chahiye
@@ -8176,6 +8201,10 @@ function saveDayFromModal(){
 
   showNewDayBanner(lang, dayNum, day.title || 'Day '+dayNum, day.emoji || '📖');
   showToast('✅ Day '+dayNum+' save ho gaya! ('+lang.toUpperCase()+')','#2EE59D');
+ } catch(e){
+  console.error('saveDayFromModal error:', e);
+  showToast('❌ Save mein error: '+(e.message||e),'#FF6B6B', 6000);
+ }
 }
 
 // JS object string ko valid JSON mein convert karo
