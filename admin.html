@@ -2368,7 +2368,8 @@ ZAROORI RULES:
       <div style="margin-top:4px;font-size:11px;color:var(--mut);">Admin se save karo → Sab devices pe update! 🚀</div>
     </div>
     <button class="btn btn-outline" onclick="testFirebaseConnection()" style="width: 100%; margin-bottom: 8px; position: relative; overflow: hidden;">🔄 Connection Test Karo</button>
-    <button class="btn btn-outline" onclick="forceSyncToFirebase()" style="width: 100%; position: relative; overflow: hidden;">☁️ Force Sync — Sab Data Cloud Pe Bhejo</button>
+    <button class="btn btn-outline" onclick="forceSyncToFirebase()" style="width: 100%; margin-bottom: 8px; position: relative; overflow: hidden;">☁️ Force Sync — Sab Data Cloud Pe Bhejo</button>
+    <button class="btn btn-outline" onclick="verifyDayInFirebase()" style="width: 100%; position: relative; overflow: hidden;">🔍 Lesson Day Verify Karo (Firebase)</button>
     <div style="font-size:11px;color:var(--mut);margin-top:8px;text-align:center;">
       Database: speakup-8fa2a-default-rtdb.firebaseio.com
     </div>
@@ -2565,6 +2566,39 @@ function updateFirebaseStatusUI(){
 }
 
 // Test connection button
+// 🔍 Debug tool: directly fetch a specific day's data from Firebase
+// (authenticated read — bypasses the "Permission denied" issue you get
+// when opening the .json URL directly in the browser, since that's an
+// unauthenticated request and rules block it)
+function verifyDayInFirebase(){
+  if(!window.FIREBASE_READY || !window.FB_DB){
+    showToast('⚠️ Firebase abhi connect nahi hua — thoda wait karo', '#FFD166');
+    return;
+  }
+  const lang = prompt('Language code likho (jaise ru, en, fr, ar):', currentLang || 'ru');
+  if(!lang) return;
+  const dayNum = prompt('Day number likho (jaise 2):', '1');
+  if(!dayNum) return;
+
+  const path = 'adminData/langs/' + lang.trim() + '/days/' + dayNum.trim();
+  showToast('🔍 Checking: ' + path + ' ...', '#5B8DEF');
+
+  window.FB_GET(window.FB_REF(window.FB_DB, path))
+    .then(snap=>{
+      if(!snap.exists()){
+        alert('❌ NAHI MILA\n\nPath: ' + path + '\n\nFirebase mein is path pe koi data nahi hai. Matlab "Save Day" se yeh data Firebase tak nahi pohcha.');
+        return;
+      }
+      const data = snap.val();
+      const json = JSON.stringify(data, null, 2);
+      const preview = json.length > 1500 ? json.slice(0,1500) + '\n... (truncated)' : json;
+      alert('✅ MIL GAYA!\n\nPath: ' + path + '\n\n' + preview);
+    })
+    .catch(err=>{
+      alert('❌ ERROR\n\nPath: ' + path + '\n\n' + err.message);
+    });
+}
+
 function testFirebaseConnection(){
   if(!window.FIREBASE_READY || !window.FB_DB){
     showToast('⚠️ Firebase abhi connect nahi hua — thoda wait karo', '#FFD166');
@@ -6586,9 +6620,23 @@ window._syncRetryTimer = null;
 
 function _doCloudSync(data, attempt){
   attempt = attempt || 1;
+  clearTimeout(window._syncRetryTimer); // purana pending retry (stale data) cancel karo
   if(!window.FIREBASE_READY || !window.FB_DB){
+    // ✅ FIX: Pehle yahan silently return ho jata tha — agar Firebase abhi
+    // connect ho raha tha (page load ke turant baad), to save Firebase
+    // tak kabhi nahi jata tha aur koi error/retry bhi nahi hota tha.
+    // Ab hum poll karenge — Firebase ready hote hi yeh save automatically
+    // retry ho jayega.
     window._syncPending = true;
     updateCloudBar('offline');
+    if(attempt === 1){
+      showToast('⏳ Firebase connect ho raha hai... save hote hi sync karunga','#FFD166', 3000);
+    }
+    if(attempt <= 20){ // ~20 * 500ms = 10 sec max wait
+      window._syncRetryTimer = setTimeout(()=>{ _doCloudSync(data, attempt+1); }, 500);
+    } else {
+      showToast('❌ Firebase connect nahi ho saka — internet check karo. "Force Sync" button try karo.','#FF6B6B', 5000);
+    }
     return;
   }
   updateCloudBar('syncing');
@@ -8032,6 +8080,16 @@ function saveDayFromModal(){
 
   const key = String(dayNum);
   const day = AD.langs[lang].days[key] || {num: dayNum};
+
+  // 🔍 DEBUG: exact save target dikhao — isse pata chalega ke save
+  // sahi day number/lang pe ja raha hai ya kahin shift ho raha hai
+  console.log('[SAVE DEBUG]', {lang, isEditMode, dayNum, key,
+    modalDayNum: document.getElementById('modalDayNum')?.value,
+    modalEditDayNum: document.getElementById('modalEditDayNum')?.value,
+    modalEditLang: document.getElementById('modalEditLang')?.value
+  });
+  showToast('💾 Saving → Lang: '+lang.toUpperCase()+' · Day: '+dayNum+' (key="'+key+'")','#5B8DEF', 3500);
+
   day.title = title;
   day.emoji = emoji;
   day.status = status;
