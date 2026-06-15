@@ -568,6 +568,7 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6;}
   <button class="nav-tab" onclick="showPage('lessons',this)">📚 Lessons</button>
   <button class="nav-tab" onclick="showPage('ai-gen',this)">🤖 AI Generator</button>
   <button class="nav-tab" onclick="showPage('prompt-gen',this)">📋 Prompt Generator</button>
+  <button class="nav-tab" onclick="showPage('lesson-save',this);initLessonSaveTab();" style="background:linear-gradient(135deg,rgba(46,229,157,.15),rgba(46,229,157,.05));color:#2EE59D;font-weight:800;border:1px solid rgba(46,229,157,.3);">💾 Lesson Save</button>
   <button class="nav-tab" onclick="showPage('languages',this)">🌍 Languages</button>
   <button class="nav-tab" onclick="showPage('pastpapers-admin',this)">📄 Past Papers</button>
   <button class="nav-tab" onclick="showPage('skills-admin',this);loadSkillsAdmin();" style="background:linear-gradient(135deg,rgba(245,196,0,.12),rgba(255,165,0,.08));color:#F5C400;font-weight:800;">⚡ Skills</button>
@@ -959,6 +960,78 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6;}
       </div>
     </div>
   </div>
+
+</div>
+
+<!-- ════════════════════════════
+     PAGE: LESSON SAVE
+════════════════════════════ -->
+<div class="page" id="page-lesson-save">
+
+  <!-- Header -->
+  <div class="card" style="border:2px solid rgba(46,229,157,.3);background:rgba(46,229,157,.05);">
+    <div class="card-title" style="color:#2EE59D;">💾 Lesson Direct Save Karo</div>
+    <div class="card-sub">Gemini/ChatGPT se JSON aaye — yahan paste karo — seedha Firebase pe save hoga. Koi data delete nahi hoga.</div>
+  </div>
+
+  <!-- Step 1: Language + Day -->
+  <div class="card">
+    <div style="font-size:11px;font-weight:800;color:#5B8DEF;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">① Language aur Day</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <div class="inp-label">Language</div>
+        <select class="inp" id="lsLang">
+          <option value="en">🇬🇧 English</option>
+          <option value="fr">🇫🇷 French</option>
+          <option value="ru">🇷🇺 Russian</option>
+          <option value="ar">🇸🇦 Arabic</option>
+          <option value="zh">🇨🇳 Chinese</option>
+          <option value="ko">🇰🇷 Korean</option>
+          <option value="ja">🇯🇵 Japanese</option>
+          <option value="de">🇩🇪 German</option>
+          <option value="es">🇪🇸 Spanish</option>
+          <option value="tr">🇹🇷 Turkish</option>
+          <option value="ie">🇮🇪 Irish</option>
+        </select>
+      </div>
+      <div>
+        <div class="inp-label">Day Number</div>
+        <input class="inp" type="number" id="lsDayNum" min="1" max="90" value="1" placeholder="1-90">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <div>
+        <div class="inp-label">Title</div>
+        <input class="inp" id="lsTitle" placeholder="e.g. Greetings">
+      </div>
+      <div>
+        <div class="inp-label">Emoji</div>
+        <input class="inp" id="lsEmoji" placeholder="👋" maxlength="4">
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: JSON Paste -->
+  <div class="card">
+    <div style="font-size:11px;font-weight:800;color:#5B8DEF;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">② JSON Paste Karo</div>
+    <div style="background:rgba(255,154,60,.08);border:1px solid rgba(255,154,60,.25);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:#FF9A3C;line-height:1.7;">
+      📌 Gemini/ChatGPT se jo JSON aaye woh neeche paste karo — vocab, sentences, grammar, quizzes sab ek saath
+    </div>
+    <textarea class="inp" id="lsJsonInput" placeholder='{"vocab":[...],"sentences":[...],"grammar":[...],"quizzes":[...]}' style="height:160px;font-family:monospace;font-size:11px;resize:vertical;"></textarea>
+    <button onclick="lsParseJson()" class="btn btn-blue" style="width:100%;margin-top:10px;font-size:15px;padding:13px;">🔍 Parse + Verify Karo</button>
+  </div>
+
+  <!-- Step 3: Preview -->
+  <div class="card" id="lsPreviewCard" style="display:none;">
+    <div style="font-size:11px;font-weight:800;color:#2EE59D;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">③ Preview</div>
+    <div id="lsPreviewContent"></div>
+    <button onclick="lsSaveToFirebase()" class="btn btn-green" style="width:100%;margin-top:14px;font-size:16px;padding:14px;font-weight:800;">
+      🔥 Firebase Pe Save Karo
+    </button>
+  </div>
+
+  <!-- Result -->
+  <div id="lsResultBox" style="display:none;"></div>
 
 </div>
 
@@ -6646,8 +6719,13 @@ function forceSyncToFirebase(){
   }
   showToast('⏳ Sync ho raha hai...','#5B8DEF', 2000);
   updateCloudBar('syncing');
-  const adminRef=window.FB_REF(window.FB_DB,'adminData');
-  window.FB_SET(adminRef,AD)
+  // FB_UPDATE use karo — FB_SET se data delete hone ka risk tha
+  const updateMap = {};
+  if(AD.settings) updateMap['settings'] = AD.settings;
+  if(AD.paymentPlans) updateMap['paymentPlans'] = AD.paymentPlans;
+  if(AD.paymentAccounts) updateMap['paymentAccounts'] = AD.paymentAccounts;
+  if(AD.langs){ Object.keys(AD.langs).forEach(function(lang){ if(AD.langs[lang] && AD.langs[lang].enabled!==undefined) updateMap['langs/'+lang+'/enabled']=AD.langs[lang].enabled; }); }
+  window.FB_UPDATE(window.FB_REF(window.FB_DB,'adminData'), updateMap)
     .then(()=>{ showToast('☁️ Force Sync ho gaya! Sab data Firebase pe hai ✅','#2EE59D'); updateCloudBar('synced'); })
     .catch(err=>{
       if(err.code === 'PERMISSION_DENIED' || (err.message && err.message.includes('PERMISSION_DENIED'))){
@@ -6738,7 +6816,25 @@ function _doCloudSync(data, attempt){
     return;
   }
   updateCloudBar('syncing');
-  window.FB_SET(window.FB_REF(window.FB_DB,'adminData'), data)
+
+  // ✅ CRITICAL: FB_SET ki jagah flat update map banao
+  // FB_SET poori adminData overwrite karta tha — agar AD mein koi lang missing ho
+  // toh Firebase se woh lang delete ho jaati thi (YAHI bug tha jis se ru/days gaye)
+  // Ab: har field individually update hoti hai — missing fields safe rehti hain
+  const updateMap = {};
+  if(data.settings) updateMap['settings'] = data.settings;
+  if(data.paymentPlans) updateMap['paymentPlans'] = data.paymentPlans;
+  if(data.paymentAccounts) updateMap['paymentAccounts'] = data.paymentAccounts;
+  if(data.langs){
+    Object.keys(data.langs).forEach(function(lang){
+      if(data.langs[lang]){
+        // Sirf enabled flag — days kabhi nahi (direct path se save hote hain)
+        if(data.langs[lang].enabled !== undefined) updateMap['langs/'+lang+'/enabled'] = data.langs[lang].enabled;
+      }
+    });
+  }
+
+  window.FB_UPDATE(window.FB_REF(window.FB_DB,'adminData'), updateMap)
     .then(()=>{
       window._syncPending = false;
       clearTimeout(window._syncRetryTimer);
@@ -7556,6 +7652,175 @@ function lrQuickDelete(){
   }).catch(function(err){
     showToast('❌ Load error: ' + err.message, '#FF6B6B');
   });
+}
+
+// ════════════════════════════════════════════
+// 💾 LESSON SAVE TAB — Direct Firebase Save
+// ════════════════════════════════════════════
+
+let _lsParsedContent = null;
+
+function initLessonSaveTab(){
+  // Tab khulne pe kuch khas karna nahi
+}
+
+function lsParseJson(){
+  const raw = (document.getElementById('lsJsonInput').value||'').trim();
+  const previewCard = document.getElementById('lsPreviewCard');
+  const previewContent = document.getElementById('lsPreviewContent');
+  const resultBox = document.getElementById('lsResultBox');
+  if(resultBox) resultBox.style.display='none';
+
+  if(!raw){ showToast('❌ Kuch paste nahi kiya','#FF6B6B'); return; }
+
+  let parsed;
+  try{
+    const clean = raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+    parsed = JSON.parse(clean);
+  }catch(e){
+    showToast('❌ JSON format galat hai: '+e.message,'#FF6B6B');
+    previewCard.style.display='none';
+    return;
+  }
+
+  // Normalize — vocab/vocabulary dono accept karo
+  const vocab     = parsed.vocab || parsed.vocabulary || [];
+  const sentences = parsed.sentences || [];
+  const grammar   = parsed.grammar || [];
+  const quizzes   = parsed.quizzes || parsed.quiz || [];
+  const story     = parsed.story || [];
+
+  _lsParsedContent = { vocab, sentences, grammar, quizzes, story };
+
+  // Auto-fill title agar JSON mein hai
+  if(parsed.title && !document.getElementById('lsTitle').value){
+    document.getElementById('lsTitle').value = parsed.title;
+  }
+
+  // Preview render
+  const vCount = vocab.length;
+  const sCount = sentences.length;
+  const gCount = grammar.length;
+  const qCount = quizzes.length;
+  const stCount = story.length;
+
+  const statusColor = (vCount>0&&qCount>0) ? '#2EE59D' : '#FFD166';
+  const statusText  = (vCount>0&&qCount>0) ? '✅ Sab theek hai — save ho sakta hai' : '⚠️ Vocab ya quizzes missing hain';
+
+  previewContent.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+      <div style="background:rgba(46,229,157,.1);border:1px solid rgba(46,229,157,.25);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:#2EE59D;">${vCount}</div>
+        <div style="font-size:11px;color:var(--mut);">Vocab</div>
+      </div>
+      <div style="background:rgba(91,141,239,.1);border:1px solid rgba(91,141,239,.25);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:#5B8DEF;">${sCount}</div>
+        <div style="font-size:11px;color:var(--mut);">Sentences</div>
+      </div>
+      <div style="background:rgba(199,125,255,.1);border:1px solid rgba(199,125,255,.25);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:#C77DFF;">${qCount}</div>
+        <div style="font-size:11px;color:var(--mut);">Quizzes</div>
+      </div>
+      <div style="background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.25);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:#FFD166;">${gCount}</div>
+        <div style="font-size:11px;color:var(--mut);">Grammar</div>
+      </div>
+      <div style="background:rgba(255,154,60,.1);border:1px solid rgba(255,154,60,.25);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:#FF9A3C;">${stCount}</div>
+        <div style="font-size:11px;color:var(--mut);">Story</div>
+      </div>
+      <div style="background:rgba(46,229,157,.05);border:1px solid rgba(46,229,157,.15);border-radius:10px;padding:10px;text-align:center;grid-column:span 1;">
+        <div style="font-size:18px;font-weight:800;color:${statusColor};">${vCount+sCount+gCount+qCount}</div>
+        <div style="font-size:11px;color:var(--mut);">Total Items</div>
+      </div>
+    </div>
+    <div style="padding:10px 12px;border-radius:10px;background:${(vCount>0&&qCount>0)?'rgba(46,229,157,.1)':'rgba(255,209,102,.1)'};border:1px solid ${(vCount>0&&qCount>0)?'rgba(46,229,157,.3)':'rgba(255,209,102,.3)'};font-size:13px;font-weight:700;color:${statusColor};">
+      ${statusText}
+    </div>
+    ${vCount>0 ? `<div style="margin-top:10px;font-size:12px;color:var(--mut);">
+      <b style="color:var(--txt);">Pehle 3 vocab:</b> ${vocab.slice(0,3).map(v=>v.w||v.word||'').join(', ')}
+    </div>` : ''}
+  `;
+  previewCard.style.display='block';
+  showToast('✅ Parse hua! '+vCount+' vocab, '+qCount+' quizzes','#2EE59D');
+}
+
+function lsSaveToFirebase(){
+  if(!_lsParsedContent){ showToast('❌ Pehle JSON parse karo','#FF6B6B'); return; }
+
+  const lang   = document.getElementById('lsLang').value;
+  const dayNum = parseInt(document.getElementById('lsDayNum').value)||1;
+  const title  = document.getElementById('lsTitle').value.trim() || ('Day '+dayNum);
+  const emoji  = document.getElementById('lsEmoji').value.trim() || '📚';
+
+  const cu = window.FB_AUTH && window.FB_AUTH.currentUser;
+  if(!window.FIREBASE_READY || !window.FB_DB || !window.FB_SET || !window.FB_REF || !cu){
+    showToast('❌ Firebase/Login ready nahi — thodi der baad try karo','#FF6B6B'); return;
+  }
+
+  const dayData = {
+    num: dayNum,
+    title: title,
+    emoji: emoji,
+    status: 'unlocked',
+    lessonCount: (_lsParsedContent.vocab||[]).length,
+    lessonContent: {
+      vocab:     _lsParsedContent.vocab     || [],
+      sentences: _lsParsedContent.sentences || [],
+      grammar:   _lsParsedContent.grammar   || [],
+      quizzes:   _lsParsedContent.quizzes   || [],
+      story:     _lsParsedContent.story     || []
+    }
+  };
+
+  // DIRECT PATH save — koi saveAdminData nahi, koi overwrite nahi
+  const path = 'adminData/langs/'+lang+'/days/'+dayNum;
+  const dayRef = window.FB_REF(window.FB_DB, path);
+
+  showToast('⏳ Firebase pe save ho raha hai...','#5B8DEF', 2000);
+
+  window.FB_SET(dayRef, dayData)
+    .then(function(){
+      // AD mein bhi update karo taake panel mein dikhe
+      if(!AD.langs) AD.langs={};
+      if(!AD.langs[lang]) AD.langs[lang]={enabled:true, days:{}};
+      if(!AD.langs[lang].days) AD.langs[lang].days={};
+      AD.langs[lang].days[String(dayNum)] = dayData;
+
+      // App cache bhi update karo
+      try{ localStorage.setItem('su_admin_day_'+lang+'_'+dayNum, JSON.stringify(dayData)); }catch(e){}
+
+      const resultBox = document.getElementById('lsResultBox');
+      if(resultBox){
+        resultBox.style.display='block';
+        resultBox.innerHTML = `<div style="background:rgba(46,229,157,.1);border:2px solid rgba(46,229,157,.4);border-radius:14px;padding:16px;text-align:center;">
+          <div style="font-size:32px;margin-bottom:8px;">✅</div>
+          <div style="font-size:16px;font-weight:800;color:#2EE59D;margin-bottom:4px;">${title} — Saved!</div>
+          <div style="font-size:13px;color:var(--mut);">${lang.toUpperCase()} Day ${dayNum} — Firebase pe safe hai</div>
+          <div style="font-size:11px;color:var(--mut);margin-top:6px;">Path: adminData/langs/${lang}/days/${dayNum}</div>
+          <button onclick="lsResetForm()" class="btn btn-blue" style="margin-top:12px;">➕ Agla Lesson Add Karo</button>
+        </div>`;
+        resultBox.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+      showToast('🔥 '+lang.toUpperCase()+' Day '+dayNum+' Firebase pe save ho gaya!','#2EE59D', 4000);
+      loadDaysList();
+    })
+    .catch(function(err){
+      showToast('❌ Save fail: '+err.message,'#FF6B6B', 6000);
+    });
+}
+
+function lsResetForm(){
+  document.getElementById('lsJsonInput').value='';
+  document.getElementById('lsTitle').value='';
+  document.getElementById('lsEmoji').value='';
+  document.getElementById('lsPreviewCard').style.display='none';
+  document.getElementById('lsResultBox').style.display='none';
+  _lsParsedContent = null;
+  // Day number ek aage karo
+  const dn = document.getElementById('lsDayNum');
+  if(dn) dn.value = (parseInt(dn.value)||1)+1;
+  showToast('✅ Form reset — agla lesson ready','#2EE59D');
 }
 
 function lrCloseDetail(){
@@ -8662,17 +8927,7 @@ function saveDayFromModal(){
         window._syncPending = false;
         updateCloudBar('synced');
         showToast('✅ Day '+dayNum+' Firebase pe save ho gaya! ('+lang.toUpperCase()+')','#2EE59D');
-        // Ab puri AD ka bhi ek full sync karo (background mein)
-        setTimeout(function(){
-          try{
-            const snapshot = JSON.parse(JSON.stringify(AD));
-            if(window.FB_AUTH && window.FB_AUTH.currentUser){
-              window.FB_SET(window.FB_REF(window.FB_DB,'adminData'), snapshot)
-                .then(function(){ updateCloudBar('synced'); })
-                .catch(function(e){ console.warn('Full AD background sync error:', e.message); });
-            }
-          }catch(e){}
-        }, 1000);
+        // ✅ Background full sync HATA DIYA — yeh FB_SET se sara data delete karta tha
       })
       .catch(function(err){
         if(retries < 3){
