@@ -79,8 +79,8 @@
 
   onAuthStateChanged(auth, (user) => {
     window.FB_CURRENT_USER = user;
-    const loadingEl = document.getElementById('authLoadingScreen');
-    if(loadingEl) loadingEl.style.display = 'none';
+    // ✅ Loading screen onAdminAuthChange mein hide hogi — yahan nahi
+    // Taake panel check hone se pehle flash na kare
 
     if(user){
       // ✅ FIREBASE_READY — panel onAdminAuthChange dikhayega
@@ -109,7 +109,8 @@
               }
             });
           }
-          localStorage.setItem('speakup_admin', JSON.stringify(data));
+          // Settings sirf save karo (lesson data nahi)
+          try{ localStorage.setItem('speakup_admin', JSON.stringify({settings: data.settings, paymentPlans: data.paymentPlans})); }catch(e){}
           if(typeof AD !== 'undefined' && AD) {
             const prevSettings = AD.settings ? {...AD.settings} : {};
             Object.assign(AD, data);
@@ -577,6 +578,7 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6;}
   <button class="nav-tab" onclick="showPage('phase3',this);loadPhase3Data();" style="background:linear-gradient(135deg,rgba(255,100,0,.12),rgba(255,50,0,.08));color:#FF9500;font-weight:800;">🔥 Phase 3</button>
   <button class="nav-tab" onclick="showPage('onboarding',this);loadOnboardingData();" style="background:linear-gradient(135deg,rgba(46,229,157,.12),rgba(91,141,239,.08));color:#2EE59D;font-weight:800;">🚀 Onboarding</button>
   <button class="nav-tab" onclick="showPage('settings',this)">⚙️ Settings</button>
+  <button class="nav-tab" onclick="showPage('lesson-refresh',this);initLessonRefreshTab();" style="background:linear-gradient(135deg,rgba(46,229,157,.12),rgba(91,141,239,.08));color:#2EE59D;font-weight:800;">🔄 Lesson Refresh</button>
 </div>
 
 <!-- ════════════════════════════
@@ -744,18 +746,10 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6;}
 ════════════════════════════ -->
 <div class="page" id="page-lessons">
 
-  <!-- ══════════════════════════════════════
-       📊 LESSON STATS OVERVIEW (All Languages)
-  ══════════════════════════════════════ -->
-  <div class="card" id="lessonStatsCard">
-    <div class="card-title" style="justify-content:space-between;">
-      <span>📊 Lesson Stats — Sari Languages</span>
-      <button class="btn btn-small" onclick="refreshLessonStats()" style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);color:var(--p);font-size:12px;padding:5px 12px;border-radius:8px;">🔄 Refresh</button>
-    </div>
-    <div class="card-sub" style="margin-bottom:12px;">30 days tak — Built-in + Firebase (aapke add kiye hue)</div>
-    <div id="lessonStatsGrid" style="display:flex;flex-direction:column;gap:8px;">
-      <div style="color:var(--mut);font-size:12px;text-align:center;padding:16px;">⏳ Loading stats...</div>
-    </div>
+  <!-- ✅ Quick Actions — Add / Remove -->
+  <div style="display:flex;gap:10px;margin-bottom:4px;">
+    <button class="btn btn-blue" style="flex:1;font-size:15px;padding:13px 0;border-radius:14px;font-weight:800;" onclick="addNewDay()">＋ Add Lesson</button>
+    <button class="btn" style="flex:1;font-size:15px;padding:13px 0;border-radius:14px;font-weight:800;background:rgba(255,90,90,.12);border:1.5px solid rgba(255,90,90,.3);color:#FF5A5A;" onclick="lrQuickDelete()">🗑 Remove Lesson</button>
   </div>
 
   <div class="card">
@@ -2418,6 +2412,53 @@ ZAROORI RULES:
       <div>Version: <span style="color:var(--txt);">SpeakUp v1.0 Admin + Firebase</span></div>
       <div>Built for: <span style="color:var(--txt);">Malik — SpeakUp</span></div>
       <div>Admin Panel by: <span style="color:var(--txt);">Claude AI</span></div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     🔄 LESSON REFRESH PAGE
+══════════════════════════════════════════════ -->
+<div class="page" id="page-lesson-refresh">
+
+  <div class="card">
+    <div class="card-title" style="justify-content:space-between;align-items:center;">
+      <span>🔄 Firebase Lesson Refresh</span>
+      <button class="btn btn-small" onclick="lrLoadFromFirebase()" style="background:rgba(46,229,157,.15);border:1px solid rgba(46,229,157,.4);color:#2EE59D;font-size:12px;padding:6px 14px;border-radius:10px;font-weight:800;">☁️ Firebase Se Load</button>
+    </div>
+    <div class="card-sub">Firebase mein jo lessons hain unhe directly dekho — Language select karo phir days list aayegi</div>
+  </div>
+
+  <!-- Language Selector -->
+  <div class="card" style="padding:14px 16px;">
+    <div class="inp-label" style="margin-bottom:8px;">🌍 Language Select Karo</div>
+    <div id="lrLangGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+      <div style="color:var(--mut);font-size:13px;text-align:center;padding:12px;grid-column:1/-1;">⏳ Languages load ho rahi hain...</div>
+    </div>
+  </div>
+
+  <!-- Firebase Status -->
+  <div id="lrStatusBar" style="display:none;margin:0 0 12px;padding:10px 14px;border-radius:12px;background:rgba(91,141,239,.1);border:1px solid rgba(91,141,239,.25);font-size:12px;color:var(--mut);"></div>
+
+  <!-- Days List -->
+  <div class="card" id="lrDaysCard" style="display:none;">
+    <div class="card-title" style="justify-content:space-between;">
+      <span id="lrDaysTitle">📅 Days</span>
+      <span id="lrDaysCount" style="font-size:12px;color:var(--mut);font-weight:700;"></span>
+    </div>
+    <div id="lrDaysList" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"></div>
+  </div>
+
+  <!-- Day Detail Modal-style panel -->
+  <div id="lrDetailPanel" style="display:none;">
+    <div class="card" style="border:1.5px solid rgba(46,229,157,.3);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div id="lrDetailTitle" style="font-size:16px;font-weight:800;color:var(--txt);"></div>
+        <button onclick="lrCloseDetail()" style="background:rgba(255,255,255,.08);border:none;border-radius:10px;padding:6px 12px;color:var(--mut);font-size:12px;cursor:pointer;">✕ Wapas</button>
+      </div>
+      <div id="lrDetailContent" style="font-size:13px;line-height:1.8;"></div>
     </div>
   </div>
 
@@ -6003,16 +6044,14 @@ async function onAdminAuthChange(user){
     document.getElementById('adminPanelWrap').style.display = 'none';
     return;
   }
-  // Check admin access
   const email = user.email;
   const level = await checkSubAdminAccess(email);
   if(level === 0){
-    // Show access denied
     document.getElementById('accessDenied').style.display = 'block';
     document.getElementById('loginErr').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
     return;
   }
-  // Show admin panel
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('adminPanelWrap').style.display = 'block';
   document.getElementById('adminUserEmail').textContent = '👤 ' + email;
@@ -6594,10 +6633,30 @@ function updateCloudBar(status){
 
 function forceSyncToFirebase(){
   if(!window.FIREBASE_READY||!window.FB_DB){ showToast('⚠️ Firebase connect nahi hua','#FFD166'); return; }
+  // ✅ FIX: Auth check — currentUser null hone pe PERMISSION_DENIED aata tha
+  const cu = window.FB_AUTH && window.FB_AUTH.currentUser;
+  if(!cu){
+    showToast('⚠️ Login session abhi load ho raha hai — 3 second baad try karo','#FFD166', 4000);
+    // Auto retry karo jab user ready ho
+    setTimeout(function(){
+      if(window.FB_AUTH && window.FB_AUTH.currentUser) forceSyncToFirebase();
+      else showToast('❌ Login nahi hua — panel refresh karo','#FF6B6B');
+    }, 3000);
+    return;
+  }
+  showToast('⏳ Sync ho raha hai...','#5B8DEF', 2000);
+  updateCloudBar('syncing');
   const adminRef=window.FB_REF(window.FB_DB,'adminData');
   window.FB_SET(adminRef,AD)
-    .then(()=>{ showToast('☁️ Sync ho gaya!','#2EE59D'); updateCloudBar('synced'); })
-    .catch(err=>{ showToast('❌ Sync failed: '+err.message,'#FF6B6B'); updateCloudBar('error'); });
+    .then(()=>{ showToast('☁️ Force Sync ho gaya! Sab data Firebase pe hai ✅','#2EE59D'); updateCloudBar('synced'); })
+    .catch(err=>{
+      if(err.code === 'PERMISSION_DENIED' || (err.message && err.message.includes('PERMISSION_DENIED'))){
+        showToast('❌ Permission Denied — Firebase Console mein Rules check karo. Admin email: '+cu.email,'#FF6B6B', 7000);
+      } else {
+        showToast('❌ Sync failed: '+err.message,'#FF6B6B');
+      }
+      updateCloudBar('error');
+    });
 }
 
 // ════════════════════════════════════════════
@@ -6624,37 +6683,32 @@ function defaultAdminData(){
 let AD = {};
 
 function loadAdminData(){
-  const fresh=defaultAdminData();
-  const raw=localStorage.getItem(ADMIN_KEY);
-  if(raw){
-    try{
-      const saved=JSON.parse(raw);
-      if(saved.settings){ fresh.settings=saved.settings; if(fresh.settings.maxHearts===undefined)fresh.settings.maxHearts=3; }
-      if(saved.paymentPlans) fresh.paymentPlans=saved.paymentPlans;
-      if(saved.generatedLessons) fresh.generatedLessons=saved.generatedLessons;
-      if(saved.langs){
-        // ✅ FIX: Saved langs mein bhi custom keys normalize karo
-        Object.keys(saved.langs).forEach(code=>{
-          if(!fresh.langs[code]) fresh.langs[code] = {enabled:false, days:{}};
-          const sl=saved.langs[code];
-          if(sl){
-            if(sl.enabled!==undefined) fresh.langs[code].enabled=sl.enabled;
-            if(sl.days){
-              const normalized = {};
-              Object.keys(sl.days).forEach(k=>{ normalized[String(k)] = sl.days[k]; });
-              fresh.langs[code].days = normalized;
-            }
-          }
-        });
-      }
-    }catch(e){}
-  }
+  // ✅ FIREBASE ONLY — localStorage se sirf settings load (koi lesson data nahi)
+  // Lessons Firebase se aate hain — login ke baad get(adminData) call hoti hai
+  const fresh = defaultAdminData();
+  try{
+    const raw = localStorage.getItem(ADMIN_KEY);
+    if(raw){
+      const saved = JSON.parse(raw);
+      // Sirf settings aur paymentPlans — lesson content nahi
+      if(saved.settings){ fresh.settings = saved.settings; if(fresh.settings.maxHearts===undefined) fresh.settings.maxHearts=3; }
+      if(saved.paymentPlans) fresh.paymentPlans = saved.paymentPlans;
+    }
+  }catch(e){}
   return fresh;
 }
 
 window._syncPending = false;
 window._syncRetryTimer = null;
 
+
+// ✅ Settings-only localStorage save — lesson content kabhi nahi
+function _saveSettingsToLS(){
+  try{
+    const mini = { settings: AD.settings, paymentPlans: AD.paymentPlans };
+    localStorage.setItem(ADMIN_KEY, JSON.stringify(mini));
+  }catch(e){}
+}
 function _doCloudSync(data, attempt){
   attempt = attempt || 1;
   clearTimeout(window._syncRetryTimer); // purana pending retry (stale data) cancel karo
@@ -6674,13 +6728,12 @@ function _doCloudSync(data, attempt){
     if(attempt === 1){
       showToast('⏳ Login session load ho raha hai... save hote hi sync karunga','#FFD166', 3000);
     }
-    if(attempt <= 40){ // ~40 * 500ms = 20 sec max wait (auth restore ke liye kaafi waqt)
+    if(attempt <= 40){
       window._syncRetryTimer = setTimeout(()=>{ _doCloudSync(data, attempt+1); }, 500);
+      if(attempt === 1) showToast('⏳ Auth load ho rahi hai — save queue mein hai...','#FFD166', 3000);
     } else {
-      // ✅ Data localStorage mein safe hai — Force Sync se recover ho sakta hai
-      showToast('❌ Login session ready nahi hua — Data localStorage mein save hai. Panel refresh karo ya "Force Sync" use karo.','#FF6B6B', 8000);
-      // ✅ Emergency: localStorage mein flag laga do ke pending sync hai
-      try{ localStorage.setItem('su_admin_sync_pending', JSON.stringify({ts: Date.now(), data: data})); }catch(e){}
+      showToast('❌ Auth timeout — panel refresh karo ya Force Sync dabao','#FF6B6B', 6000);
+      updateCloudBar('error');
     }
     return;
   }
@@ -6708,32 +6761,15 @@ function _doCloudSync(data, attempt){
 }
 
 function saveAdminData(){
-  // ✅ FIX: localStorage.setItem ko try/catch mein wrap kiya
-  // Pehle agar yeh QuotaExceededError (storage full) throw karta tha,
-  // to is function ke baad ka sara code (cloud sync, modal close, toast)
-  // chal hi nahi pata tha — isi wajah se "Save Day" pe kuch nahi hota tha
-  // jab lesson content bohot bara ho (40 vocab / 45 sentences / 80 quizzes).
+  // ✅ SEEDHA FIREBASE — localStorage bilkul nahi
+  // Settings sirf (koi lesson content nahi) memory mein AD object mein rehti hai
   let snapshot;
   try{
     snapshot = JSON.parse(JSON.stringify(AD));
   } catch(e){
-    showToast('❌ Save fail: data structure mein error — '+e.message,'#FF6B6B', 5000);
-    console.error('saveAdminData stringify error:', e);
+    showToast('❌ Save fail: '+e.message,'#FF6B6B', 5000);
     return;
   }
-
-  try{
-    localStorage.setItem(ADMIN_KEY, JSON.stringify(AD));
-  } catch(e){
-    console.warn('localStorage save failed:', e);
-    if(e && (e.name === 'QuotaExceededError' || e.code === 22)){
-      showToast('⚠️ Local storage full hai — sirf cloud (Firebase) pe save ho raha hai','#FFD166', 5000);
-    } else {
-      showToast('⚠️ Local save warning: '+(e.message||e),'#FFD166', 5000);
-    }
-    // localStorage fail hone par bhi cloud sync zaroor chalao
-  }
-
   _doCloudSync(snapshot, 1);
   const fs=document.getElementById('floatSave');
   if(fs) fs.classList.remove('visible');
@@ -6752,7 +6788,6 @@ function _startPaymentPlansFirebaseSync(){
       if(!Array.isArray(fbPlans) || !fbPlans.length) return;
       // AD mein update karo (localStorage bhi)
       AD.paymentPlans = fbPlans;
-      localStorage.setItem(ADMIN_KEY, JSON.stringify(AD));
       renderPaymentPlans();
       _updateProSelectorPrices();
     }, function(err){ console.warn('paymentPlans sync error:', err.message); });
@@ -6772,10 +6807,9 @@ function _startPaymentPlansFirebaseSync(){
 })();
 
 window.addEventListener('online', function(){
-  if(window._syncPending){
+  if(window._syncPending && Object.keys(AD).length){
     showToast('🌐 Internet wapas — sync ho raha hai...','#2EE59D');
-    const data = JSON.parse(localStorage.getItem(ADMIN_KEY)||'{}');
-    _doCloudSync(data, 1);
+    _doCloudSync(JSON.parse(JSON.stringify(AD)), 1);
   }
 });
 
@@ -6836,7 +6870,7 @@ function showPage(name,btn){
             });
           }
           if(data.settings) AD.settings = Object.assign({}, AD.settings, data.settings);
-          localStorage.setItem('speakup_admin', JSON.stringify(AD));
+          _saveSettingsToLS();
         }
         loadDaysList();
         if(typeof refreshLessonStats === 'function') refreshLessonStats();
@@ -7167,7 +7201,24 @@ function renderLessonStatus(){
   const el = document.getElementById('lessonStatus');
   if(!el) return;
   if(!AD || !AD.langs){
+    // ✅ FIX: Stuck "loading" problem — retry karo, forever stuck mat raho
     el.innerHTML = '<div style="color:var(--mut);font-size:13px;text-align:center;padding:12px;">⏳ Data load ho raha hai...</div>';
+    // AD ready hone ka wait karo — 500ms baad retry
+    clearTimeout(window._lessonStatusRetry);
+    window._lessonStatusRetry = setTimeout(function(){
+      if(AD && AD.langs) renderLessonStatus();
+      else if(window.FIREBASE_READY && window.FB_DB && window.FB_GET && window.FB_REF){
+        // Firebase se load karke render karo
+        window.FB_GET(window.FB_REF(window.FB_DB,'adminData')).then(function(snap){
+          if(snap && snap.exists()){
+            const d = snap.val();
+            if(!AD) window.AD = {};
+            Object.assign(AD, d);
+          }
+          renderLessonStatus();
+        }).catch(function(){ renderLessonStatus(); });
+      }
+    }, 600);
     return;
   }
   const TARGET = 30; // target days per language
@@ -7208,12 +7259,316 @@ function renderLessonStatus(){
   el.innerHTML = html || '<div style="color:var(--mut);font-size:13px;padding:8px;">Koi language data nahi</div>';
 }
 
+// ════════════════════════════════════════════
+// 🔄 LESSON REFRESH TAB — Firebase Direct Viewer
+// ════════════════════════════════════════════
+
+let _lrSelectedLang = null;
+let _lrFirebaseData = null; // Firebase se loaded data
+
+function initLessonRefreshTab(){
+  // Lang grid render karo
+  _lrRenderLangGrid();
+  // Agar pehle se lang selected hai toh load karo
+  if(_lrSelectedLang) lrLoadFromFirebase();
+}
+
+function _lrRenderLangGrid(){
+  const grid = document.getElementById('lrLangGrid');
+  if(!grid) return;
+  const langs = Object.keys(LANG_INFO);
+  if(!langs.length){ grid.innerHTML = '<div style="color:var(--mut);text-align:center;padding:12px;font-size:13px;">Languages nahi mili</div>'; return; }
+  grid.innerHTML = langs.map(code => {
+    const info = LANG_INFO[code] || {};
+    const isSelected = _lrSelectedLang === code;
+    return `<div onclick="lrSelectLang('${code}')" style="
+      cursor:pointer;padding:10px 6px;border-radius:12px;text-align:center;
+      background:${isSelected ? 'rgba(46,229,157,.15)' : 'rgba(255,255,255,.04)'};
+      border:1.5px solid ${isSelected ? 'rgba(46,229,157,.5)' : 'rgba(255,255,255,.08)'};
+      transition:.2s;">
+      <div style="font-size:22px;">${info.flag || '🌐'}</div>
+      <div style="font-size:11px;font-weight:700;color:${isSelected ? '#2EE59D' : 'var(--txt)'};margin-top:4px;">${info.name || code}</div>
+    </div>`;
+  }).join('');
+}
+
+function lrSelectLang(code){
+  _lrSelectedLang = code;
+  _lrRenderLangGrid();
+  lrLoadFromFirebase();
+}
+
+function lrLoadFromFirebase(){
+  const statusBar = document.getElementById('lrStatusBar');
+  const daysCard = document.getElementById('lrDaysCard');
+  const detailPanel = document.getElementById('lrDetailPanel');
+  if(detailPanel) detailPanel.style.display = 'none';
+
+  if(!_lrSelectedLang){
+    if(statusBar){ statusBar.style.display='block'; statusBar.innerHTML='⚠️ Pehle koi language select karo'; }
+    return;
+  }
+
+  if(!window.FIREBASE_READY || !window.FB_DB || !window.FB_GET || !window.FB_REF){
+    if(statusBar){ statusBar.style.display='block'; statusBar.innerHTML='❌ Firebase connect nahi hai'; }
+    return;
+  }
+
+  if(statusBar){ statusBar.style.display='block'; statusBar.innerHTML='⏳ Firebase se <b>'+(_lrSelectedLang).toUpperCase()+'</b> lessons load ho rahi hain...'; }
+  if(daysCard) daysCard.style.display='none';
+
+  const path = 'adminData/langs/' + _lrSelectedLang + '/days';
+  window.FB_GET(window.FB_REF(window.FB_DB, path)).then(function(snap){
+    if(!snap || !snap.exists()){
+      if(statusBar) statusBar.innerHTML = '📭 <b>'+_lrSelectedLang.toUpperCase()+'</b> mein Firebase pe koi lesson nahi hai abhi';
+      if(daysCard) daysCard.style.display='none';
+      return;
+    }
+    const data = snap.val();
+    _lrFirebaseData = data;
+
+    // Normalize keys
+    const days = {};
+    Object.keys(data).forEach(k => { days[String(k)] = data[k]; });
+
+    // Sort by day number
+    const sorted = Object.keys(days).map(Number).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+    const info = LANG_INFO[_lrSelectedLang] || {};
+
+    if(statusBar) statusBar.innerHTML = '✅ <b>'+info.flag+' '+(info.name||_lrSelectedLang)+'</b> — Firebase pe <b style="color:#2EE59D;">'+sorted.length+' din</b> ka lesson mila';
+
+    // Render days list
+    const titleEl = document.getElementById('lrDaysTitle');
+    const countEl = document.getElementById('lrDaysCount');
+    const listEl = document.getElementById('lrDaysList');
+    if(titleEl) titleEl.innerHTML = (info.flag||'📅')+' '+(info.name||_lrSelectedLang)+' — Firebase Days';
+    if(countEl) countEl.textContent = sorted.length + ' days';
+
+    if(listEl){
+      if(!sorted.length){
+        listEl.innerHTML = '<div style="color:var(--mut);text-align:center;padding:16px;font-size:13px;">Koi day nahi mila</div>';
+      } else {
+        listEl.innerHTML = sorted.map(dayNum => {
+          const d = days[String(dayNum)] || {};
+          const lc = d.lessonContent || {};
+          const vocabCount = (lc.vocab||[]).length;
+          const sentCount = (lc.sentences||[]).length;
+          const quizCount = (lc.quizzes||[]).length;
+          const hasContent = vocabCount > 0 || sentCount > 0;
+          const statusColor = hasContent ? '#2EE59D' : '#FFD166';
+          const statusText = hasContent ? '✅ Content hai' : '⚠️ Sirf meta';
+          return `<div onclick="lrShowDayDetail('${dayNum}')" style="
+            background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+            border-radius:12px;padding:12px 14px;cursor:pointer;
+            display:flex;align-items:center;justify-content:space-between;
+            transition:.15s;" onmouseover="this.style.background='rgba(46,229,157,.06)'" onmouseout="this.style.background='rgba(255,255,255,.03)'">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(91,141,239,.15);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#5B8DEF;">
+                ${dayNum}
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--txt);">${d.emoji||'📚'} ${d.title||'Day '+dayNum}</div>
+                <div style="font-size:11px;color:var(--mut);margin-top:2px;">
+                  ${hasContent ? `Vocab: ${vocabCount} · Sent: ${sentCount} · Quiz: ${quizCount}` : 'Content check karo'}
+                </div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px;font-weight:700;color:${statusColor};">${statusText}</div>
+              <div style="font-size:10px;color:var(--mut);margin-top:2px;">Status: ${d.status||'unlocked'}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    }
+    if(daysCard) daysCard.style.display='block';
+
+  }).catch(function(err){
+    if(statusBar) statusBar.innerHTML = '❌ Load error: ' + err.message + ' — Login check karo ya Firebase Rules verify karo';
+  });
+}
+
+function lrShowDayDetail(dayNum){
+  const detailPanel = document.getElementById('lrDetailPanel');
+  const detailTitle = document.getElementById('lrDetailTitle');
+  const detailContent = document.getElementById('lrDetailContent');
+  if(!detailPanel || !_lrFirebaseData) return;
+
+  const d = _lrFirebaseData[String(dayNum)] || _lrFirebaseData[dayNum] || {};
+  const lc = d.lessonContent || {};
+  const info = LANG_INFO[_lrSelectedLang] || {};
+
+  if(detailTitle) detailTitle.innerHTML = (info.flag||'📅')+' Day '+dayNum+' — '+(d.title||'Untitled')+' '+( d.emoji||'');
+
+  let html = '';
+
+  // Meta info
+  html += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+    <span style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.3);border-radius:8px;padding:3px 10px;font-size:11px;color:#5B8DEF;font-weight:700;">Status: ${d.status||'unlocked'}</span>
+    <span style="background:rgba(46,229,157,.1);border:1px solid rgba(46,229,157,.25);border-radius:8px;padding:3px 10px;font-size:11px;color:#2EE59D;font-weight:700;">Vocab: ${(lc.vocab||[]).length}</span>
+    <span style="background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.25);border-radius:8px;padding:3px 10px;font-size:11px;color:#FFD166;font-weight:700;">Sentences: ${(lc.sentences||[]).length}</span>
+    <span style="background:rgba(199,125,255,.1);border:1px solid rgba(199,125,255,.25);border-radius:8px;padding:3px 10px;font-size:11px;color:#C77DFF;font-weight:700;">Quiz: ${(lc.quizzes||[]).length}</span>
+  </div>`;
+
+  // Vocab preview
+  if(lc.vocab && lc.vocab.length){
+    html += `<div style="font-size:12px;font-weight:800;color:var(--g);margin-bottom:6px;">📖 Vocabulary (${lc.vocab.length})</div>`;
+    html += `<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:10px;margin-bottom:12px;max-height:160px;overflow-y:auto;">`;
+    lc.vocab.forEach((v,i) => {
+      html += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;">
+        <span style="color:var(--txt);font-weight:600;">${i+1}. ${v.w||v.word||''}</span>
+        <span style="color:var(--mut);">${v.u||v.urdu||''}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Grammar preview
+  if(lc.grammar && lc.grammar.length){
+    html += `<div style="font-size:12px;font-weight:800;color:var(--y);margin-bottom:6px;">📐 Grammar Rules (${lc.grammar.length})</div>`;
+    html += `<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:10px;margin-bottom:12px;">`;
+    lc.grammar.slice(0,3).forEach(g => {
+      html += `<div style="font-size:12px;color:var(--mut);padding:3px 0;">${g.title||g.rule||JSON.stringify(g).slice(0,60)}</div>`;
+    });
+    html += '</div>';
+  }
+
+  // Quiz preview
+  if(lc.quizzes && lc.quizzes.length){
+    html += `<div style="font-size:12px;font-weight:800;color:#C77DFF;margin-bottom:6px;">❓ Quiz Questions (${lc.quizzes.length})</div>`;
+    html += `<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:10px;margin-bottom:12px;max-height:120px;overflow-y:auto;">`;
+    lc.quizzes.slice(0,5).forEach((q,i) => {
+      html += `<div style="font-size:12px;color:var(--mut);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);">${i+1}. ${q.q||q.question||''}</div>`;
+    });
+    if(lc.quizzes.length > 5) html += `<div style="font-size:11px;color:var(--mut);padding:4px 0;">...aur ${lc.quizzes.length-5} questions</div>`;
+    html += '</div>';
+  }
+
+  if(!lc.vocab && !lc.grammar && !lc.quizzes){
+    html += `<div style="color:var(--mut);text-align:center;padding:16px;font-size:13px;">⚠️ Is day mein sirf meta hai (title/status) — lesson content nahi mila</div>`;
+  }
+
+  if(detailContent) detailContent.innerHTML = html;
+  detailPanel.style.display = 'block';
+  detailPanel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function cleanAdminLocalStorage(){
+  try{
+    // Current size calculate karo
+    let totalBytes = 0;
+    for(let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      totalBytes += (localStorage.getItem(k)||'').length * 2;
+    }
+    const beforeKB = Math.round(totalBytes/1024);
+
+    // 1. Admin data se lessonContent strip karo
+    const raw = localStorage.getItem(ADMIN_KEY);
+    if(raw){
+      const ad = JSON.parse(raw);
+      if(ad.langs){
+        Object.keys(ad.langs).forEach(function(lang){
+          if(ad.langs[lang] && ad.langs[lang].days){
+            Object.keys(ad.langs[lang].days).forEach(function(k){
+              const d = ad.langs[lang].days[k];
+              if(d && d.lessonContent){
+                ad.langs[lang].days[k] = { num:d.num, title:d.title, emoji:d.emoji, status:d.status, lessonCount:d.lessonCount, _hasContent:true };
+              }
+            });
+          }
+        });
+      }
+      localStorage.setItem(ADMIN_KEY, JSON.stringify(ad));
+    }
+
+    // 2. Su_admin_day caches clear karo (app fresh Firebase se legi)
+    const toDelete = [];
+    for(let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(k && (k.startsWith('su_admin_day_') || k.startsWith('su_skills_cache_') || k.startsWith('su_paper_sec_'))) toDelete.push(k);
+    }
+    toDelete.forEach(k => localStorage.removeItem(k));
+
+    // 3. Pending sync flag clear
+    localStorage.removeItem('su_admin_sync_pending');
+
+    // After size
+    let afterBytes = 0;
+    for(let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      afterBytes += (localStorage.getItem(k)||'').length * 2;
+    }
+    const afterKB = Math.round(afterBytes/1024);
+    const freed = beforeKB - afterKB;
+
+    const info = document.getElementById('lsUsageInfo');
+    if(info) info.innerHTML = '✅ '+freed+' KB free hua! Pehle: '+beforeKB+'KB → Ab: '+afterKB+'KB ('+toDelete.length+' cache files hatayi)';
+    showToast('✅ '+freed+' KB clear ho gaya! Ab lesson save karo.','#2EE59D', 4000);
+  }catch(e){
+    showToast('❌ Cleanup error: '+e.message,'#FF6B6B');
+  }
+}
+
+function lrQuickDelete(){
+  // Current selected lang ka day delete — dayListContainer se select karo
+  const lang = (typeof currentLang !== 'undefined') ? currentLang : 'en';
+  const langName = (LANG_INFO && LANG_INFO[lang]) ? LANG_INFO[lang].name : lang.toUpperCase();
+
+  // Pehle Firebase se us lang ke days list lo — user select kare
+  if(!window.FIREBASE_READY || !window.FB_DB || !window.FB_GET || !window.FB_REF){
+    showToast('❌ Firebase connect nahi', '#FF6B6B'); return;
+  }
+  showToast('⏳ ' + langName + ' ke days load ho rahe hain...', '#5B8DEF', 2000);
+  window.FB_GET(window.FB_REF(window.FB_DB, 'adminData/langs/' + lang + '/days')).then(function(snap){
+    if(!snap || !snap.exists()){
+      showToast('📭 ' + langName + ' mein koi Firebase lesson nahi', '#FFD166'); return;
+    }
+    const data = snap.val();
+    const days = Object.keys(data).map(Number).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+    if(!days.length){ showToast('Koi day nahi mila', '#FFD166'); return; }
+
+    // Simple confirm prompt — day number pocho
+    const dayNum = prompt(langName + ' — Firebase mein ye days hain:\n' + days.join(', ') + '\n\nKaun sa day delete karna hai? (number likho)');
+    if(!dayNum || isNaN(parseInt(dayNum))){ return; }
+    const num = parseInt(dayNum);
+    if(!days.includes(num)){ showToast('Day ' + num + ' Firebase mein nahi mila', '#FF6B6B'); return; }
+
+    const confirm2 = confirm(langName + ' — Day ' + num + ' hamesha ke liye delete ho jaayega Firebase se.\nPakka??');
+    if(!confirm2) return;
+
+    // Delete karo
+    const delRef = window.FB_REF(window.FB_DB, 'adminData/langs/' + lang + '/days/' + num);
+    window.FB_REMOVE(delRef).then(function(){
+      // AD se bhi hatao
+      if(AD && AD.langs && AD.langs[lang] && AD.langs[lang].days){
+        delete AD.langs[lang].days[String(num)];
+        delete AD.langs[lang].days[num];
+        _saveSettingsToLS();
+      }
+      // App cache clear karo
+      try{ localStorage.removeItem('su_admin_day_' + lang + '_' + num); }catch(e){}
+      showToast('✅ Day ' + num + ' delete ho gaya!', '#2EE59D');
+      loadDaysList();
+    }).catch(function(err){
+      showToast('❌ Delete failed: ' + err.message, '#FF6B6B');
+    });
+  }).catch(function(err){
+    showToast('❌ Load error: ' + err.message, '#FF6B6B');
+  });
+}
+
+function lrCloseDetail(){
+  const detailPanel = document.getElementById('lrDetailPanel');
+  if(detailPanel) detailPanel.style.display = 'none';
+}
+
 function refreshLessonStatus(){
   if(window.FB_DB){
     window.FB_GET(window.FB_REF(window.FB_DB,'adminData')).then(snap=>{
       if(snap.exists()){
         const data = snap.val();
-        localStorage.setItem('speakup_admin', JSON.stringify(data));
+        _saveSettingsToLS();
         Object.assign(AD, data);
         renderLessonStatus();
         showToast('✅ Firebase se lesson data refresh ho gaya!','#2EE59D');
@@ -7294,6 +7649,22 @@ const INBUILT_DAYS_FALLBACK = {
 function refreshLessonStats(){
   const grid = document.getElementById('lessonStatsGrid');
   if(!grid) return;
+
+  // ✅ FIX: AD ready nahi toh Firebase se load karke retry karo — loading stuck nahi hoga
+  if(!AD || !AD.langs){
+    grid.innerHTML = '<div style="color:var(--mut);font-size:13px;text-align:center;padding:16px;">⏳ Data load ho raha hai...</div>';
+    clearTimeout(window._statsRetry);
+    window._statsRetry = setTimeout(function(){
+      if(AD && AD.langs){ refreshLessonStats(); return; }
+      if(window.FIREBASE_READY && window.FB_DB && window.FB_GET && window.FB_REF){
+        window.FB_GET(window.FB_REF(window.FB_DB,'adminData')).then(function(snap){
+          if(snap && snap.exists()){ if(!AD) window.AD={}; Object.assign(AD, snap.val()); }
+          refreshLessonStats();
+        }).catch(function(){ grid.innerHTML='<div style="color:var(--r);text-align:center;padding:16px;">❌ Load nahi hua — Refresh try karo</div>'; });
+      }
+    }, 800);
+    return;
+  }
 
   const TOTAL = 30; // 30 days tak dikhana hai
 
@@ -8262,31 +8633,60 @@ function saveDayFromModal(){
   }
 
   AD.langs[lang].days[key] = day;
-  saveAdminData();
+
+  // ✅ CRITICAL FIX: Puri AD save karne ki jagah SIRF YEH SPECIFIC DAY Firebase pe save karo
+  // Pehle FB_SET(adminData, fullAD) karta tha — agar 800ms baad get() overwrite karta
+  // toh naya day overwrite ho jaata tha. Ab direct path pe save = guaranteed persist.
   closeModal('addDayModal');
 
-  // ✅ FIX: onValue (real-time) ki jagah get() use karo — race condition avoid karo
-  // onValue { onlyOnce } SDK mein properly nahi kaam karta — FB_SET complete hone se
-  // PEHLE fire ho sakta tha aur purana data wapas AD mein dal deta tha.
-  // Ab sirf 800ms wait karo (FB_SET ko settle karne do) phir fresh pull karo.
-  setTimeout(function(){
-    if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET){
-      window.FB_GET(window.FB_REF(window.FB_DB,'adminData')).then(function(snap){
-        if(snap.exists()){
-          const data = snap.val();
-          if(data.langs){ Object.keys(data.langs).forEach(function(l){ if(data.langs[l]&&data.langs[l].days){ const n={}; Object.keys(data.langs[l].days).forEach(function(k){ n[String(k)]=data.langs[l].days[k]; }); data.langs[l].days=n; } }); }
-          // ✅ Deep merge — existing unsaved keys preserve karo
-          if(!AD.langs) AD.langs = {};
-          if(data.langs){ Object.keys(data.langs).forEach(function(l){ if(!AD.langs[l]) AD.langs[l]=data.langs[l]; else { if(data.langs[l].days) Object.assign(AD.langs[l].days||{}, data.langs[l].days); } }); }
-          if(data.settings) AD.settings = Object.assign({}, AD.settings, data.settings);
-        }
-        loadDaysList();
-        if(typeof refreshLessonStats === 'function') refreshLessonStats();
-      }).catch(function(){ loadDaysList(); });
-    } else {
-      loadDaysList();
+  // localStorage nahi — seedha Firebase pe jayega neche
+
+  // Step 3: DIRECT Firebase path pe save karo — sirf yeh day, puri AD nahi
+  function _saveThisDayToFirebase(retries){
+    retries = retries || 0;
+    const cu = window.FB_AUTH && window.FB_AUTH.currentUser;
+    if(!window.FIREBASE_READY || !window.FB_DB || !window.FB_SET || !window.FB_REF || !cu){
+      if(retries < 40){
+        setTimeout(function(){ _saveThisDayToFirebase(retries+1); }, 500);
+        if(retries === 0) showToast('⏳ Auth load ho rahi hai — day save queue mein hai...','#FFD166', 3000);
+      } else {
+        showToast('❌ Auth timeout — Force Sync se manually save karo','#FF6B6B', 6000);
+        try{ localStorage.setItem('su_admin_sync_pending', JSON.stringify({ts:Date.now(), lang:lang, key:key, day:day})); }catch(e){}
+      }
+      return;
     }
-  }, 800);
+    updateCloudBar('syncing');
+    const dayRef = window.FB_REF(window.FB_DB, 'adminData/langs/'+lang+'/days/'+key);
+    window.FB_SET(dayRef, day)
+      .then(function(){
+        window._syncPending = false;
+        updateCloudBar('synced');
+        showToast('✅ Day '+dayNum+' Firebase pe save ho gaya! ('+lang.toUpperCase()+')','#2EE59D');
+        // Ab puri AD ka bhi ek full sync karo (background mein)
+        setTimeout(function(){
+          try{
+            const snapshot = JSON.parse(JSON.stringify(AD));
+            if(window.FB_AUTH && window.FB_AUTH.currentUser){
+              window.FB_SET(window.FB_REF(window.FB_DB,'adminData'), snapshot)
+                .then(function(){ updateCloudBar('synced'); })
+                .catch(function(e){ console.warn('Full AD background sync error:', e.message); });
+            }
+          }catch(e){}
+        }, 1000);
+      })
+      .catch(function(err){
+        if(retries < 3){
+          setTimeout(function(){ _saveThisDayToFirebase(retries+1); }, 2000);
+          showToast('⚠️ Save retry ('+(retries+1)+'/3)...','#FFD166');
+        } else {
+          showToast('❌ Firebase save fail: '+err.message+' — Force Sync try karo','#FF6B6B', 6000);
+          updateCloudBar('error');
+        }
+      });
+  }
+  _saveThisDayToFirebase(0);
+
+  setTimeout(function(){ loadDaysList(); }, 300);
 
   if(typeof renderLessonStatus === 'function') renderLessonStatus();
   if(typeof refreshLessonStats === 'function') refreshLessonStats();
@@ -9894,7 +10294,7 @@ function resetPlansToCorrect(){
   }
 
   // localStorage bhi update karo
-  localStorage.setItem(ADMIN_KEY, JSON.stringify(AD));
+  _saveSettingsToLS();
   renderPaymentPlans();
   _updateProSelectorPrices();
 }
