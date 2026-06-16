@@ -580,6 +580,7 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6;}
   <button class="nav-tab" onclick="showPage('onboarding',this);loadOnboardingData();" style="background:linear-gradient(135deg,rgba(46,229,157,.12),rgba(91,141,239,.08));color:#2EE59D;font-weight:800;">🚀 Onboarding</button>
   <button class="nav-tab" onclick="showPage('settings',this)">⚙️ Settings</button>
   <button class="nav-tab" onclick="showPage('lesson-refresh',this);initLessonRefreshTab();" style="background:linear-gradient(135deg,rgba(46,229,157,.12),rgba(91,141,239,.08));color:#2EE59D;font-weight:800;">🔄 Lesson Refresh</button>
+  <button class="nav-tab" onclick="showPage('backup',this);initBackupTab();" style="background:linear-gradient(135deg,rgba(255,209,102,.12),rgba(255,154,60,.08));color:#FFD166;font-weight:800;">📦 Backup</button>
 </div>
 
 <!-- ════════════════════════════
@@ -2533,6 +2534,48 @@ ZAROORI RULES:
       </div>
       <div id="lrDetailContent" style="font-size:13px;line-height:1.8;"></div>
     </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════
+     PAGE: BACKUP
+════════════════════════════ -->
+<div class="page" id="page-backup">
+
+  <div class="card" style="border:2px solid rgba(255,209,102,.3);background:rgba(255,209,102,.04);">
+    <div class="card-title" style="color:#FFD166;">📦 Lesson Backup</div>
+    <div class="card-sub">Firebase se saari languages ke lessons download karo — ek JSON file mein. Agar dubara data delete ho toh is file se wapas restore kar sakte ho.</div>
+  </div>
+
+  <!-- Download All -->
+  <div class="card">
+    <div class="card-title">⬇️ Sab Languages Download Karo</div>
+    <div class="card-sub" style="margin-bottom:14px;">Ek click — Firebase se sab lessons fetch hokar ek JSON file download hogi</div>
+    <button onclick="backupDownloadAll()" class="btn" style="width:100%;padding:14px;font-size:16px;font-weight:800;background:linear-gradient(135deg,#FFD166,#FF9A3C);color:#1a1a1a;border:none;border-radius:14px;">
+      📦 Full Backup Download Karo
+    </button>
+    <div id="backupStatus" style="margin-top:12px;font-size:13px;text-align:center;color:var(--mut);display:none;"></div>
+  </div>
+
+  <!-- Per Language -->
+  <div class="card">
+    <div class="card-title">🌍 Language-wise Download</div>
+    <div class="card-sub" style="margin-bottom:12px;">Sirf ek language ka backup chahiye toh yahan se lo</div>
+    <div id="backupLangGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+      <div style="color:var(--mut);text-align:center;padding:12px;font-size:13px;grid-column:1/-1;">Tab kholne pe load hoga...</div>
+    </div>
+  </div>
+
+  <!-- Restore -->
+  <div class="card" style="border:1.5px solid rgba(255,107,107,.25);">
+    <div class="card-title" style="color:#FF6B6B;">🔁 Backup Se Restore Karo</div>
+    <div class="card-sub" style="margin-bottom:12px;">Pehle download ki hui JSON file choose karo — Firebase mein wapas save ho jaayegi</div>
+    <input type="file" id="backupRestoreFile" accept=".json" onchange="backupPreviewRestore(event)" style="display:none;">
+    <button onclick="document.getElementById('backupRestoreFile').click()" class="btn" style="width:100%;padding:13px;background:rgba(255,107,107,.1);border:1.5px solid rgba(255,107,107,.3);color:#FF6B6B;font-size:15px;border-radius:12px;">
+      📂 JSON File Choose Karo
+    </button>
+    <div id="backupRestorePreview" style="margin-top:12px;display:none;"></div>
   </div>
 
 </div>
@@ -7821,6 +7864,192 @@ function lsResetForm(){
   const dn = document.getElementById('lsDayNum');
   if(dn) dn.value = (parseInt(dn.value)||1)+1;
   showToast('✅ Form reset — agla lesson ready','#2EE59D');
+}
+
+// ════════════════════════════════════════════
+// 📦 BACKUP TAB — Download / Restore all lessons
+// ════════════════════════════════════════════
+
+const BACKUP_LANGS = [
+  {code:'en', flag:'🇬🇧', name:'English'},
+  {code:'fr', flag:'🇫🇷', name:'French'},
+  {code:'es', flag:'🇪🇸', name:'Spanish'},
+  {code:'de', flag:'🇩🇪', name:'German'},
+  {code:'ar', flag:'🇸🇦', name:'Arabic'},
+  {code:'zh', flag:'🇨🇳', name:'Chinese'},
+  {code:'ko', flag:'🇰🇷', name:'Korean'},
+  {code:'ja', flag:'🇯🇵', name:'Japanese'},
+  {code:'ru', flag:'🇷🇺', name:'Russian'},
+  {code:'tr', flag:'🇹🇷', name:'Turkish'},
+  {code:'ie', flag:'🇮🇪', name:'Irish'},
+  {code:'chess', flag:'♟️', name:'Chess'}
+];
+
+function initBackupTab(){
+  const grid = document.getElementById('backupLangGrid');
+  if(!grid) return;
+  grid.innerHTML = BACKUP_LANGS.map(l => `
+    <div onclick="backupDownloadOne('${l.code}','${l.name}')" style="
+      cursor:pointer;padding:12px 6px;border-radius:12px;text-align:center;
+      background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);">
+      <div style="font-size:22px;">${l.flag}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--txt);margin-top:4px;">${l.name}</div>
+    </div>
+  `).join('');
+}
+
+function _backupFetchLang(lang){
+  return new Promise(function(resolve){
+    if(!window.FIREBASE_READY || !window.FB_DB || !window.FB_GET || !window.FB_REF){
+      resolve(null); return;
+    }
+    window.FB_GET(window.FB_REF(window.FB_DB, 'adminData/langs/'+lang)).then(function(snap){
+      if(snap && snap.exists()) resolve(snap.val());
+      else resolve(null);
+    }).catch(function(){ resolve(null); });
+  });
+}
+
+function _downloadJsonFile(obj, filename){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function backupDownloadAll(){
+  const statusEl = document.getElementById('backupStatus');
+  if(statusEl){ statusEl.style.display='block'; statusEl.textContent = '⏳ Firebase se sab languages fetch ho rahi hain...'; }
+
+  const result = { exportedAt: new Date().toISOString(), source: 'speakup-8fa2a', langs: {} };
+  let totalDays = 0;
+
+  for(const l of BACKUP_LANGS){
+    const data = await _backupFetchLang(l.code);
+    if(data && data.days){
+      result.langs[l.code] = data;
+      totalDays += Object.keys(data.days).length;
+    }
+    if(statusEl) statusEl.textContent = '⏳ '+l.name+' fetch ho gaya...';
+  }
+
+  if(totalDays === 0){
+    if(statusEl) statusEl.textContent = '⚠️ Firebase mein koi lesson nahi mila';
+    showToast('⚠️ Koi lesson Firebase mein nahi mila','#FFD166');
+    return;
+  }
+
+  const dateStr = new Date().toISOString().slice(0,10);
+  _downloadJsonFile(result, 'speakup_full_backup_'+dateStr+'.json');
+
+  if(statusEl) statusEl.textContent = '✅ Download ho gaya! Total '+totalDays+' days, '+Object.keys(result.langs).length+' languages';
+  showToast('✅ Backup download ho gaya! '+totalDays+' lessons','#2EE59D', 4000);
+}
+
+async function backupDownloadOne(lang, langName){
+  showToast('⏳ '+langName+' fetch ho raha hai...','#5B8DEF', 2000);
+  const data = await _backupFetchLang(lang);
+  if(!data || !data.days || !Object.keys(data.days).length){
+    showToast('⚠️ '+langName+' mein koi lesson Firebase pe nahi hai','#FFD166');
+    return;
+  }
+  const result = { exportedAt: new Date().toISOString(), lang: lang, langName: langName, data: data };
+  const dateStr = new Date().toISOString().slice(0,10);
+  _downloadJsonFile(result, 'speakup_'+lang+'_backup_'+dateStr+'.json');
+  showToast('✅ '+langName+' — '+Object.keys(data.days).length+' days download ho gaye','#2EE59D', 4000);
+}
+
+let _backupRestoreData = null;
+
+function backupPreviewRestore(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const parsed = JSON.parse(e.target.result);
+      _backupRestoreData = parsed;
+      const previewEl = document.getElementById('backupRestorePreview');
+
+      let summary = '';
+      let totalDays = 0;
+      if(parsed.langs){
+        // Full backup
+        Object.keys(parsed.langs).forEach(function(l){
+          const d = parsed.langs[l];
+          const count = d && d.days ? Object.keys(d.days).length : 0;
+          totalDays += count;
+          summary += '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;"><span>'+l.toUpperCase()+'</span><span style="color:#2EE59D;">'+count+' days</span></div>';
+        });
+      } else if(parsed.lang && parsed.data){
+        // Single lang backup
+        const count = parsed.data.days ? Object.keys(parsed.data.days).length : 0;
+        totalDays = count;
+        summary = '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;"><span>'+(parsed.langName||parsed.lang)+'</span><span style="color:#2EE59D;">'+count+' days</span></div>';
+      } else {
+        previewEl.innerHTML = '<div style="color:#FF6B6B;font-size:13px;">❌ Yeh valid backup file nahi hai</div>';
+        previewEl.style.display='block';
+        _backupRestoreData = null;
+        return;
+      }
+
+      previewEl.innerHTML = `
+        <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:12px;margin-bottom:10px;">
+          ${summary}
+        </div>
+        <div style="font-size:12px;color:var(--mut);margin-bottom:10px;">Total: <b style="color:var(--txt);">${totalDays} lessons</b> restore honge — Firebase pe har specific day path pe save hoga (overwrite nahi, sirf merge)</div>
+        <button onclick="backupConfirmRestore()" class="btn btn-green" style="width:100%;padding:13px;font-weight:800;">✅ Confirm Restore Karo</button>
+      `;
+      previewEl.style.display='block';
+    }catch(err){
+      showToast('❌ File parse error: '+err.message,'#FF6B6B');
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function backupConfirmRestore(){
+  if(!_backupRestoreData){ showToast('❌ Koi file load nahi hai','#FF6B6B'); return; }
+  const cu = window.FB_AUTH && window.FB_AUTH.currentUser;
+  if(!window.FIREBASE_READY || !window.FB_DB || !window.FB_SET || !window.FB_REF || !cu){
+    showToast('❌ Login/Firebase ready nahi','#FF6B6B'); return;
+  }
+
+  showToast('⏳ Restore ho raha hai...','#5B8DEF', 3000);
+  let savedCount = 0;
+  let langsToRestore = {};
+
+  if(_backupRestoreData.langs){
+    langsToRestore = _backupRestoreData.langs;
+  } else if(_backupRestoreData.lang && _backupRestoreData.data){
+    langsToRestore[_backupRestoreData.lang] = _backupRestoreData.data;
+  }
+
+  for(const lang of Object.keys(langsToRestore)){
+    const langData = langsToRestore[lang];
+    if(!langData || !langData.days) continue;
+    for(const dayKey of Object.keys(langData.days)){
+      try{
+        // ✅ DIRECT PATH save — sirf yeh day, koi overwrite nahi
+        const dayRef = window.FB_REF(window.FB_DB, 'adminData/langs/'+lang+'/days/'+dayKey);
+        await window.FB_SET(dayRef, langData.days[dayKey]);
+        savedCount++;
+      }catch(e){
+        console.warn('Restore error for', lang, dayKey, e.message);
+      }
+    }
+  }
+
+  showToast('✅ Restore complete! '+savedCount+' lessons Firebase pe save hue','#2EE59D', 5000);
+  document.getElementById('backupRestorePreview').style.display='none';
+  document.getElementById('backupRestoreFile').value='';
+  _backupRestoreData = null;
+  loadDaysList();
 }
 
 function lrCloseDetail(){
