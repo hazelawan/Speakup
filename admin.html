@@ -761,7 +761,10 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6;}
     </div>
     <div class="card-sub">Language choose karo, phir days lock/unlock aur edit karo</div>
 
-    <div class="inp-label">Language Select</div>
+    <div class="inp-label" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <span>Language Select</span>
+      <button id="lessonLangLoadBtn" onclick="loadSingleLangFromFirebase(this)" style="background:rgba(46,229,157,.15);border:1px solid rgba(46,229,157,.4);color:#2EE59D;font-size:11px;padding:5px 10px;border-radius:10px;font-weight:800;white-space:nowrap;">⬇️ Is Language Ko Load Karo</button>
+    </div>
     <select class="inp" id="lessonLangSel" onchange="currentLang=this.value;lrFetchLangIntoAD(currentLang,function(){loadDaysList();if(typeof refreshLessonStats==='function')refreshLessonStats();})">
       <option value="en">🇬🇧 English</option>
       <option value="fr">🇫🇷 French</option>
@@ -6965,9 +6968,9 @@ function markUnsaved(){
 // (poora adminData tree khींchne ki jagah)
 // ════════════════════════════════════════════
 function lrFetchLangIntoAD(lang, callback){
-  if(!lang){ if(callback) callback(); return; }
+  if(!lang){ if(callback) callback(true); return; }
   if(!(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET)){
-    if(callback) callback();
+    if(callback) callback(false);
     return;
   }
   const langPath = 'adminData/langs/' + lang;
@@ -6989,56 +6992,118 @@ function lrFetchLangIntoAD(lang, callback){
         if(langData.enabled !== undefined) AD.langs[lang].enabled = langData.enabled;
       }
     }
-    if(callback) callback();
+    if(callback) callback(true);
   }).catch(function(){
-    if(callback) callback();
+    if(callback) callback(false);
   });
 }
 
-// ✅ Manual "Sab Refresh" — poora adminData (sab languages + settings) khींchta hai.
+// ════════════════════════════════════════════
+// ✅ Sirf EK language load karo (fast — currently
+// selected language ke liye). Load hone ke baad
+// "X lessons add hain, Y reh gaye hain" turant dikhega.
+// ════════════════════════════════════════════
+function loadSingleLangFromFirebase(btnEl){
+  const sel = document.getElementById('lessonLangSel');
+  const lang = (sel && sel.value) ? sel.value : currentLang;
+  if(!lang){ showToast && showToast('❌ Pehle language select karo','#FF6B6B'); return; }
+  if(!(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET)){
+    showToast && showToast('❌ Firebase connect nahi hai','#FF6B6B');
+    return;
+  }
+  const originalLabel = btnEl ? btnEl.innerHTML : null;
+  if(btnEl){ btnEl.innerHTML = '⏳ Load ho raha hai...'; btnEl.disabled = true; }
+  currentLang = lang;
+  lrFetchLangIntoAD(lang, function(ok){
+    loadDaysList(); // ✅ yehi function realLessonInfo box ko added/remaining count ke sath update karta hai
+    if(typeof refreshLessonStats === 'function') refreshLessonStats();
+    if(btnEl){ btnEl.innerHTML = originalLabel; btnEl.disabled = false; }
+    if(ok){
+      const langInfo = (typeof LANG_INFO !== 'undefined') ? LANG_INFO[lang] : null;
+      const name = langInfo ? (langInfo.flag + ' ' + langInfo.name) : lang;
+      const days = AD.langs?.[lang]?.days || {};
+      const adminDayCount = Object.keys(days).filter(k=>Number(k)>0).length;
+      const builtInDays = (typeof ALL_DAYS !== 'undefined') ? ALL_DAYS[lang] : null;
+      const builtInCount = builtInDays ? (Array.isArray(builtInDays) ? builtInDays.filter(Boolean).length : Object.keys(builtInDays).filter(k=>Number(k)>0).length) : 0;
+      const totalCount = builtInCount + adminDayCount;
+      const remaining = Math.max(0, 30 - totalCount);
+      showToast && showToast(`✅ ${name}: ${totalCount} lessons add hain, ${remaining} reh gaye hain`, '#2EE59D');
+    } else {
+      showToast && showToast('❌ Load fail ho gaya — dobara try karo', '#FF6B6B');
+    }
+  });
+}
+
+
 // Sirf jab user explicitly button dabaye, tab call hota hai — auto nahi.
+// ✅ SPEED FIX v2: poora 'adminData' node EK hi giant request mein khींchne
+// ki jagah (jo slow/weak connection pe atak jata tha ya timeout ho jata tha),
+// ab har language ALAG, CHHOTI request mein, ek-ek karke (sequentially)
+// load hoti hai. Isse:
+//  1) Koi ek request bhi timeout/atak nahi hoti (chhota payload = jaldi)
+//  2) Progress dikhta hai (kitni languages ho gayin)
+//  3) Agar 1 language fail ho to baaki languages phir bhi load ho jati hain
 function refreshAllLangsFromFirebase(btnEl){
   if(!(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET)){
     showToast && showToast('❌ Firebase connect nahi hai','#FF6B6B');
     return;
   }
   const originalLabel = btnEl ? btnEl.innerHTML : null;
-  if(btnEl){ btnEl.innerHTML = '⏳ Sab languages load ho rahi hain...'; btnEl.disabled = true; }
-  window.FB_GET(window.FB_REF(window.FB_DB, 'adminData')).then(function(snap){
+  if(btnEl) btnEl.disabled = true;
+
+  const langs = (typeof LANG_CODES !== 'undefined' && LANG_CODES.length) ? LANG_CODES.slice() : Object.keys(AD.langs || {});
+  let done = 0;
+  let failedLangs = [];
+
+  function updateProgress(){
+    if(btnEl) btnEl.innerHTML = '⏳ Load ho rahi hain... (' + done + '/' + langs.length + ')';
+  }
+  updateProgress();
+
+  // Settings alag se (chhota node, fast)
+  window.FB_GET(window.FB_REF(window.FB_DB, 'adminData/settings')).then(function(snap){
     if(snap && snap.exists()){
-      const data = snap.val();
-      if(data.langs){
-        Object.keys(data.langs).forEach(function(lang){
-          if(data.langs[lang] && data.langs[lang].days){
-            const norm = {};
-            Object.keys(data.langs[lang].days).forEach(function(k){
-              norm[String(k)] = data.langs[lang].days[k];
-            });
-            data.langs[lang].days = norm;
-          }
-        });
-      }
-      if(!AD.langs) AD.langs = {};
-      if(data.langs){
-        Object.keys(data.langs).forEach(function(l){
-          if(!AD.langs[l]) AD.langs[l] = data.langs[l];
-          else {
-            if(data.langs[l].days) Object.assign(AD.langs[l].days || {}, data.langs[l].days);
-            if(data.langs[l].enabled !== undefined) AD.langs[l].enabled = data.langs[l].enabled;
-          }
-        });
-      }
-      if(data.settings) AD.settings = Object.assign({}, AD.settings, data.settings);
+      AD.settings = Object.assign({}, AD.settings, snap.val());
       _saveSettingsToLS();
     }
-    loadDaysList();
-    if(typeof refreshLessonStats === 'function') refreshLessonStats();
-    showToast && showToast('✅ Sab languages refresh ho gayi!','#2EE59D');
-    if(btnEl){ btnEl.innerHTML = originalLabel; btnEl.disabled = false; }
-  }).catch(function(err){
-    showToast && showToast('❌ Refresh error: ' + err.message,'#FF6B6B');
-    if(btnEl){ btnEl.innerHTML = originalLabel; btnEl.disabled = false; }
-  });
+  }).catch(function(){ /* settings fail ho to bhi languages load hote rahein */ });
+
+  function fetchNext(i){
+    if(i >= langs.length){
+      // ✅ Sab languages process ho gayin
+      loadDaysList();
+      if(typeof refreshLessonStats === 'function') refreshLessonStats();
+      if(failedLangs.length){
+        showToast && showToast('⚠️ ' + failedLangs.length + ' language(s) fail: ' + failedLangs.join(', '), '#FFD166');
+      } else {
+        showToast && showToast('✅ Sab languages refresh ho gayi!','#2EE59D');
+      }
+      if(btnEl){ btnEl.innerHTML = originalLabel; btnEl.disabled = false; }
+      return;
+    }
+    const lang = langs[i];
+    let settled = false;
+    // ✅ Agar koi single language 15 sec mein bhi respond na kare (bahot weak net),
+    // usko skip karke aage badh jao — taake poora process atka na rahe.
+    const timeoutId = setTimeout(function(){
+      if(settled) return;
+      settled = true;
+      failedLangs.push(lang);
+      done++;
+      updateProgress();
+      fetchNext(i+1);
+    }, 15000);
+    lrFetchLangIntoAD(lang, function(ok){
+      if(settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      if(!ok) failedLangs.push(lang);
+      done++;
+      updateProgress();
+      fetchNext(i+1);
+    });
+  }
+  fetchNext(0);
 }
 
 // ════════════════════════════════════════════
@@ -8168,7 +8233,7 @@ function loadDaysList(){
     <div style="background:rgba(255,255,255,.08);border-radius:6px;height:5px;overflow:hidden;">
       <div style="height:100%;width:${Math.min(100,Math.round(totalCount/30*100))}%;background:var(--g);border-radius:6px;"></div>
     </div>
-    <div style="font-size:10px;color:var(--mut);margin-top:3px;">Total: ${totalCount} days available</div>`;
+    <div style="font-size:10px;color:var(--mut);margin-top:3px;">✏️ ${totalCount} add hain &nbsp;•&nbsp; ⏳ ${Math.max(0,30-totalCount)} reh gaye hain (30 mein se)</div>`;
   }
   renderDaysList();
 }
