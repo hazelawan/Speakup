@@ -755,11 +755,14 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6;}
   </div>
 
   <div class="card">
-    <div class="card-title">📚 Day Manager</div>
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <span>📚 Day Manager</span>
+      <button onclick="refreshAllLangsFromFirebase(this)" style="background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.4);color:#5B8DEF;font-size:11px;padding:6px 12px;border-radius:10px;font-weight:800;white-space:nowrap;">🔄 Sab Refresh</button>
+    </div>
     <div class="card-sub">Language choose karo, phir days lock/unlock aur edit karo</div>
 
     <div class="inp-label">Language Select</div>
-    <select class="inp" id="lessonLangSel" onchange="currentLang=this.value;loadDaysList()">
+    <select class="inp" id="lessonLangSel" onchange="currentLang=this.value;lrFetchLangIntoAD(currentLang,function(){loadDaysList();if(typeof refreshLessonStats==='function')refreshLessonStats();})">
       <option value="en">🇬🇧 English</option>
       <option value="fr">🇫🇷 French</option>
       <option value="zh">🇨🇳 Chinese</option>
@@ -6958,6 +6961,87 @@ function markUnsaved(){
 }
 
 // ════════════════════════════════════════════
+// ✅ SPEED FIX: ek language ka data narrow-load karo
+// (poora adminData tree khींchne ki jagah)
+// ════════════════════════════════════════════
+function lrFetchLangIntoAD(lang, callback){
+  if(!lang){ if(callback) callback(); return; }
+  if(!(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET)){
+    if(callback) callback();
+    return;
+  }
+  const langPath = 'adminData/langs/' + lang;
+  window.FB_GET(window.FB_REF(window.FB_DB, langPath)).then(function(snap){
+    if(snap && snap.exists()){
+      const langData = snap.val();
+      if(langData && langData.days){
+        const norm = {};
+        Object.keys(langData.days).forEach(function(k){
+          norm[String(k)] = langData.days[k];
+        });
+        langData.days = norm;
+      }
+      // ✅ Deep merge — sirf is language ka data, locally unsaved kaam preserve rehta hai
+      if(!AD.langs) AD.langs = {};
+      if(!AD.langs[lang]) AD.langs[lang] = langData;
+      else {
+        if(langData.days) Object.assign(AD.langs[lang].days || {}, langData.days);
+        if(langData.enabled !== undefined) AD.langs[lang].enabled = langData.enabled;
+      }
+    }
+    if(callback) callback();
+  }).catch(function(){
+    if(callback) callback();
+  });
+}
+
+// ✅ Manual "Sab Refresh" — poora adminData (sab languages + settings) khींchta hai.
+// Sirf jab user explicitly button dabaye, tab call hota hai — auto nahi.
+function refreshAllLangsFromFirebase(btnEl){
+  if(!(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET)){
+    showToast && showToast('❌ Firebase connect nahi hai','#FF6B6B');
+    return;
+  }
+  const originalLabel = btnEl ? btnEl.innerHTML : null;
+  if(btnEl){ btnEl.innerHTML = '⏳ Sab languages load ho rahi hain...'; btnEl.disabled = true; }
+  window.FB_GET(window.FB_REF(window.FB_DB, 'adminData')).then(function(snap){
+    if(snap && snap.exists()){
+      const data = snap.val();
+      if(data.langs){
+        Object.keys(data.langs).forEach(function(lang){
+          if(data.langs[lang] && data.langs[lang].days){
+            const norm = {};
+            Object.keys(data.langs[lang].days).forEach(function(k){
+              norm[String(k)] = data.langs[lang].days[k];
+            });
+            data.langs[lang].days = norm;
+          }
+        });
+      }
+      if(!AD.langs) AD.langs = {};
+      if(data.langs){
+        Object.keys(data.langs).forEach(function(l){
+          if(!AD.langs[l]) AD.langs[l] = data.langs[l];
+          else {
+            if(data.langs[l].days) Object.assign(AD.langs[l].days || {}, data.langs[l].days);
+            if(data.langs[l].enabled !== undefined) AD.langs[l].enabled = data.langs[l].enabled;
+          }
+        });
+      }
+      if(data.settings) AD.settings = Object.assign({}, AD.settings, data.settings);
+      _saveSettingsToLS();
+    }
+    loadDaysList();
+    if(typeof refreshLessonStats === 'function') refreshLessonStats();
+    showToast && showToast('✅ Sab languages refresh ho gayi!','#2EE59D');
+    if(btnEl){ btnEl.innerHTML = originalLabel; btnEl.disabled = false; }
+  }).catch(function(err){
+    showToast && showToast('❌ Refresh error: ' + err.message,'#FF6B6B');
+    if(btnEl){ btnEl.innerHTML = originalLabel; btnEl.disabled = false; }
+  });
+}
+
+// ════════════════════════════════════════════
 // PAGE NAVIGATION
 // ════════════════════════════════════════════
 function showPage(name,btn){
@@ -6979,48 +7063,15 @@ function showPage(name,btn){
   if(name==='dashboard') renderDashboard();
   if(name==='lessons'){
     if(typeof _syncEnabledSkillsToLangInfo==='function') _syncEnabledSkillsToLangInfo();
-    // ✅ FIX: onValue ki jagah get() — har tab switch pe overwrite nahi hoga
-    // AD mein jo data hai woh preserve rehta hai — sirf render karo
-    if(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET){
-      window.FB_GET(window.FB_REF(window.FB_DB, 'adminData')).then(function(snap){
-        if(snap && snap.exists()){
-          const data = snap.val();
-          if(data.langs){
-            Object.keys(data.langs).forEach(function(lang){
-              if(data.langs[lang] && data.langs[lang].days){
-                const norm = {};
-                Object.keys(data.langs[lang].days).forEach(function(k){
-                  norm[String(k)] = data.langs[lang].days[k];
-                });
-                data.langs[lang].days = norm;
-              }
-            });
-          }
-          // ✅ CRITICAL: Object.assign nahi — deep merge karo
-          // Taake locally kiya gaya unsaved work overwrite na ho
-          if(!AD.langs) AD.langs = {};
-          if(data.langs){
-            Object.keys(data.langs).forEach(function(l){
-              if(!AD.langs[l]) AD.langs[l] = data.langs[l];
-              else {
-                if(data.langs[l].days) Object.assign(AD.langs[l].days || {}, data.langs[l].days);
-                if(data.langs[l].enabled !== undefined) AD.langs[l].enabled = data.langs[l].enabled;
-              }
-            });
-          }
-          if(data.settings) AD.settings = Object.assign({}, AD.settings, data.settings);
-          _saveSettingsToLS();
-        }
-        loadDaysList();
-        if(typeof refreshLessonStats === 'function') refreshLessonStats();
-      }).catch(function(){
-        loadDaysList();
-        if(typeof refreshLessonStats === 'function') refreshLessonStats();
-      });
-    } else {
+    // ✅ SPEED FIX: poora 'adminData' (sab languages) khींchne ki jagah
+    // sirf currently-selected language ka path load karo. Yeh load ko
+    // bahot halka kar deta hai, especially slow connection pe.
+    // Baqi languages ka data 'Sync Now' ya naya '🔄 Sab Refresh' button se aayega.
+    const _lessonsTabLang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
+    lrFetchLangIntoAD(_lessonsTabLang, function(){
       loadDaysList();
       if(typeof refreshLessonStats === 'function') refreshLessonStats();
-    }
+    });
   }
   if(name==='languages') renderLangManager();
   if(name==='users') renderUsers();
