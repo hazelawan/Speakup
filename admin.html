@@ -87,89 +87,81 @@
       window.FIREBASE_READY = true;
       if(typeof updateCloudBar === 'function') updateCloudBar('connected');
 
-      // ✅ FIX: onValue real-time listener ki jagah sirf ek baar get() se load karo
-      // onValue bar-bar fire hota tha — jab bhi koi bhi Firebase node change hota
-      // (even unrelated nodes) toh yeh purana/stale data wapas AD mein inject kar deta tha
-      // aur locally kiya gaya unsaved change overwrite ho jaata tha (lesson disappear bug).
-      // Ab: sirf login pe ek baar full data load hoga get() se.
+      // ════════════════════════════════════════════════════════
+      // ✅ FAST INIT: Cache se turant show → Firebase se narrow fetch
+      // Poora adminData tree fetch karna slow tha + langs overwrite karta tha
+      // Ab: settings/paymentPlans sirf fetch karo, langs = cache se aata hai
+      // Language lesson data = lrFetchLangIntoAD se on-demand load hoga
+      // ════════════════════════════════════════════════════════
       window._adminInitialLoadDone = false;
-      const adminRef = ref(db, 'adminData');
-      get(adminRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          // Numeric keys normalize karo
-          if(data.langs) {
-            Object.keys(data.langs).forEach(lang => {
-              if(data.langs[lang]?.days) {
-                const normalized = {};
-                Object.keys(data.langs[lang].days).forEach(k => {
-                  normalized[String(k)] = data.langs[lang].days[k];
-                });
-                data.langs[lang].days = normalized;
-              }
-            });
-          }
-          // Settings sirf save karo (lesson data nahi)
-          try{ localStorage.setItem('speakup_admin', JSON.stringify({settings: data.settings, paymentPlans: data.paymentPlans})); }catch(e){}
-          if(typeof AD !== 'undefined' && AD) {
-            const prevSettings = AD.settings ? {...AD.settings} : {};
-            Object.assign(AD, data);
-            if(data.settings) {
-              AD.settings = Object.assign({}, prevSettings, data.settings);
-            }
-            if(AD.langs) {
-              Object.keys(AD.langs).forEach(lang => {
-                if(AD.langs[lang]?.days) {
-                  const norm = {};
-                  Object.keys(AD.langs[lang].days).forEach(k => {
-                    norm[String(k)] = AD.langs[lang].days[k];
-                  });
-                  AD.langs[lang].days = norm;
-                }
-              });
-            }
-          }
-          window._adminInitialLoadDone = true;
-          if(typeof loadDaysList === 'function') setTimeout(loadDaysList, 100);
-          if (typeof renderDashboard === 'function') renderDashboard();
-          if (typeof renderLangManager === 'function') renderLangManager();
-          if (typeof renderLessonStatus === 'function') renderLessonStatus();
-          if (typeof renderPayAccounts === 'function') renderPayAccounts();
-          if (typeof renderThemeGrid === 'function') renderThemeGrid();
-          if(typeof updateCloudBar === 'function') updateCloudBar('synced');
-          console.log('✅ Firebase se admin data load hua (one-time get)!');
 
-          // ✅ RECOVERY: Agar pehle koi save pending tha toh ab sync karo
-          try{
-            const pending = localStorage.getItem('su_admin_sync_pending');
-            if(pending){
-              const obj = JSON.parse(pending);
-              // Sirf tab recover karo agar 30 minute se zyada purana na ho
-              if(obj && obj.data && obj.ts && (Date.now() - obj.ts) < 30*60*1000){
-                showToast('🔄 Pehle ka unsaved data mila — auto-sync ho raha hai...','#FFD166', 4000);
-                setTimeout(function(){
-                  // Pending data mein se lessons extract karke current AD mein merge karo
-                  if(obj.data.langs){
-                    Object.keys(obj.data.langs).forEach(function(l){
-                      if(!AD.langs) AD.langs = {};
-                      if(!AD.langs[l]) AD.langs[l] = obj.data.langs[l];
-                      else {
-                        if(obj.data.langs[l].days) Object.assign(AD.langs[l].days || {}, obj.data.langs[l].days);
-                      }
-                    });
-                  }
-                  localStorage.removeItem('su_admin_sync_pending');
-                  saveAdminData();
-                  showToast('✅ Pending data sync ho gaya!','#2EE59D');
-                }, 1500);
-              } else {
-                localStorage.removeItem('su_admin_sync_pending');
-              }
-            }
-          }catch(e){}
+      // ── STEP A: Cache se turant panel show karo (0ms wait) ──
+      // loadAdminData() mein cache inject ho chuki hai — sirf render karo
+      window._adminInitialLoadDone = true;
+      if(typeof loadDaysList === 'function') setTimeout(loadDaysList, 50);
+      if(typeof renderDashboard === 'function') setTimeout(renderDashboard, 50);
+      if(typeof renderLangManager === 'function') setTimeout(renderLangManager, 50);
+      if(typeof renderLessonStatus === 'function') setTimeout(renderLessonStatus, 50);
+      if(typeof renderPayAccounts === 'function') setTimeout(renderPayAccounts, 50);
+      if(typeof renderThemeGrid === 'function') setTimeout(renderThemeGrid, 50);
+
+      // ── STEP B: Firebase se sirf settings + paymentPlans fetch karo (narrow) ──
+      const settingsRef = ref(db, 'adminData/settings');
+      const plansRef    = ref(db, 'adminData/paymentPlans');
+
+      Promise.all([get(settingsRef), get(plansRef)]).then(([snapS, snapP]) => {
+        if(typeof AD === 'undefined' || !AD) return;
+        if(snapS && snapS.exists()){
+          const fbSettings = snapS.val();
+          AD.settings = Object.assign({}, AD.settings || {}, fbSettings);
+          if(AD.settings.maxHearts === undefined) AD.settings.maxHearts = 3;
         }
+        if(snapP && snapP.exists() && Array.isArray(snapP.val()) && snapP.val().length){
+          AD.paymentPlans = snapP.val();
+          if(typeof renderPaymentPlans === 'function') renderPaymentPlans();
+        }
+        // Settings localStorage update karo
+        try{ localStorage.setItem('speakup_admin', JSON.stringify({settings: AD.settings, paymentPlans: AD.paymentPlans})); }catch(e){}
+        if(typeof updateCloudBar === 'function') updateCloudBar('synced');
+        console.log('✅ Firebase se settings load hua (narrow fetch)!');
+
+        // ── STEP C: Currently selected language ka fresh data load karo ──
+        const selEl = document.getElementById('lessonLangSel');
+        const activeLang = (selEl && selEl.value) ? selEl.value : (window.currentLang || 'en');
+        if(typeof lrFetchLangIntoAD === 'function'){
+          lrFetchLangIntoAD(activeLang, function(){
+            if(typeof loadDaysList === 'function') loadDaysList();
+            if(typeof refreshLessonStats === 'function') refreshLessonStats();
+          });
+        }
+
+        // ── STEP D: Pending unsaved data recover karo ──
+        try{
+          const pending = localStorage.getItem('su_admin_sync_pending');
+          if(pending){
+            const obj = JSON.parse(pending);
+            if(obj && obj.data && obj.ts && (Date.now() - obj.ts) < 30*60*1000){
+              if(typeof showToast === 'function') showToast('🔄 Pehle ka unsaved data mila — auto-sync ho raha hai...','#FFD166', 4000);
+              setTimeout(function(){
+                if(obj.data.langs){
+                  Object.keys(obj.data.langs).forEach(function(l){
+                    if(!AD.langs) AD.langs = {};
+                    if(!AD.langs[l]) AD.langs[l] = obj.data.langs[l];
+                    else { if(obj.data.langs[l].days) Object.assign(AD.langs[l].days || (AD.langs[l].days={}), obj.data.langs[l].days); }
+                  });
+                }
+                localStorage.removeItem('su_admin_sync_pending');
+                if(typeof saveAdminData === 'function') saveAdminData();
+                if(typeof showToast === 'function') showToast('✅ Pending data sync ho gaya!','#2EE59D');
+              }, 1500);
+            } else {
+              localStorage.removeItem('su_admin_sync_pending');
+            }
+          }
+        }catch(e){}
+
       }).catch((err) => {
-        console.warn('adminData read error:', err);
+        console.warn('settings/plans read error:', err);
         if(typeof updateCloudBar === 'function') updateCloudBar('error');
       });
 
