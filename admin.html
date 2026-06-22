@@ -6822,6 +6822,19 @@ function loadAdminData(){
       if(saved.paymentPlans) fresh.paymentPlans = saved.paymentPlans;
     }
   }catch(e){}
+  // ✅ Cached lang data load karo — refresh pe turant lessons dikhen
+  // (Firebase load hone se pehle bhi user ko blank screen nahi dikhi)
+  try{
+    Object.keys(fresh.langs || {}).forEach(function(lang){
+      var raw = localStorage.getItem('su_lang_cache_'+lang);
+      if(!raw) return;
+      var obj = JSON.parse(raw);
+      var CACHE_TTL = 24 * 60 * 60 * 1000;
+      if(obj && obj.data && obj.ts && (Date.now() - obj.ts) < CACHE_TTL){
+        fresh.langs[lang] = obj.data;
+      }
+    });
+  }catch(e){}
   return fresh;
 }
 
@@ -6915,6 +6928,14 @@ function saveAdminData(){
     showToast('❌ Save fail: '+e.message,'#FF6B6B', 5000);
     return;
   }
+  // ✅ Lang cache update karo — refresh pe turant days dikhen
+  if(typeof _lcSave === 'function' && AD.langs){
+    Object.keys(AD.langs).forEach(function(lang){
+      if(AD.langs[lang] && AD.langs[lang].days && Object.keys(AD.langs[lang].days).length > 0){
+        _lcSave(lang, AD.langs[lang]);
+      }
+    });
+  }
   _doCloudSync(snapshot, 1);
   const fs=document.getElementById('floatSave');
   if(fs) fs.classList.remove('visible');
@@ -6967,34 +6988,73 @@ function markUnsaved(){
 // ✅ SPEED FIX: ek language ka data narrow-load karo
 // (poora adminData tree khींchne ki jagah)
 // ════════════════════════════════════════════
+// ════════════════════════════════════════════
+// ✅ LANG CACHE SYSTEM
+// Keys: su_lang_cache_{lang}  → {data, ts}
+// Expiry: 24 hours (sirf agar Firebase available na ho)
+// Fresh load: har baar Firebase se latest data aata hai,
+//             cache update hota hai — refresh pe turant show hota hai
+// ════════════════════════════════════════════
+var _LANG_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+function _lcSave(lang, data){
+  try{ localStorage.setItem('su_lang_cache_'+lang, JSON.stringify({data: data, ts: Date.now()})); }catch(e){}
+}
+function _lcLoad(lang){
+  try{
+    var raw = localStorage.getItem('su_lang_cache_'+lang);
+    if(!raw) return null;
+    var obj = JSON.parse(raw);
+    if(obj && obj.data && obj.ts && (Date.now() - obj.ts) < _LANG_CACHE_TTL) return obj.data;
+  }catch(e){}
+  return null;
+}
+function _lcMergeIntoAD(lang, langData){
+  if(!langData) return;
+  if(langData.days){
+    var norm = {};
+    Object.keys(langData.days).forEach(function(k){ norm[String(k)] = langData.days[k]; });
+    langData.days = norm;
+  }
+  if(!AD.langs) AD.langs = {};
+  if(!AD.langs[lang]) AD.langs[lang] = langData;
+  else {
+    if(langData.days) Object.assign(AD.langs[lang].days || (AD.langs[lang].days={}), langData.days);
+    if(langData.enabled !== undefined) AD.langs[lang].enabled = langData.enabled;
+  }
+}
+
 function lrFetchLangIntoAD(lang, callback){
   if(!lang){ if(callback) callback(true); return; }
+
+  // ── STEP 1: Cache se turant show karo (instant, no wait) ──
+  var cached = _lcLoad(lang);
+  if(cached && (!AD.langs || !AD.langs[lang] || Object.keys(AD.langs[lang].days||{}).length === 0)){
+    _lcMergeIntoAD(lang, JSON.parse(JSON.stringify(cached))); // deep copy
+    if(typeof loadDaysList === 'function') loadDaysList();
+  }
+
+  // ── STEP 2: Firebase unavailable? Cache se kaam chala lo ──
   if(!(window.FIREBASE_READY && window.FB_DB && window.FB_REF && window.FB_GET)){
-    if(callback) callback(false);
+    if(cached){ if(callback) callback(true); }
+    else { if(callback) callback(false); }
     return;
   }
-  const langPath = 'adminData/langs/' + lang;
+
+  // ── STEP 3: Firebase se fresh data fetch karo ──
+  var langPath = 'adminData/langs/' + lang;
   window.FB_GET(window.FB_REF(window.FB_DB, langPath)).then(function(snap){
     if(snap && snap.exists()){
-      const langData = snap.val();
-      if(langData && langData.days){
-        const norm = {};
-        Object.keys(langData.days).forEach(function(k){
-          norm[String(k)] = langData.days[k];
-        });
-        langData.days = norm;
-      }
-      // ✅ Deep merge — sirf is language ka data, locally unsaved kaam preserve rehta hai
-      if(!AD.langs) AD.langs = {};
-      if(!AD.langs[lang]) AD.langs[lang] = langData;
-      else {
-        if(langData.days) Object.assign(AD.langs[lang].days || {}, langData.days);
-        if(langData.enabled !== undefined) AD.langs[lang].enabled = langData.enabled;
-      }
+      var langData = snap.val();
+      _lcMergeIntoAD(lang, langData);
+      // ✅ Cache update karo — agla refresh instant hoga
+      _lcSave(lang, AD.langs[lang]);
     }
     if(callback) callback(true);
   }).catch(function(){
-    if(callback) callback(false);
+    // Firebase fail — cache se chal lo
+    if(cached && (!AD.langs || !AD.langs[lang])) _lcMergeIntoAD(lang, JSON.parse(JSON.stringify(cached)));
+    if(callback) callback(!!cached);
   });
 }
 
@@ -7948,6 +8008,8 @@ function lsSaveToFirebase(){
 
       // App cache bhi update karo
       try{ localStorage.setItem('su_admin_day_'+lang+'_'+dayNum, JSON.stringify(dayData)); }catch(e){}
+      // ✅ Lang cache bhi update karo — refresh pe turant dikhe
+      if(typeof _lcSave === 'function' && AD.langs && AD.langs[lang]) _lcSave(lang, AD.langs[lang]);
 
       const resultBox = document.getElementById('lsResultBox');
       if(resultBox){
