@@ -105,11 +105,12 @@
       if(typeof renderPayAccounts === 'function') setTimeout(renderPayAccounts, 50);
       if(typeof renderThemeGrid === 'function') setTimeout(renderThemeGrid, 50);
 
-      // ── STEP B: Firebase se sirf settings + paymentPlans fetch karo (narrow) ──
+      // ── STEP B: Firebase se sirf settings + paymentPlans + langs-meta fetch karo ──
       const settingsRef = ref(db, 'adminData/settings');
       const plansRef    = ref(db, 'adminData/paymentPlans');
+      const langsMetaRef = ref(db, 'adminData/langs'); // ✅ FIX: langs meta (enabled, name, flag) bhi load karo
 
-      Promise.all([get(settingsRef), get(plansRef)]).then(([snapS, snapP]) => {
+      Promise.all([get(settingsRef), get(plansRef), get(langsMetaRef)]).then(([snapS, snapP, snapL]) => {
         if(typeof AD === 'undefined' || !AD) return;
         if(snapS && snapS.exists()){
           const fbSettings = snapS.val();
@@ -119,6 +120,32 @@
         if(snapP && snapP.exists() && Array.isArray(snapP.val()) && snapP.val().length){
           AD.paymentPlans = snapP.val();
           if(typeof renderPaymentPlans === 'function') renderPaymentPlans();
+        }
+        // ✅ FIX: Firebase pe jo bhi langs hain (custom-added), unhe LANG_INFO mein inject karo
+        // Taake "Sab Refresh" ke baad — aur login pe — Firebase-added langs panel mein dikhen
+        if(snapL && snapL.exists()){
+          const fbLangs = snapL.val();
+          if(!AD.langs) AD.langs = {};
+          Object.keys(fbLangs).forEach(function(code){
+            const ld = fbLangs[code];
+            // enabled flag sync karo
+            if(!AD.langs[code]) AD.langs[code] = { enabled: true, days: {} };
+            if(ld && ld.enabled !== undefined) AD.langs[code].enabled = ld.enabled;
+            // Agar LANG_INFO mein nahi hai to inject karo (Firebase-added lang)
+            if(typeof LANG_INFO !== 'undefined' && !LANG_INFO[code] && ld){
+              LANG_INFO[code] = {
+                name: ld.name || code.toUpperCase(),
+                flag: ld.flag || '🌐',
+                color: ld.color || '#58CC02',
+                colorDark: ld.colorDark || '#46A300',
+                _fromFirebase: true
+              };
+              if(typeof LANG_CODES !== 'undefined' && !LANG_CODES.includes(code)) LANG_CODES.push(code);
+            }
+          });
+          if(typeof renderLangManager === 'function') renderLangManager();
+          // Lessons tab dropdown bhi refresh karo
+          if(typeof populateLangDropdown === 'function') populateLangDropdown();
         }
         // Settings localStorage update karo
         try{ localStorage.setItem('speakup_admin', JSON.stringify({settings: AD.settings, paymentPlans: AD.paymentPlans})); }catch(e){}
@@ -7103,7 +7130,39 @@ function refreshAllLangsFromFirebase(btnEl){
   const originalLabel = btnEl ? btnEl.innerHTML : null;
   if(btnEl) btnEl.disabled = true;
 
-  const langs = (typeof LANG_CODES !== 'undefined' && LANG_CODES.length) ? LANG_CODES.slice() : Object.keys(AD.langs || {});
+  // ✅ FIX: Pehle Firebase se poora langs node fetch karo — taake Firebase-only
+  // languages (jo LANG_CODES mein nahi hain) bhi LANG_INFO mein inject ho jayein
+  // aur renderLangManager mein dikhein. Phir ek-ek lang data fetch karo.
+  window.FB_GET(window.FB_REF(window.FB_DB, 'adminData/langs')).then(function(allSnap){
+    if(allSnap && allSnap.exists()){
+      const fbLangs = allSnap.val();
+      Object.keys(fbLangs).forEach(function(code){
+        // Agar yeh lang LANG_INFO mein nahi hai to inject karo
+        if(!LANG_INFO[code]){
+          const fbLangMeta = fbLangs[code];
+          LANG_INFO[code] = {
+            name: (fbLangMeta && fbLangMeta.name) ? fbLangMeta.name : code.toUpperCase(),
+            flag: (fbLangMeta && fbLangMeta.flag) ? fbLangMeta.flag : '🌐',
+            color: (fbLangMeta && fbLangMeta.color) ? fbLangMeta.color : '#58CC02',
+            colorDark: (fbLangMeta && fbLangMeta.colorDark) ? fbLangMeta.colorDark : '#46A300',
+            _fromFirebase: true
+          };
+        }
+        if(!AD.langs) AD.langs = {};
+        if(!AD.langs[code]) AD.langs[code] = { enabled: true, days: {} };
+        if(fbLangs[code] && fbLangs[code].enabled !== undefined) AD.langs[code].enabled = fbLangs[code].enabled;
+        if(typeof LANG_CODES !== 'undefined' && !LANG_CODES.includes(code)) LANG_CODES.push(code);
+      });
+      renderLangManager();
+    }
+  }).catch(function(){ /* fail silently — individual lang fetch aage hoga */ });
+
+  const langs = (function(){
+    // LANG_CODES + AD.langs dono se merge karo — Firebase-only langs bhi include hon
+    const base = (typeof LANG_CODES !== 'undefined' && LANG_CODES.length) ? LANG_CODES.slice() : [];
+    Object.keys(AD.langs || {}).forEach(function(c){ if(!base.includes(c)) base.push(c); });
+    return base;
+  })();
   let done = 0;
   let failedLangs = [];
 
@@ -9754,6 +9813,23 @@ function parseJsonLesson(){
 // LANGUAGES
 // ════════════════════════════════════════════
 function renderLangManager(){
+  // ✅ FIX: AD.langs mein jo bhi languages hain (Firebase se add ki gayi),
+  // unhe LANG_INFO mein inject karo taake renderLangManager mein dikhen
+  if(AD.langs){
+    Object.keys(AD.langs).forEach(function(code){
+      if(!LANG_INFO[code]){
+        const ld = AD.langs[code];
+        LANG_INFO[code] = {
+          name: (ld && ld.name) ? ld.name : code.toUpperCase(),
+          flag: (ld && ld.flag) ? ld.flag : '🌐',
+          color: (ld && ld.color) ? ld.color : '#58CC02',
+          colorDark: (ld && ld.colorDark) ? ld.colorDark : '#46A300',
+          _fromFirebase: true
+        };
+        if(typeof LANG_CODES !== 'undefined' && !LANG_CODES.includes(code)) LANG_CODES.push(code);
+      }
+    });
+  }
   // langChipsAdmin (chips view) — Chess exclude karo
   const container=document.getElementById('langChipsAdmin');
   if(container){
@@ -9815,6 +9891,8 @@ function renderLangManager(){
 
     listEl.innerHTML = langRows + chessBox;
   }
+  // ✅ FIX: Lessons dropdown bhi update karo — Firebase-added langs include hon
+  populateLangDropdown();
 }
 
 function toggleLang(code,enabled){
@@ -9822,6 +9900,22 @@ function toggleLang(code,enabled){
   if(!AD.langs[code]) AD.langs[code]={days:{}};
   AD.langs[code].enabled=enabled;
   renderLangManager(); saveAdminData(); showToast((enabled?'✅ ':'❌ ')+LANG_INFO[code]?.name+' '+(enabled?'enable':'disable')+' ho gaya!','#FFD166');
+}
+
+// ✅ FIX: Lessons tab ka language dropdown dynamically rebuild karo
+// Taake Firebase-added languages bhi select ho sakein
+function populateLangDropdown(){
+  const sel = document.getElementById('lessonLangSel');
+  if(!sel) return;
+  const currentVal = sel.value;
+  // Sab LANG_INFO keys (built-in + Firebase-added) se options banao
+  const allCodes = Object.keys(LANG_INFO);
+  sel.innerHTML = allCodes.map(function(code){
+    const info = LANG_INFO[code];
+    return '<option value="'+code+'">'+(info.flag||'🌐')+' '+(info.name||code)+'</option>';
+  }).join('');
+  // Pehle wala value restore karo (agar abhi bhi exist karta ho)
+  if(currentVal && allCodes.includes(currentVal)) sel.value = currentVal;
 }
 
 // ════════════════════════════════════════════════════════
@@ -13850,7 +13944,15 @@ function addNewLanguage(){
   LANG_INFO[code]={name,flag,color};
   if(!LANG_CODES.includes(code)) LANG_CODES.push(code);
   if(!AD.langs) AD.langs={};
-  AD.langs[code]={enabled:true,days:{}};
+  AD.langs[code]={enabled:true,days:{},name,flag,color};
+  // ✅ FIX: Firebase pe lang metadata bhi save karo — warna sirf local rehti hai
+  // aur dusre sessions / "Sab Refresh" pe woh lang show nahi hoti
+  if(window.FIREBASE_READY && window.FB_DB && window.FB_UPDATE && window.FB_REF){
+    var meta = { enabled: true, name: name, flag: flag, color: color };
+    window.FB_UPDATE(window.FB_REF(window.FB_DB, 'adminData/langs/' + code), meta)
+      .then(function(){ showToast(flag+' '+name+' Firebase pe save ho gayi! ✅', '#2EE59D'); })
+      .catch(function(e){ showToast('⚠️ Local mein add hua, Firebase fail: '+e.message, '#FFD166', 5000); });
+  }
   saveAdminData(); renderLangManager();
   showToast(`${flag} ${name} add ho gayi!`,var_g());
 }
